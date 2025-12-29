@@ -11,7 +11,7 @@ L'applicazione permette all'utente di selezionare dai 5 ai 10 monumenti in una c
 ## 🚀 Il Problema: Perché BuddyMaps?
 
 Ti è mai capitato di camminare avanti e indietro per una città perdendo tempo prezioso?
-Matematicamente, questo è noto come **Traveling Salesman Problem (TSP)**, un problema complesso (NP-Hard) che diventa difficile da risolvere a mente man mano che i punti di interesse aumentano.
+è un problema complesso (NP-Hard) che diventa difficile da risolvere a mente man mano che i punti di interesse aumentano.
 
 BuddyMaps automatizza questo processo utilizzando **algoritmi sui Grafi** per trovare il ciclo ottimale, risparmiando ai turisti chilometri inutili e ore di cammino.
 
@@ -20,10 +20,15 @@ BuddyMaps automatizza questo processo utilizzando **algoritmi sui Grafi** per tr
 ## ✨ Caratteristiche Principali
 
 ✅ **Pianificazione Smart** – Inserisci i punti di interesse (POI) e ottieni subito l'itinerario ottimizzato.
+
 ✅ **Gestione Itinerario** – Crea nuovi viaggi, modifica le tappe o elimina itinerari passati.
+
 ✅ **Algoritmo TSP Integrato** – Sfrutta euristiche avanzate (es. Nearest Neighbor) per calcolare il ciclo Hamiltoniano minimo.
+
 ✅ **Integrazione Geografica** – Si interfaccia con Provider esterni (es. Google Maps/OpenStreetMap) per calcolare le distanze reali su strada.
+
 ✅ **Storico Viaggi** – Salva i tuoi percorsi preferiti per riutilizzarli o condividerli in futuro.
+
 ✅ **Interfaccia Intuitiva** – Un design pulito che guida l'utente dalla selezione dei monumenti alla navigazione.
 
 ---
