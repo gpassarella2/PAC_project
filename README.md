@@ -1,6 +1,6 @@
 # 🗺️ BuddyMaps – L'Ottimizzatore di Viaggi Intelligente
 
-![Logo BuddyMaps](logoApp.png)
+![Logo BuddyMaps](logoApp.PNG)
 
 **BuddyMaps** non è una semplice mappa: è un sistema intelligente che risolve il problema logistico di ogni turista. Tu scegli *cosa* vedere, noi calcoliamo *come* vederlo nel minor tempo possibile.
 
