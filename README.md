@@ -45,5 +45,4 @@ Il progetto si basa su una solida struttura algoritmica:
 
 ---
 
-### 🛠️ Tecnologie (Esempio - Da compilare con le tue)
 
