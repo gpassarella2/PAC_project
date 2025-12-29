@@ -23,7 +23,7 @@ BuddyMaps automatizza questo processo utilizzando **algoritmi sui Grafi** per tr
 
 ✅ **Gestione Itinerario** – Crea nuovi viaggi, modifica le tappe o elimina itinerari passati.
 
-✅ **Algoritmo TSP Integrato** – Sfrutta euristiche avanzate (es. Nearest Neighbor) per calcolare il ciclo Hamiltoniano minimo.
+✅ **Algoritmo TSP Integrato** – Sfrutta euristiche avanzate (es. Nearest Neighbor) per calcolare il ciclo minimo.
 
 ✅ **Integrazione Geografica** – Si interfaccia con Provider esterni (es. Google Maps/OpenStreetMap) per calcolare le distanze reali su strada.
 
