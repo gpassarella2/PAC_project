@@ -33,7 +33,6 @@ BuddyMaps automatizza questo processo utilizzando **algoritmi sui Grafi** per tr
 Il progetto si basa su una solida struttura algoritmica:
 
 * **Modello Dati:** Grafo completo pesato, dove i **Nodi** rappresentano i monumenti e gli **Archi** rappresentano le distanze/tempi di percorrenza.
-* **Motore di Calcolo:** Implementazione di algoritmi di approssimazione per il *Traveling Salesman Problem* per garantire risposte rapide anche su dispositivi mobili.
 * **Architettura:** Separazione netta tra logica di presentazione (Utente) e logica di business (Sistema di Ottimizzazione).
 
 ---
@@ -47,6 +46,4 @@ Il progetto si basa su una solida struttura algoritmica:
 ---
 
 ### 🛠️ Tecnologie (Esempio - Da compilare con le tue)
-* *Linguaggio:* Java / Python / C++ (Scegli il tuo)
-* *API Mappe:* Google Maps API / Mapbox
-* *Diagrammi:* UML 2.0
+
