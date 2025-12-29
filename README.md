@@ -1,5 +1,7 @@
 # 🗺️ BuddyMaps – L'Ottimizzatore di Viaggi Intelligente
 
+![Logo BuddyMaps](logoApp.png)
+
 **BuddyMaps** non è una semplice mappa: è un sistema intelligente che risolve il problema logistico di ogni turista. Tu scegli *cosa* vedere, noi calcoliamo *come* vederlo nel minor tempo possibile.
 
 L'applicazione permette all'utente di selezionare dai 5 ai 10 monumenti in una città e calcola automaticamente il **percorso più breve** per visitarli tutti e tornare al punto di partenza, trasformando una lista disordinata di luoghi nell'itinerario perfetto.
@@ -44,4 +46,7 @@ Il progetto si basa su una solida struttura algoritmica:
 
 ---
 
-### 🛠️ Tecnologie 
+### 🛠️ Tecnologie (Esempio - Da compilare con le tue)
+* *Linguaggio:* Java / Python / C++ (Scegli il tuo)
+* *API Mappe:* Google Maps API / Mapbox
+* *Diagrammi:* UML 2.0
