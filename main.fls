@@ -562,11 +562,9 @@ INPUT ./main.lol
 INPUT ./main.lol
 INPUT main.lol
 OUTPUT main.lol
-INPUT ./introduzione.tex
-INPUT ./introduzione.tex
-INPUT ./introduzione.tex
-INPUT ./introduzione.tex
-INPUT introduzione.tex
+INPUT ./Iterazione0/introduzione.tex
+INPUT ./Iterazione0/introduzione.tex
+INPUT Iterazione0/introduzione.tex
 INPUT c:/texlive/2025/texmf-dist/tex/latex/newtx/ts1ntxtlf.fd
 INPUT c:/texlive/2025/texmf-dist/tex/latex/newtx/ts1ntxtlf.fd
 INPUT c:/texlive/2025/texmf-dist/tex/latex/newtx/ts1ntxtlf.fd

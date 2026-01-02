@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.10.7)  2 JAN 2026 20:50
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.10.7)  2 JAN 2026 20:52
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
@@ -1310,7 +1310,7 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.vii}) has
 <to be read again> 
                    \relax 
 l.23 \newpage
-              [7] (./introduzione.tex
+              [7] (./Iterazione0/introduzione.tex
 LaTeX Font Info:    Trying to load font information for TS1+ntxtlf on input line 9.
  (c:/texlive/2025/texmf-dist/tex/latex/newtx/ts1ntxtlf.fd
 File: ts1ntxtlf.fd 2015/01/18 v1.0 fd file for TS1/ntxtlf
@@ -1348,10 +1348,10 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: BF0201A10AC2F245EA275FB133160530;602.
  ) 
 Here is how much of TeX's memory you used:
- 63550 strings out of 467748
- 1560952 string characters out of 5431138
+ 63549 strings out of 467748
+ 1560975 string characters out of 5431138
  2382463 words of memory out of 5000000
- 91390 multiletter control sequences out of 15000+600000
+ 91388 multiletter control sequences out of 15000+600000
  668076 words of font info for 82 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  99i,11n,96p,785b,1095s stack positions out of 10000i,1000n,20000p,200000b,200000s
