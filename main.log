@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.10.7)  2 JAN 2026 20:37
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.10.7)  2 JAN 2026 20:47
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**"c:/Users/giorg/Desktop/uni/anno 1/pac/PAC_project/main.tex"
-(c:/Users/giorg/Desktop/uni/anno 1/pac/PAC_project/main.tex
+**c:/Users/giorg/Desktop/uni/PAC_project/main.tex
+(c:/Users/giorg/Desktop/uni/PAC_project/main.tex
 LaTeX2e <2025-06-01> patch level 1
 L3 programming layer <2025-09-02>
 (c:/texlive/2025/texmf-dist/tex/latex/base/report.cls
@@ -1349,14 +1349,14 @@ Package rerunfilecheck Info: File `main.out' has not changed.
  ) 
 Here is how much of TeX's memory you used:
  63550 strings out of 467748
- 1560987 string characters out of 5431138
+ 1560952 string characters out of 5431138
  2382463 words of memory out of 5000000
  91390 multiletter control sequences out of 15000+600000
  668076 words of font info for 82 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 99i,11n,96p,798b,1095s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 99i,11n,96p,785b,1095s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2025/texmf-dist/fonts/type1/public/tex-gyre/qtmr.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/newtx/ztmb.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/newtx/ztmr.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/newtx/ztmri.pfb>
-Output written on main.pdf (15 pages, 144725 bytes).
+Output written on main.pdf (15 pages, 144552 bytes).
 PDF statistics:
  135 PDF objects out of 1000 (max. 8388607)
  105 compressed objects within 2 object streams

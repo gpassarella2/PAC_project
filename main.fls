@@ -1,8 +1,8 @@
-PWD c:/Users/giorg/Desktop/uni/anno 1/pac/PAC_project
+PWD c:/Users/giorg/Desktop/uni/PAC_project
 INPUT c:/texlive/2025/texmf.cnf
 INPUT c:/texlive/2025/texmf-dist/web2c/texmf.cnf
 INPUT c:/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt
-INPUT c:/Users/giorg/Desktop/uni/anno 1/pac/PAC_project/main.tex
+INPUT c:/Users/giorg/Desktop/uni/PAC_project/main.tex
 OUTPUT main.log
 INPUT c:/texlive/2025/texmf-dist/tex/latex/base/report.cls
 INPUT c:/texlive/2025/texmf-dist/tex/latex/base/report.cls
