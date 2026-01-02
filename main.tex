@@ -1,0 +1,51 @@
+\documentclass[12pt, a4paper, twoside, openright]{report}
+\usepackage[colorlinks=true, linkcolor=black, citecolor=black, urlcolor=black]{hyperref}
+
+\input{preamble.tex}
+
+
+% ============= Document ============= %
+\begin{document}
+
+% =========== Frontespizio =========== %
+\input{frontespizio}
+\blankpage
+\blankpage
+\restoregeometry
+
+% ============== Indice ============== %
+\pagenumbering{roman}
+\tableofcontents
+\listoffigures
+\listoftables
+\lstlistoflistings
+\afterpage{\blankpage}
+\newpage
+\pagenumbering{arabic}
+
+% ============= Capitoli ============= %
+\input{introduzione}
+\addcontentsline{toc}{chapter}{Introduzione} % Aggiunge al sommario
+\markboth{Introduzione}{Introduzione}         % <--- AGGIUNGI QUESTO
+
+
+% ... qui inizia il testo dell'introduzione ...
+%\newpage
+%\thispagestyle{empty}
+%\input{capitolo1.tex}
+
+%\input{comunicazione/capitolo1}
+%\input{Analisi/capitolo2}
+%\input{interfaccia/capitolo3}
+
+\input{conclusione}
+\addcontentsline{toc}{chapter}{Conclusione} % Aggiunge al sommario
+\markboth{Conclusione}{Conclusione}         % <--- AGGIUNGI QUESTO
+% =========== Bibliografia =========== %
+
+\bibliographystyle{unsrt}
+\bibliography{references}
+
+\end{document}
+
+

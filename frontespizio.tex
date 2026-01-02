@@ -1,0 +1,54 @@
+\newgeometry{
+	left=3cm,
+	right=3cm,
+	top=3cm,
+	bottom=1.5cm,
+	heightrounded}
+
+ \begin{tikzpicture}[remember picture, overlay]
+    \node[
+            below left,
+             inner sep = 0pt,
+             xshift = 10cm,
+            yshift = -3cm,
+             ] 
+             (Foto) at (current page.north west){
+         	\includegraphics[width=0.5\linewidth]{unibg.png}
+     	};
+
+     %\draw (2.3, 1) -- (2.3, -30);
+ \end{tikzpicture}
+
+\vspace{4.5cm} 
+\begin{tabular}{@{}p{2.3cm}@{\hspace{0\textwidth}}p{0.8\textwidth}@{}}%
+    ~ & \fontsize{14}{16}\selectfont Dipartimento di\\
+    ~ & \fontsize{14}{16}\selectfont Ingegneria Gestionale, dell'Informazione e della Produzione\\
+\end{tabular}%
+
+\vspace{1.5cm} 
+\begin{tabular}{@{}p{2.3cm}@{\hspace{0\textwidth}}p{0.8\textwidth}@{}}%
+    ~ & \fontsize{14}{16}\selectfont Corso di Laurea in\\
+    ~ & \fontsize{14}{16}\selectfont Ingegneria Informatica\\
+    ~ & ~ \\
+    % ==================== Classe Di Laurea ==================== %
+\end{tabular}%
+
+\vspace{2cm} %2.916
+\begin{tabular}{@{}p{2.3cm}@{\hspace{0\textwidth}}p{0.8\textwidth}@{}}%
+    % ==================== Titolo Tesi ==================== %
+    ~ & \fontsize{20}{24}\selectfont {Progettazione algoritmi e computabilità}\\
+\end{tabular}%
+
+\vspace{1.5cm}
+\begin{tabular}{c @{\hspace{2cm}} c}
+    \fontsize{14}{16}\selectfont \textit{Giorgio Passarella} &
+    \fontsize{14}{16}\selectfont \textit{altro membro} \\
+    Matricola n.\ 1079287 & Matricola n.\ 1073364 \\
+\end{tabular}
+
+\vspace{1.65cm}
+\begin{tabular}{@{}p{2.3cm}@{\hspace{0\textwidth}}p{0.8\textwidth}@{}}%
+    ~ & Anno Accademico\\
+    % ==================== Anno Accademico ==================== %
+    ~ & 202{5}/202{6} \\
+\end{tabular}%

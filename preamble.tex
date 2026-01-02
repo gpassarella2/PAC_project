@@ -1,0 +1,118 @@
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage[nottoc]{tocbibind}
+\usepackage{geometry}
+
+\geometry{
+    a4paper,
+    left=3cm,
+    right=3cm,
+    top=3cm,
+    bottom=3cm,
+    heightrounded
+}
+
+\usepackage{setspace}               % -> Interlinea
+\onehalfspacing
+\setcounter{secnumdepth}{3}         % -> Numerazione indice
+\setcounter{tocdepth}{3} 
+
+% --- GRAFICA E COLORI ---
+\usepackage{xcolor}                 % IMPORTANTE: Caricato prima di listings
+\usepackage{graphicx}               % -> Immagini
+\usepackage{tikz}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}             % <--- SOSTITUITO subfigure (più moderno)
+\usepackage{svg}
+\usepackage{pgfplots}               % -> Plot in latex
+\pgfplotsset{compat=1.18} 
+
+% --- MATH & FONTS (Ordine Ottimizzato) ---
+\usepackage{amsfonts}               % -> Math standard
+\usepackage{amsmath}                % -> Math avanzato
+\usepackage{newtxtext,newtxmath}    % -> Times New Roman (caricato DOPO amsmath)
+\usepackage{xfrac}                  % -> sfrac
+\usepackage{rsfso}                  % -> Font per Laplace L
+\usepackage{siunitx}                % -> Unità di misura (SI)
+
+% --- CODICE E LISTINGS ---
+\usepackage{listings}
+
+% Alias per C++
+\lstdefinelanguage{cpp}{
+    language=C++
+}
+
+\lstset{
+    basicstyle=\ttfamily,
+    keywordstyle=\color{blue},
+    stringstyle=\color{red},
+    commentstyle=\color{gray},
+    numbers=left,
+    numberstyle=\tiny,
+    captionpos=b,
+    breaklines=true
+}
+
+% --- ALTRI PACCHETTI ---
+\usepackage{lipsum}                 % -> Lorem ipsum
+\usepackage{afterpage}              % -> Blank numbered page
+\usepackage{enumerate}
+\usepackage[RPvoltages]{circuitikz} % -> Schematic design
+\usepackage{fancyvrb}               % -> Codice colorato in verbatim
+\usepackage{pdfpages}               % -> Inserisce pdf 
+\usepackage{subfiles}
+\usepackage{booktabs}               % -> Tabelle belle
+\usepackage{makecell}
+\usepackage{multirow}
+\usepackage[toc,page]{appendix}     % -> Appendici
+
+\addto\captionsitalian{%
+   \renewcommand{\appendixtocname}{Appendici}%
+   \renewcommand{\appendixpagename}{Appendici}%
+}
+
+% --- HYPERREF (Va caricato quasi sempre per ultimo) ---
+\usepackage{hyperref}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=black,      
+    urlcolor=black,
+    pdfborder={1 0 0},
+    linkbordercolor=black,
+}
+
+% Configurazione autoref italiano
+\AtBeginDocument{%
+    \renewcommand{\chapterautorefname}{Capitolo}
+    \renewcommand{\sectionautorefname}{Sezione}
+    \renewcommand{\subsectionautorefname}{Sottosezione}
+    \renewcommand{\subsubsectionautorefname}{Sotto-sottosezione}
+    \renewcommand{\figureautorefname}{Figura}
+    \renewcommand{\tableautorefname}{Tabella}
+}
+
+% --- HEADER E FOOTER ---
+\usepackage{fancyhdr}               
+\pagestyle{fancy}
+\fancyfoot[CO, CE]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\setlength{\headheight}{15pt}
+
+% Roman number helper
+\makeatletter
+\newcommand*{\rom}[1]{\expandafter\@slowromancap\romannumeral #1@}
+\makeatother
+
+% Blank page helper
+\newcommand\blankpage{%
+    \null
+    \thispagestyle{empty}%
+    \addtocounter{page}{-1}%
+    \newpage
+}
