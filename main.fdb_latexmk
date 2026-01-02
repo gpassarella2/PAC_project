@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex main"] 1767382164.69736 "main.aux" "main.bbl" "main" 1767383272.42701 0
+["bibtex main"] 1767382164.69736 "main.aux" "main.bbl" "main" 1767383410.14327 0
   "./references.bib" 1767382164 0 d41d8cd98f00b204e9800998ecf8427e ""
   "c:/texlive/2025/texmf-dist/bibtex/bst/base/unsrt.bst" 1759862096 18030 1376b4b231b50c66211e47e42eda2875 ""
-  "main.aux" 1767383271 969 5bdd50187bebca7266f4b93ca06a22be "pdflatex"
+  "main.aux" 1767383409 969 5bdd50187bebca7266f4b93ca06a22be "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1767383269.16992 "c:/Users/giorg/Desktop/uni/PAC_project/main.tex" "main.pdf" "main" 1767383272.42746 0
+["pdflatex"] 1767383407.07238 "c:/Users/giorg/Desktop/uni/PAC_project/main.tex" "main.pdf" "main" 1767383410.1438 0
   "c:/Users/giorg/Desktop/uni/PAC_project/main.tex" 1767382132 1180 99bbf2579583aab10e1f79de8d38b331 ""
   "c:/texlive/2025/texmf-dist/fonts/enc/dvips/newtx/ntx-ec-tlf.enc" 1759865488 2914 fdbc4a54b9bc76f4551b5303f2737d33 ""
   "c:/texlive/2025/texmf-dist/fonts/enc/dvips/newtx/ntx-ecth-tlf.enc" 1759865488 2996 ee788e8a497a15f5f3d06406a0f11c73 ""
@@ -303,16 +303,16 @@
   "c:/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt" 1759869288 3629006 d8b69368ed19b38379b1f5c3ce0c67b4 ""
   "c:/texlive/2025/texmf.cnf" 1759869075 713 e69b156964470283e0530f5060668171 ""
   "conclusione.tex" 1767382107 23 184c0e01c56eec30b4c4bb878d2f6f06 ""
-  "frontespizio.tex" 1767382624 1712 022f1f110f06c59e968f47cb0992f46e ""
+  "frontespizio.tex" 1767383406 1822 b46ca8f0d22c96c0f7487d287107e4a7 ""
   "introduzione.tex" 1767383267 2827 b453fcf38b845820c6edaecf081ad1ec ""
-  "main.aux" 1767383271 969 5bdd50187bebca7266f4b93ca06a22be "pdflatex"
+  "main.aux" 1767383409 969 5bdd50187bebca7266f4b93ca06a22be "pdflatex"
   "main.bbl" 1767382165 49 0eba253fc001332e731e8aba3f23127b "bibtex main"
-  "main.lof" 1767383271 60 76552d2813cbb20499cd64ebe40656b6 "pdflatex"
-  "main.lol" 1767383271 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
-  "main.lot" 1767383271 60 76552d2813cbb20499cd64ebe40656b6 "pdflatex"
-  "main.out" 1767383271 602 bf0201a10ac2f245ea275fb133160530 "pdflatex"
+  "main.lof" 1767383409 60 76552d2813cbb20499cd64ebe40656b6 "pdflatex"
+  "main.lol" 1767383409 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+  "main.lot" 1767383409 60 76552d2813cbb20499cd64ebe40656b6 "pdflatex"
+  "main.out" 1767383409 602 bf0201a10ac2f245ea275fb133160530 "pdflatex"
   "main.tex" 1767382132 1180 99bbf2579583aab10e1f79de8d38b331 ""
-  "main.toc" 1767383271 346 b283bcbb0f330555e0779d588b74119c "pdflatex"
+  "main.toc" 1767383409 346 b283bcbb0f330555e0779d588b74119c "pdflatex"
   "preamble.tex" 1765448595 3209 cfc65baed027e9799e863c580be320f7 ""
   "unibg.png" 1767382593 31920 08c382d164e5e505b4ee15d457e19217 ""
   (generated)
