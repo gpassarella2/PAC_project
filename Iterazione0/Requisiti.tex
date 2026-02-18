@@ -1,0 +1,23 @@
+\section{Requisiti}
+Il sistema deve soddisfare i seguenti requisiti funzionali e non funzionali per garantire un'esperienza di pianificazione ottimale:
+
+\begin{itemize}
+    \item \textbf{Requisiti Funzionali:}
+    \begin{itemize}
+        \item \textbf{Gestione Autenticazione:} Gli utenti devono poter creare un profilo personale e autenticarsi per salvare e sincronizzare i propri itinerari.
+        \item \textbf{Selezione Punti di Interesse (POI):} Il sistema deve permettere all'utente di selezionare un numero di tappe compreso tra 5 e 10 monumenti o luoghi di interesse.
+        \item \textbf{Ottimizzazione del Percorso (TSP):} Il sistema deve calcolare automaticamente il ciclo ottimo (percorso più breve) che tocchi tutte le tappe selezionate e ritorni al punto di partenza.
+        \item \textbf{Gestione Itinerari:} L'utente deve poter creare, modificare (aggiungere o rimuovere tappe), visualizzare i dettagli e cancellare i propri viaggi salvati.
+        \item \textbf{Integrazione Geografica:} Il sistema deve interfacciarsi con Provider di Servizi Geografici esterni (es. Google Maps, OpenStreetMap) per ottenere distanze, tempi di percorrenza e coordinate in tempo reale.
+        \item \textbf{Storico Viaggi:} Il sistema deve archiviare i percorsi passati, consentendo all'utente di consultarli o riutilizzarli come modelli per nuovi itinerari.
+    \end{itemize}
+
+    \item \textbf{Requisiti Non Funzionali:}
+    \begin{itemize}
+        \item \textbf{Usabilità e Intuizione:} L'interfaccia deve essere semplice e immediata, permettendo anche a utenti non esperti di generare un percorso complesso in pochi passaggi.
+        \item \textbf{Efficienza Algoritmica:} Il calcolo dell'itinerario ottimale deve avvenire in tempi ridotti, nonostante la complessità computazionale del problema del commesso viaggiatore.
+        \item \textbf{Accuratezza dei Dati:} I percorsi generati devono riflettere fedelmente le distanze reali fornite dai provider cartografici.
+        \item \textbf{Disponibilità Multi-dispositivo:} L'applicazione deve essere accessibile e responsiva, garantendo una visualizzazione corretta sia su dispositivi mobili che su desktop.
+        \item \textbf{Sicurezza:} Il sistema deve garantire la protezione dei dati personali, delle credenziali degli utenti, e autenticazione protetta.
+    \end{itemize}
+\end{itemize}
