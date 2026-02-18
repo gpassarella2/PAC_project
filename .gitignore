@@ -1,0 +1,21 @@
+# --- LaTeX ---
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lol
+*.lot
+*.out
+*.toc
+*.synctex.gz
+*.pdf
+
+# --- Cartelle di Output (se hai impostato outDir) ---
+build/
+out/
+
+# --- Visual Studio Code ---
+.vscode/
