@@ -1,17 +1,36 @@
 \section{Architettura del Sistema}
 Il sistema segue il pattern architetturale \textbf{Model-View-Controller (MVC)}, una scelta progettuale che permette di separare nettamente la logica di presentazione, la logica di ottimizzazione degli itinerari e la gestione dei dati. Tale separazione favorisce la modularità del codice, facilitando la manutenzione e l'estendibilità del software nel tempo.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Iterazione0/immagini/mvc.png}
+    \caption{Archiettura MVC del Sistema}
+    \label{fig:mvc}
+\end{figure} 
 
-
-\textbf{Model}
-Il \textit{Model} rappresenta il cuore applicativo, occupandosi della logica di business e della persistenza delle informazioni. In questo sistema:
-
+\paragraph*{\textbf{Model}} rappresenta il cuore applicativo, occupandosi della logica di business e della persistenza delle informazioni. In questo sistema:
 \begin{itemize}
-    \item \textbf{Database NoSQL:} I dati sono memorizzati in \textbf{MongoDB}. La scelta di un database non relazionale è dettata dalla necessità di gestire con flessibilità i \textit{Points of Interest} (POI) e i dati geografici, caratterizzati da strutture documenti-orientate.
-    \item \textbf{Backend in Java:} Il core del sistema è implementato utilizzando il framework \textbf{Spring Boot}, che orchestra i servizi attraverso un'architettura orientata ai componenti.
+    \item \textbf{Database NoSQL:} I dati sono memorizzati in MongoDB. La scelta di un database non relazionale è dettata dalla necessità di gestire con flessibilità i Points of Interest (POI) e i dati geografici. Per la gestione e la visualizzazione dei dati a livello amministrativo, viene utilizzata la GUI MongoDB Compass
+    \item \textbf{Backend in Java:} Il core del sistema è implementato utilizzando il framework Spring Boot, che orchestra i servizi attraverso un'architettura orientata ai componenti.
     \item \textbf{Integrazione Geografica:} 
     \begin{itemize}
-        \item \textbf{OpenStreetMap (OSM):} Utilizzato come provider per le coordinate geografiche e i metadati dei POI.
-        \item \textbf{GraphHopper:} Integrato come motore di \textit{routing} per il calcolo del percorso ottimale tra i punti selezionati.
+        \item \textbf{OpenStreetMap:} Utilizzato come provider per le coordinate geografiche e i metadati dei POI.
+        \item \textbf{GraphHopper:} Integrato come motore di routing per il calcolo del percorso ottimale tra i punti selezionati.
     \end{itemize}
-    \item \textbf{Data Access Layer:} L'interazione con il database avviene tramite \textbf{Spring Data MongoDB}..
+    \item \textbf{Data Access Layer:} L'interazione con il database avviene tramite Spring Data MongoDB.
+\end{itemize}
+
+\paragraph*{\textbf{View}} è responsabile dell'interfaccia utente e della visualizzazione dei dati elaborati dal sistema:
+
+\begin{itemize}
+    \item \textbf{React.js:}Il frontend è sviluppato con la libreria React, utilizzando componenti funzionali e JSX per una UI reattiva. Lo sviluppo avviene tramite Visual Studio Code, ottimizzato per la gestione dei pacchetti e il debug del frontend
+    \item \textbf{Mapping e Visualizzazione:} Per la resa grafica delle mappe e dei percorsi viene utilizzata react-leaflet, permettendo di visualizzare i layer di OpenStreetMap direttamente nel browser.
+    \item \textbf{Ambiente di Esecuzione:} L'applicazione frontend viene gestita tramite Node.js, utilizzato per la gestione delle dipendenze e l'avvio del server di sviluppo locale.
+    \item \textbf{Gestione API:} Le chiamate asincrone verso il backend sono affidate ad Axios, garantendo uno scambio dati fluido tra client e server.
+\end{itemize}
+
+\paragraph*{\textbf{controller}} funge da intermediario tra il Model e la View, gestendo le richieste dell'utente e ottimizzando la logica di interazione:
+\begin{itemize}
+    \item \textbf{API:} Il backend espone endpoint documentati tramite i Controller di Spring Boot. Ogni richiesta HTTP inviata dal frontend tramite Axios viene gestita dal metodo specifico.
+    \item \textbf{ottimizzazione:} Il controller riceve in input coordinate di partenza e di arrivo, interroga i servizi di routing e restituisce i risultati elaborati, in base al percorso ottimizzato.
+    \item \textbf{Formato Dati:} Lo scambio di informazioni tra client e server avviene esclusivamente in formato JSON.
 \end{itemize}
