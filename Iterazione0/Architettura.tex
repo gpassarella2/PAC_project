@@ -7,7 +7,7 @@ Il sistema segue il pattern architetturale \textbf{Model-View-Controller (MVC)},
     \label{fig:mvc}
 \end{figure} 
 
-\paragraph*{\textbf{Model}} rappresenta il cuore applicativo, occupandosi della logica di business e della persistenza delle informazioni. In questo sistema:
+\paragraph*{\textbf{Model}} costituisce il nucleo logico e strutturale del sistema, responsabile della gestione dei dati, delle regole di dominio e dei meccanismi di persistenza dei dati. In questo sistema:
 \begin{itemize}
     \item \textbf{Database NoSQL:} I dati sono memorizzati in MongoDB. La scelta di un database non relazionale è dettata dalla necessità di gestire con flessibilità i Points of Interest (POI) e i dati geografici. Per la gestione e la visualizzazione dei dati a livello amministrativo, viene utilizzata la GUI MongoDB Compass
     \item \textbf{Backend in Java:} Il core del sistema è implementato utilizzando il framework Spring Boot, che orchestra i servizi attraverso un'architettura orientata ai componenti.
