@@ -1,0 +1,17 @@
+\section{Architettura del Sistema}
+Il sistema segue il pattern architetturale \textbf{Model-View-Controller (MVC)}, una scelta progettuale che permette di separare nettamente la logica di presentazione, la logica di ottimizzazione degli itinerari e la gestione dei dati. Tale separazione favorisce la modularità del codice, facilitando la manutenzione e l'estendibilità del software nel tempo.
+
+
+\textbf{Model}
+Il \textit{Model} rappresenta il cuore applicativo, occupandosi della logica di business e della persistenza delle informazioni. In questo sistema:
+
+\begin{itemize}
+    \item \textbf{Database NoSQL:} I dati sono memorizzati in \textbf{MongoDB}. La scelta di un database non relazionale è dettata dalla necessità di gestire con flessibilità i \textit{Points of Interest} (POI) e i dati geografici, caratterizzati da strutture documenti-orientate.
+    \item \textbf{Backend in Java:} Il core del sistema è implementato utilizzando il framework \textbf{Spring Boot}, che orchestra i servizi attraverso un'architettura orientata ai componenti.
+    \item \textbf{Integrazione Geografica:} 
+    \begin{itemize}
+        \item \textbf{OpenStreetMap (OSM):} Utilizzato come provider per le coordinate geografiche e i metadati dei POI.
+        \item \textbf{GraphHopper:} Integrato come motore di \textit{routing} per il calcolo del percorso ottimale tra i punti selezionati.
+    \end{itemize}
+    \item \textbf{Data Access Layer:} L'interazione con il database avviene tramite \textbf{Spring Data MongoDB}..
+\end{itemize}
