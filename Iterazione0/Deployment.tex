@@ -1,0 +1,42 @@
+\section{Deployment Diagram}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Iterazione0/Diagrammi/DeploymentDiagram.png}
+    \caption{Diagramma di deployment}
+    \label{fig:diagramma_di_deployment}
+\end{figure}
+
+La Figura mostra l'organizzazione del sistema secondo un modello multilivello che separa l'interfaccia utente, i servizi applicativi e le integrazioni esterne.
+
+\begin{itemize}
+
+    \item \textbf{Livello Client}  
+    L'accesso al sistema avviene tramite un browser web.  
+    La Web UI comunica con il backend attraverso richieste \texttt{HTTPS} indirizzate all'Application API.  
+    Questo livello si occupa esclusivamente della presentazione e dell'interazione con l'utente finale.
+
+    \item \textbf{Application Server}  
+    Costituisce il cuore dell'applicazione e ospita diversi servizi interni:
+    \begin{itemize}
+        \item \textbf{Auth Service}: gestisce autenticazione e autorizzazione;
+        \item \textbf{Itinerary Service}: gestisce la creazione e modifica degli itinerari;
+        \item \textbf{Optimization Engine}: calcola il percorso ottimale tra i monumenti selezionati;
+        \item \textbf{Catalog Service}: fornisce i dati relativi ai monumenti e ai punti di interesse;
+        \item \textbf{Export Service}: genera output esportabili;
+        \item \textbf{Map Adapter}: gestisce le comunicazioni con i servizi di mappe esterni.
+    \end{itemize}
+    Tutti i servizi comunicano tramite l'Application API, che funge da punto di orchestrazione.
+
+    \item \textbf{Database Server}  
+    Ospita il database principale dell'applicazione e comunica con l'Application API.  
+    Gestisce dati persistenti come utenti, monumenti, itinerari e preferenze.
+
+    \item \textbf{External Provider}  
+    Il sistema si integra con servizi esterni per ottenere informazioni geografiche e di navigazione:
+    \begin{itemize}
+        \item \textbf{Map API}: fornisce mappe, geocodifica e dati geografici;
+        \item \textbf{Routing API}: calcola distanze e tempi di percorrenza, supportando l'algoritmo di ottimizzazione.
+    \end{itemize}
+    
+\end{itemize}
