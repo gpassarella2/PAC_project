@@ -11,12 +11,12 @@ La Figura mostra l'organizzazione del sistema secondo un modello multilivello ch
 
 \begin{itemize}
 
-    \item \textbf{Livello Client}  
+    \item \textbf{Livello Client.}  
     L'accesso al sistema avviene tramite un browser web.  
     La Web UI comunica con il backend attraverso richieste \texttt{HTTPS} indirizzate all'Application API.  
     Questo livello si occupa esclusivamente della presentazione e dell'interazione con l'utente finale.
-
-    \item \textbf{Application Server}  
+    
+    \item \textbf{Application Server.}  
     Costituisce il cuore dell'applicazione e ospita diversi servizi interni:
     \begin{itemize}
         \item \textbf{Auth Service}: gestisce autenticazione e autorizzazione;
@@ -28,11 +28,11 @@ La Figura mostra l'organizzazione del sistema secondo un modello multilivello ch
     \end{itemize}
     Tutti i servizi comunicano tramite l'Application API, che funge da punto di orchestrazione.
 
-    \item \textbf{Database Server}  
+    \item \textbf{Database Server.}  
     Ospita il database principale dell'applicazione e comunica con l'Application API.  
     Gestisce dati persistenti come utenti, monumenti, itinerari e preferenze.
 
-    \item \textbf{External Provider}  
+    \item \textbf{External Provider.}  
     Il sistema si integra con servizi esterni per ottenere informazioni geografiche e di navigazione:
     \begin{itemize}
         \item \textbf{Map API}: fornisce mappe, geocodifica e dati geografici;
