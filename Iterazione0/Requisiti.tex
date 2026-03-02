@@ -1,21 +1,20 @@
 \section{Requisiti}
-Il sistema deve soddisfare i seguenti requisiti funzionali e non funzionali per garantire un'esperienza di pianificazione ottimale, come delineato nel diagramma dei casi d'uso:
-
-\textbf{Requisiti Funzionali}
+Il sistema deve soddisfare i seguenti requisiti funzionali e non funzionali per garantire un'esperienza di pianificazione ottimale:\vspace{9px}\\
+\textbf{Requisiti funzionali}
 \begin{itemize}
-    \item \textbf{Gestione Autenticazione e Profilo:} Gli utenti devono poter effettuare la registrazione, il login e il logout. Il sistema deve permettere la gestione del profilo includendo la modifica dei dati personali, il cambio password e l'eliminazione definitiva dell'account.
-    \item \textbf{Visualizzazione e Catalogo:} Il sistema deve offrire una vista astratta per la visualizzazione dei percorsi, permettendo all'utente di sfogliare un catalogo, applicare filtri di ricerca ed esportare l'itinerario desiderato.
-    \item \textbf{Creazione Itinerario Manuale:} L'utente può generare un nuovo viaggio impostando un punto di partenza e selezionando manualmente i monumenti e le tappe d'interesse.
-    \item \textbf{Creazione Itinerario Casuale:} Generazione automatica basata su percorsi esistenti o nuovi, con la possibilità di definire tempistiche specifiche per la visita.
-    \item \textbf{Ottimizzazione del Percorso (TSP):} Il sistema deve integrare un modulo di ottimizzazione che, interfacciandosi con un Provider di Servizi Geografici esterno, calcoli il percorso ottimo. Tale ottimizzazione è inclusa automaticamente durante la creazione o la modifica delle tappe.
-    \item \textbf{Gestione e Stato Viaggi:} Gli utenti devono poter salvare percorsi, modificarne le tappe, eliminarli o contrassegnarli come "completati".
-    \item \textbf{Social e Storico:} Il sistema deve gestire uno storico dei viaggi che permetta la condivisione degli itinerari e l'aggiunta di recensioni per i percorsi effettuati.
+    \item \textbf{Gestione autenticazione e profilo:} gli utenti devono poter effettuare la registrazione, il login e il logout. Il sistema deve permettere la gestione del profilo includendo la modifica dei dati personali, il cambio password e l'eliminazione definitiva dell'account.
+    \item \textbf{Visualizzazione e catalogo:} il sistema deve offrire una vista astratta per la visualizzazione dei percorsi, permettendo all'utente di sfogliare un catalogo, applicare filtri di ricerca ed esportare l'itinerario desiderato.
+    \item \textbf{Creazione itinerario manuale:} l'utente può generare un nuovo viaggio impostando un punto di partenza e selezionando manualmente i monumenti e le tappe d'interesse.
+    \item \textbf{Creazione itinerario casuale:} generazione automatica basata su percorsi esistenti o nuovi, con la possibilità di definire tempistiche specifiche per la visita.
+    \item \textbf{Ottimizzazione del percorso (TSP):} il sistema deve integrare un modulo di ottimizzazione che, interfacciandosi con un Provider di servizi geografici esterno, calcoli il percorso ottimo. Tale ottimizzazione è inclusa automaticamente durante la creazione o la modifica delle tappe.
+    \item \textbf{Gestione e stato viaggi:} gli utenti devono poter salvare percorsi, modificarne le tappe, eliminarli o contrassegnarli come "completati".
+    \item \textbf{Social e storico:} il sistema deve gestire uno storico dei viaggi che permetta la condivisione degli itinerari e l'aggiunta di recensioni per i percorsi effettuati.
 \end{itemize}
 
-\textbf{Requisiti Non Funzionali}
+\textbf{Requisiti non funzionali}
 \begin{itemize}
-    \item \textbf{Architettura Modulare:} Il sistema deve separare nettamente le funzionalità di interfaccia (Vista User) dalle logiche di elaborazione e integrazione esterna (Vista Sistema).
-    \item \textbf{Usabilità:} L'interfaccia deve permettere l'estensione fluida di funzionalità secondarie (es. filtri, esportazione) senza interrompere il flusso principale di creazione del viaggio.
-    \item \textbf{Efficienza e Accuratezza:} Il calcolo dell'ottimizzazione deve essere tempestivo e basato su dati geografici reali forniti da terze parti.
-    \item \textbf{Sicurezza:} Garantire l'accesso protetto alle funzionalità di gestione profilo e la persistenza sicura dei percorsi salvati e dello storico.
+    \item \textbf{Architettura modulare:} il sistema deve separare nettamente le funzionalità di interfaccia (vista utente) dalle logiche di elaborazione e integrazione esterna (vista di sistema).
+    \item \textbf{Usabilità:} l'interfaccia deve permettere l'estensione fluida di funzionalità secondarie (es. filtri, esportazione) senza interrompere il flusso principale di creazione del viaggio.
+    \item \textbf{Efficienza e accuratezza:} il calcolo dell'ottimizzazione deve essere tempestivo e basato su dati geografici reali forniti da terze parti.
+    \item \textbf{Sicurezza:} garantire l'accesso protetto alle funzionalità di gestione profilo e la persistenza sicura dei percorsi salvati e dello storico.
 \end{itemize}
