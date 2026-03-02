@@ -1,21 +1,5 @@
 # 🗺️ BuddyMaps – Sistema di Ottimizzazione Viaggi Intelligente
-<p align="center">
-  <img src="logoApp.PNG" style="width: 250px; animation: buddyFloat 3s ease-in-out infinite; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.2));">
-</p>
-
-<style>
-  @keyframes buddyFloat {
-    0% {
-      transform: translateY(0px) scale(1);
-    }
-    50% {
-      transform: translateY(-20px) scale(1.03);
-    }
-    100% {
-      transform: translateY(0px) scale(1);
-    }
-  }
-</style>
+![Logo BuddyMaps](logoApp.PNG)
 BuddyMaps è un'applicazione avanzata di ottimizzazione logistica progettata per risolvere il problema decisionale che ogni turista affronta: scegliere cosa visitare è facile, ma decidere come farlo nel minor tempo possibile è una sfida complessa. A differenza delle tradizionali app di mappatura, BuddyMaps trasforma una lista disordinata di punti di interesse in un itinerario perfetto.
 Il sistema offre all'utente la massima flessibilità: è possibile selezionare manualmente i singoli monumenti, attingere dai propri itinerari preferiti o lasciarsi ispirare dai percorsi consigliati. Inoltre, è possibile caricare itinerari preimpostati già ottimizzati. Una volta definiti i punti di interesse, l'app calcola automaticamente il percorso più breve per visitarli tutti in modo efficiente, ottimizzando gli spostamenti.
 
