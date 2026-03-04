@@ -13,9 +13,8 @@
 *.synctex.gz
 *.pdf
 
-# --- Cartelle di Output (se hai impostato outDir) ---
+
 build/
 out/
 
-# --- Visual Studio Code ---
 .vscode/
