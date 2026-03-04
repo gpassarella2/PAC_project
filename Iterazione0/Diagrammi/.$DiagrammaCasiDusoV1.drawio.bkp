@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.1.2 Chrome/138.0.7204.243 Electron/37.4.0 Safari/537.36" version="28.1.2">
   <diagram name="Pagina-1" id="CUG754-uB9WJT8NB6b19">
-    <mxGraphModel dx="1869" dy="1829" grid="1" gridSize="5" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1312" dy="1476" grid="1" gridSize="5" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -145,6 +145,33 @@
         </mxCell>
         <mxCell id="rO17QrfCALg3tbluTXQv-56" value="Storico" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="45" y="320" width="85" height="27.5" as="geometry" />
+        </mxCell>
+        <mxCell id="rO17QrfCALg3tbluTXQv-58" value="Selezione Monumenti" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="410" y="740" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="rO17QrfCALg3tbluTXQv-60" value="Imposta&amp;nbsp;&lt;div&gt;Partenza&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="395" y="615" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="rO17QrfCALg3tbluTXQv-62" value="&amp;lt;&amp;lt;include&amp;gt;&amp;gt;" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;dashed=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="rO17QrfCALg3tbluTXQv-20" target="rO17QrfCALg3tbluTXQv-58" edge="1">
+          <mxGeometry x="-0.2222" width="80" relative="1" as="geometry">
+            <mxPoint x="46.6799999999999" y="559.6800000000001" as="sourcePoint" />
+            <mxPoint x="38.3200000000001" y="639.9999999999999" as="targetPoint" />
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="460" y="680" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rO17QrfCALg3tbluTXQv-63" value="&amp;lt;&amp;lt;include&amp;gt;&amp;gt;" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;dashed=1;exitX=1;exitY=1;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="rO17QrfCALg3tbluTXQv-19" target="rO17QrfCALg3tbluTXQv-60" edge="1">
+          <mxGeometry x="-0.376" width="80" relative="1" as="geometry">
+            <mxPoint x="675" y="580" as="sourcePoint" />
+            <mxPoint x="535" y="625" as="targetPoint" />
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="390" y="595" />
+              <mxPoint x="445" y="595" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="gXgVF6FIsnOvuqA29bTA-1" value="Gestione Profilo" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="15" y="25" width="95" height="30" as="geometry" />
