@@ -1,11 +1,11 @@
-# 🗺️ BuddyMaps – Sistema di Ottimizzazione Viaggi Intelligente
-![Logo BuddyMaps](logoApp.PNG)
-BuddyMaps è un'applicazione avanzata di ottimizzazione logistica progettata per risolvere il problema decisionale che ogni turista affronta: scegliere cosa visitare è facile, ma decidere come farlo nel minor tempo possibile è una sfida complessa. A differenza delle tradizionali app di mappatura, BuddyMaps trasforma una lista disordinata di punti di interesse in un itinerario perfetto.
+# 🗺️ OptiTour – Sistema di Ottimizzazione Viaggi Intelligente
+![Logo OptiTour](logoApp.PNG)
+OptiTour è un'applicazione avanzata di ottimizzazione logistica progettata per risolvere il problema decisionale che ogni turista affronta: scegliere cosa visitare è facile, ma decidere come farlo nel minor tempo possibile è una sfida complessa. A differenza delle tradizionali app di mappatura, OptiTour trasforma una lista disordinata di punti di interesse in un itinerario perfetto.
 Il sistema offre all'utente la massima flessibilità: è possibile selezionare manualmente i singoli monumenti, attingere dai propri itinerari preferiti o lasciarsi ispirare dai percorsi consigliati. Inoltre, è possibile caricare itinerari preimpostati già ottimizzati. Una volta definiti i punti di interesse, l'app calcola automaticamente il percorso più breve per visitarli tutti in modo efficiente, ottimizzando gli spostamenti.
 
 ## Il Problema: Efficienza Urbana
 Spesso i turisti perdono tempo prezioso camminando avanti e indietro per la città a causa di una pianificazione non ottimale. In informatica, questo è noto come Traveling Salesman Problem (TSP), un problema che diventa difficile da risolvere mentalmente all'aumentare dei luoghi da visitare.
-BuddyMaps automatizza questo processo complesso utilizzando algoritmi avanzati sui Grafi ed euristiche dedicate. Il sistema non offre solo un percorso, ma il miglior percorso possibile, rendendolo lo strumento ideale per il "Turista Efficiente", il "Runner Urbano" o i professionisti dell'ospitalità.
+OptiTour automatizza questo processo complesso utilizzando algoritmi avanzati sui Grafi ed euristiche dedicate. Il sistema non offre solo un percorso, ma il miglior percorso possibile, rendendolo lo strumento ideale per il "Turista Efficiente", il "Runner Urbano" o i professionisti dell'ospitalità.
 
 ## Funzionalità Principali
 * **Pianificazione Itinerari Smart**: Selezione dei punti di interesse (POI) e calcolo del ciclo ottimale per ridurre chilometri e tempi di percorrenza.
