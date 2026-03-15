@@ -1,6 +1,5 @@
 package com.optitour.backend.model;
 
-import com.optitour.backend.model.TripStage;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -36,9 +35,14 @@ public class Trip {
     private String city;
 
     // Punto di partenza scelto dall'utente (coordinate lat/lon come stringa
-    // o indirizzo  il formato esatto dipende da lo vogliamo gestire nel ffrontend)
+    // o indirizzo  il formato esatto dipende da come lo vogliamo gestire nel frontend)
     private String startPoint;
-
+    
+    //latitudine
+    private double startLat;
+    //longitudine
+    private double startLon;
+    
     // Lista delle tappe nell'ordine scelto dall'utente
     // Ogni TripStage contiene solo monumentId + visitDurationMinutes
     // I dettagli del monumento si recuperano dalla collection "monuments"
@@ -64,7 +68,7 @@ public class Trip {
 
     public Trip() {}
 
-    public Trip(String id, String userId, String name, String city, String startPoint,
+    public Trip(String id, String userId, String name, String city, String startPoint, double startLat, double startLon,
                 List<TripStage> stages, TripStatus status,
                 Instant createdAt, Instant updatedAt) {
         this.id = id;
@@ -72,6 +76,8 @@ public class Trip {
         this.name = name;
         this.city = city;
         this.startPoint = startPoint;
+        this.startLat = startLat;
+        this.startLon = startLon;
         this.stages = stages;
         this.status = status;
         this.createdAt = createdAt;
@@ -90,6 +96,8 @@ public class Trip {
         private String name;
         private String city;
         private String startPoint;
+        private double startLat;
+        private double startLon;
         private List<TripStage> stages;
         private TripStatus status;
         private Instant createdAt;
@@ -100,13 +108,15 @@ public class Trip {
         public TripBuilder name(String name) { this.name = name; return this; }
         public TripBuilder city(String city) { this.city = city; return this; }
         public TripBuilder startPoint(String startPoint) { this.startPoint = startPoint; return this; }
+        public TripBuilder startLat(double startLat) { this.startLat = startLat; return this; }
+        public TripBuilder startLon(double startLon) { this.startLon = startLon; return this; }
         public TripBuilder stages(List<TripStage> stages) { this.stages = stages; return this; }
         public TripBuilder status(TripStatus status) { this.status = status; return this; }
         public TripBuilder createdAt(Instant createdAt) { this.createdAt = createdAt; return this; }
         public TripBuilder updatedAt(Instant updatedAt) { this.updatedAt = updatedAt; return this; }
 
         public Trip build() {
-            return new Trip(id, userId, name, city, startPoint, stages, status, createdAt, updatedAt);
+            return new Trip(id, userId, name, city, startPoint, startLat, startLon, stages, status, createdAt, updatedAt);
         }
         
     }
@@ -182,10 +192,26 @@ public class Trip {
 	public void setUpdatedAt(Instant updatedAt) {
 		this.updatedAt = updatedAt;
 	}
+	public double getStartLat() {
+		return startLat;
+	}
+
+	public void setStartLat(double startLat) {
+		this.startLat = startLat;
+	}
+
+	public double getStartLon() {
+		return startLon;
+	}
+
+	public void setStartLon(double startLon) {
+		this.startLon = startLon;
+	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(city, createdAt, id, name, startPoint, status, updatedAt, userId);
+		return Objects.hash(city, createdAt, id, name, stages, startLat, startLon, startPoint, status, updatedAt,
+				userId);
 	}
 
 	@Override
@@ -199,6 +225,9 @@ public class Trip {
 		Trip other = (Trip) obj;
 		return Objects.equals(city, other.city) && Objects.equals(createdAt, other.createdAt)
 				&& Objects.equals(id, other.id) && Objects.equals(name, other.name)
+				&& Objects.equals(stages, other.stages)
+				&& Double.doubleToLongBits(startLat) == Double.doubleToLongBits(other.startLat)
+				&& Double.doubleToLongBits(startLon) == Double.doubleToLongBits(other.startLon)
 				&& Objects.equals(startPoint, other.startPoint) && status == other.status
 				&& Objects.equals(updatedAt, other.updatedAt) && Objects.equals(userId, other.userId);
 	}
@@ -206,9 +235,7 @@ public class Trip {
 	@Override
 	public String toString() {
 		return "Trip [id=" + id + ", userId=" + userId + ", name=" + name + ", city=" + city + ", startPoint="
-				+ startPoint + ", status=" + status + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + "]";
+				+ startPoint + ", startLat=" + startLat + ", startLon=" + startLon + ", stages=" + stages + ", status="
+				+ status + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + "]";
 	}
-    
-
-
 }
