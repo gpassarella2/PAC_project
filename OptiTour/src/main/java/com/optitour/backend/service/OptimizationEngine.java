@@ -3,6 +3,7 @@ package com.optitour.backend.service;
 import com.optitour.backend.model.Monument;
 
 import com.optitour.backend.model.TripStage;
+import com.buddymaps.service.TspResult;
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
 import com.graphhopper.GraphHopper;
@@ -78,6 +79,74 @@ public class OptimizationEngine {
         if (hopper != null) {
             hopper.close();
         }
+    }
+    
+    /**
+     * Ottimizza il percorso tra i monumenti a partire da un punto di partenza.
+     *
+     * I parametri monuments e stages devono essere allineati:
+     * monuments.get(i) corrisponde a stages.get(i.
+     * Questo allineamento è garantito da RouteOptimizationService
+     * che prepara i dati prima di chiamare questo metodo.
+     *
+     * @param startLat  latitudine del punto di partenza
+     * @param startLon  longitudine del punto di partenza
+     * @param monuments lista dei monumenti da visitare (già caricati dal DB)
+     * @param stages    lista delle TripStage corrispondenti (stessa dimensione e ordine)
+     * @return {@link TspResult} con le TripStage riordinate e le metriche del percorso
+     * @throws IllegalArgumentException se le liste sono vuote o di dimensioni diverse
+     */
+    public TspResult optimise(double startLat, double startLon,
+                              List<Monument> monuments,
+                              List<TripStage> stages) {
+
+        int n = monuments.size();
+        if (n == 0) {
+            throw new IllegalArgumentException("La lista dei monumenti non può essere vuota.");
+        }
+        if (n != stages.size()) {
+            throw new IllegalArgumentException(
+                    "monuments e stages devono avere la stessa dimensione. " +
+                    "monuments=" + n + ", stages=" + stages.size());
+        }
+
+        System.out.println("Avvio ottimizzazione TSP");
+
+        // 1. Matrice distanze: nodo 0 = startPoint, nodi 1..n = monumenti
+        double[][] dist = buildDistanceMatrix(startLat, startLon, monuments);
+
+        // 2. Nearest Neighbour heuristic → tour iniziale
+        int[] tour = nearestNeighbour(dist, n + 1);
+
+        // 3. 2-opt → miglioramento del tour
+        tour = twoOpt(tour, dist, n + 1);
+
+        // 4. Ricostruisce la lista di TripStage nell'ordine ottimizzato
+        //    tour[0] = 0 (startPoint), tour[1..n] = indici dei monumenti (1-based)
+        List<TripStage> orderedStages = new ArrayList<>();
+        for (int i = 1; i <= n; i++) {
+            int monumentId = tour[i] - 1; // riduce tutti di 1 in modo da non contare startingpoint e avere giusta corrispondenza su stages
+            orderedStages.add(stages.get(monumentId)); // 
+        }
+
+        // 5. Calcolo costo totale del circuito
+        double totalDistanceMeters = tourCost(tour, dist);
+
+        // 6. Durata totale = tempo di camminata + tempo di visita di ogni tappa
+        //    Velocità media a piedi: 5 km/h → 720 secondi per km
+        long walkingSeconds = Math.round(totalDistanceMeters / 1000.0 * 720);
+        int visitMinutes = 0;
+        for (TripStage stage : stages) {
+            visitMinutes += stage.getVisitDurationMinutes();
+        }
+        long totalDurationSeconds = walkingSeconds + visitMinutes * 60L;
+
+        System.out.println("TSP risolto: distanza totale= " + totalDistanceMeters + ", durata totale: " + totalDurationSeconds);
+
+        return new TspResult(orderedStages, totalDistanceMeters, totalDurationSeconds);
+        
+        
+       
     }
     
     // ── Costruzione matrice distanze ──────────────────────────────────────
@@ -244,6 +313,20 @@ public class OptimizationEngine {
         }
         return total;
     }
+    
+ // ── TspResult ─────────────────────────────────────────────────────────
+
+    /**
+     * Risultato dell'ottimizzazione.
+     *
+     * @param orderedStages       TripStage nell'ordine ottimizzato
+     * @param totalDistanceMeters distanza totale del percorso in metri
+     * @param totalDurationSeconds durata totale in secondi (camminata + visite)
+     */
+    public record TspResult(
+            List<TripStage> orderedStages,
+            double totalDistanceMeters,
+            long totalDurationSeconds) {}
 
  
 }
