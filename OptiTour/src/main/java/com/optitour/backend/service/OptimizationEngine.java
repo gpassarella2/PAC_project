@@ -79,4 +79,74 @@ public class OptimizationEngine {
             hopper.close();
         }
     }
+    
+    // ── Costruzione matrice distanze ──────────────────────────────────────
+
+    /**
+     * Costruisce la matrice delle distanze (n+1) × (n+1).
+     * L'indice 0 corrisponde al punto di partenza, gli indici 1..n ai monumenti.
+     */
+    private double[][] buildDistanceMatrix(double startLat, double startLon,
+                                           List<Monument> monuments) {
+        int n = monuments.size();
+        int size = n + 1;
+        double[][] dist = new double[size][size];
+
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (i == j) {
+                    dist[i][j] = 0;
+                    continue;
+                }
+                double lat1 = (i == 0) ? startLat : monuments.get(i - 1).getLat();
+                double lon1 = (i == 0) ? startLon : monuments.get(i - 1).getLon();
+                double lat2 = (j == 0) ? startLat : monuments.get(j - 1).getLat();
+                double lon2 = (j == 0) ? startLon : monuments.get(j - 1).getLon();
+                dist[i][j] = routeDistance(lat1, lon1, lat2, lon2);
+            }
+        }
+        return dist;
+    }
+
+    /**
+     * Calcola la distanza in metri tra due coordinate.
+     * Usa GraphHopper se disponibile, altrimenti Haversine.
+     */
+    private double routeDistance(double lat1, double lon1, double lat2, double lon2) {
+        if (graphHopperAvailable) {
+            try {
+            	//avvio richiesta graphopper per route tra due punti
+                GHRequest req = new GHRequest(
+                        new GHPoint(lat1, lon1),
+                        new GHPoint(lat2, lon2))
+                        .setProfile("foot");
+                GHResponse rsp = hopper.route(req); // calcolo della route
+                if (!rsp.hasErrors()) {
+                    ResponsePath path = rsp.getBest();
+                    return path.getDistance();
+                } else {
+                    System.out.println("Errore GraphHopper tra: ("+lat1+","+lat2+") e ("+lat1+","+lat2+"): "+ rsp.getErrors());
+                }
+            } catch (Exception e) {
+                System.out.println("Query GraphHopper fallita, uso Haversine: " + e.getMessage());
+            }
+        }
+        return haversine(lat1, lon1, lat2, lon2);
+    }
+    // ── Haversine  ────────────────────────────────────────────────
+
+    private static final double EARTH_RADIUS_M = 6371000.0;
+
+    /**
+     * Calcola la distanzain linea d'aria in metri tra due coordinate.
+     * Usata come fallback quando GraphHopper non è disponibile.
+     */
+    private double haversine(double lat1, double lon1, double lat2, double lon2) {
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                 + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                 * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        return EARTH_RADIUS_M * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
 }
