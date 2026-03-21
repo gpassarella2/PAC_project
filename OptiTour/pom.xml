@@ -59,6 +59,11 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+    		<groupId>com.graphhopper</groupId>
+    		<artifactId>graphhopper-core</artifactId>
+    		<version>9.1</version>
+		</dependency>
 	</dependencies>
 
 	<build>
