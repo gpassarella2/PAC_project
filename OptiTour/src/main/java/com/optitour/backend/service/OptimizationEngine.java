@@ -149,4 +149,101 @@ public class OptimizationEngine {
                  * Math.sin(dLon / 2) * Math.sin(dLon / 2);
         return EARTH_RADIUS_M * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
+    
+    // ── Algoritmi TSP ─────────────────────────────────────────────────────
+
+    /**
+     * Nearest Neighbour.
+     * Parte sempre dal nodo 0 (punto di partenza) e si sposta
+     * iterativamente al nodo non ancora visitato più vicino.
+     *
+     * @param dist matrice delle distanze di dimensione size × size
+     * @param size numero totale di nodi (startPoint + monumenti)
+     * @return array di indici che rappresenta il tour
+     */
+    private int[] nearestNeighbour(double[][] dist, int size) {
+        boolean[] visited = new boolean[size];
+        int[] tour = new int[size];
+        tour[0] = 0;
+        visited[0] = true;
+
+        // ad ogni step scegliamo prossimo nodo da visitare
+        for (int step = 1; step < size; step++) {
+            int current = tour[step - 1];
+            double best = Double.MAX_VALUE;
+            int bestNext = -1;
+            for (int j = 0; j < size; j++) {
+                if (!visited[j] && dist[current][j] < best) {
+                    best = dist[current][j];
+                    bestNext = j;
+                }
+            }
+            tour[step] = bestNext;
+            visited[bestNext] = true;
+        }
+        return tour;
+    }
+
+    /**
+     * Ricerca locale 2-opt.
+     * Inverte sottosequenze del tour finché non trova miglioramenti.
+     * Termina quando nessuno scambio riduce la distanza totale.
+     */
+    private int[] twoOpt(int[] tour, double[][] dist, int size) {
+        boolean improved = true;
+        while (improved) {
+            improved = false;
+            for (int i = 0; i < size - 1; i++) {
+                for (int j = i + 2; j < size; j++) {
+                    // salta il caso che chiude il circuito (i=0, j=size-1), perchè sono entrambi starting point (otterrei solo il percorso al contrario)
+                    if (i == 0 && j == size - 1) continue;
+
+                    double delta = twoOptGain(tour, dist, i, j, size);
+                    if (delta < -1.0) {
+                        tour = reverse(tour, i + 1, j);
+                        improved = true;
+                    }
+                }
+            }
+        }
+        return tour;
+    }
+
+    /**
+     * Calcola il guadagno (negativo = miglioramento) ottenuto
+     * invertendo la sottosequenza tour[i+1..j].
+     */
+    private double twoOptGain(int[] tour, double[][] dist, int i, int j, int size) {
+        int a = tour[i]; // nodo prima del taglio sinistro
+        int b = tour[i + 1]; // primo nodo della sottosequenza da invertire
+        int c = tour[j];  // ultimo nodo della sottosequenza da invertire
+        int d = tour[(j + 1) % size]; // nodo dopo il taglio destro, `% size` serve per gestire il caso in cui `j` sia l'ultimo elemento — in quel caso `j+1` sforerebbe l'array e invece torna a 0 (startPoint).
+        return dist[a][c] + dist[b][d] - dist[a][b] - dist[c][d]; // sommo archi nuovi e sottraggo archi vecchi, archi interni alla sottsequenza si invertono ma le distanze rimangono le stesse
+    }
+
+    /** Inverte il sottoarray  */
+    private int[] reverse(int[] tour, int from, int to) {
+        int[] result = tour.clone();
+        int tmp;
+        while (from < to) {
+            tmp = result[from];
+            result[from] = result[to];
+            result[to] = tmp;
+            from++;
+            to--;
+        }
+        return result;
+    }
+
+    /** Calcola il costo totale del circuito chiuso */
+    private double tourCost(int[] tour, double[][] dist) {
+        int size = tour.length;
+        double total = 0;
+        for (int i = 0; i < size; i++) {
+            total += dist[tour[i]][tour[(i + 1) % size]];
+        }
+        return total;
+    }
+
+ 
 }
