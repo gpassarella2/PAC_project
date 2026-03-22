@@ -3,7 +3,6 @@ package com.optitour.backend.service;
 import com.optitour.backend.model.Monument;
 
 import com.optitour.backend.model.TripStage;
-import com.buddymaps.service.TspResult;
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
 import com.graphhopper.GraphHopper;
@@ -194,7 +193,7 @@ public class OptimizationEngine {
                     ResponsePath path = rsp.getBest();
                     return path.getDistance();
                 } else {
-                    System.out.println("Errore GraphHopper tra: ("+lat1+","+lat2+") e ("+lat1+","+lat2+"): "+ rsp.getErrors());
+                    System.out.println("Errore GraphHopper tra: ("+lat1+","+lon1+") e ("+lat2+","+lon2+"): "+ rsp.getErrors());
                 }
             } catch (Exception e) {
                 System.out.println("Query GraphHopper fallita, uso Haversine: " + e.getMessage());
