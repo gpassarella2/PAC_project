@@ -1,5 +1,6 @@
 package com.optitour.backend.service;
 
+import com.optitour.backend.dto.OptimizedTripResponse;
 import com.optitour.backend.model.Monument;
 import com.optitour.backend.model.Trip;
 import com.optitour.backend.model.TripStage;
@@ -51,14 +52,11 @@ public class RouteOptimizationService {
      * @return il Trip aggiornato con stages riordinate e salvato su MongoDB
      * @throws IllegalStateException se un monumentId nelle stages non esiste nel DB
      */
-    public Trip optimizeAndSave(Trip trip) {
-        System.out.println("Avvio ottimizzazione per il trip id: " + trip.getId() +", città: " + trip.getCity());
+    public OptimizedTripResponse optimizeAndSave(Trip trip) {
 
         List<TripStage> stages = trip.getStages();
 
-        // 1. Recupera i Monument dal DB per ogni stage
-        //    findAllById restituisce i documenti nell'ordine del DB, non dell'input —
-        //    per questo costruiamo una Map e poi ricostruiamo la lista allineata alle stages.
+        // 1. Recupera i Monument dal DB
         List<String> monumentIds = new ArrayList<>();
         for (TripStage stage : stages) {
             monumentIds.add(stage.getMonumentId());
@@ -69,8 +67,8 @@ public class RouteOptimizationService {
         for (Monument monument : foundMonuments) {
             monumentMap.put(monument.getId(), monument);
         }
-        
-        // Verifica che tutti i monumenti esistano nel DB
+
+        // 2. Verifica che tutti i monumenti esistano nel DB
         for (String id : monumentIds) {
             if (!monumentMap.containsKey(id)) {
                 throw new IllegalStateException(
@@ -79,29 +77,52 @@ public class RouteOptimizationService {
             }
         }
 
-        // Lista di Monument allineata all'ordine delle stages (monuments.get(i) ↔ stages.get(i))
+        // 3. Lista Monument allineata alle stages
         List<Monument> monuments = new ArrayList<>();
         for (TripStage stage : stages) {
             monuments.add(monumentMap.get(stage.getMonumentId()));
         }
 
-        // 2. Coordinate del punto di partenza
-        double startLat = trip.getStartLat();
-        double startLon = trip.getStartLon();
-
-        // 3. Ottimizzazione del percorso
+        // 4. Ottimizzazione del percorso
         OptimizationEngine.TspResult result = optimizationEngine.optimise(
-                startLat, startLon, monuments, stages);
+                trip.getStartLat(), trip.getStartLon(), monuments, stages);
 
-        // 4. Aggiorna il Trip con i dati ottimizzati e salva
+        // 5. Aggiorna e salva il Trip
         trip.setStages(result.orderedStages());
         trip.setStatus(Trip.TripStatus.SAVED);
         trip.setUpdatedAt(Instant.now());
-
         Trip saved = tripRepository.save(trip);
-        System.out.println("Trip id= "+ saved.getId()  +" ottimizzato e salvato. Distanza="+ result.totalDistanceMeters() +", Durata="+
-                result.totalDurationSeconds());
 
-        return saved;
+        System.out.println("Trip id=" + saved.getId() + " ottimizzato e salvato. Distanza="
+                + result.totalDistanceMeters() + "m, Durata=" + result.totalDurationSeconds() + "s");
+
+        // 6. Costruisce e restituisce il DTO di risposta
+        List<OptimizedTripResponse.StageDetail> details = new ArrayList<>();
+        List<TripStage> ordered = result.orderedStages();
+        for (int i = 0; i < ordered.size(); i++) {
+            TripStage stage = ordered.get(i);
+            Monument m = monumentMap.get(stage.getMonumentId());
+            details.add(new OptimizedTripResponse.StageDetail(
+                    i + 1,
+                    m.getId(),
+                    m.getName(),
+                    m.getType(),
+                    m.getLat(),
+                    m.getLon(),
+                    m.getAddress(),
+                    stage.getVisitDurationMinutes()
+            ));
+        }
+
+        return new OptimizedTripResponse(
+                saved.getId(),
+                saved.getName(),
+                saved.getCity(),
+                saved.getStartLat(),
+                saved.getStartLon(),
+                details,
+                result.totalDistanceMeters(),
+                result.totalDurationSeconds()
+        );
     }
 }
