@@ -68,10 +68,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        // Bypass JWT filter for authentication endpoints
+        String path = request.getServletPath();
+        if (path.startsWith("/api/auth/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         // Extract JWT from the Authorization header
         String token = extractToken(request);
 
-        // Proceed only if a non-empty token is present
         if (StringUtils.hasText(token)) {
 
             // reject tokens explicitly revoked during logout
@@ -82,31 +88,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             try {
-                // Extract username from the token
                 String username = tokenProvider.getUsernameFromToken(token);
-
-                // Load user details from the database
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-                // Validate the token against the loaded user
                 if (tokenProvider.validateToken(token, userDetails)) {
-
-                    // Create the Authentication object for Spring Security
                     UsernamePasswordAuthenticationToken auth =
                             new UsernamePasswordAuthenticationToken(
                                     userDetails, null, userDetails.getAuthorities());
-
-                    // Attach request-specific details (IP, session, etc.)
                     auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                    // Store the authenticated user in the SecurityContext
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
+
             } catch (Exception ex) {
                 logger.warn("Could not authenticate JWT: {}", ex.getMessage());
             }
         }
-        // Continue the filter chain
+
         filterChain.doFilter(request, response);
     }
 
