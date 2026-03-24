@@ -8,6 +8,8 @@ import com.optitour.backend.model.Trip.TripStatus;
 import com.optitour.backend.model.TripStage;
 import com.optitour.backend.repository.MonumentRepository;
 import com.optitour.backend.repository.TripRepository;
+
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -53,7 +55,7 @@ public class TripService {
         // Costruisce la lista delle tappe
         List<TripStage> stages = new ArrayList<>();
         for (CreateTripRequest.TripStageRequest stageReq : request.getStages()) {
-            Optional<Monument> monument = monumentRepository.findById(stageReq.getMonumentId());
+        	Optional<Monument> monument = monumentRepository.findById(new ObjectId(stageReq.getMonumentId()));
 
             TripStage stage = TripStage.builder()
                     .monumentId(monument.get().getId())

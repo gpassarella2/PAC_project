@@ -1,6 +1,8 @@
 package com.optitour.backend.repository;
 
 import com.optitour.backend.model.Monument;
+
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,7 +15,7 @@ import java.util.Optional;
  * https://docs.spring.io/spring-data/mongodb/docs/1.2.0.RELEASE/reference/html/mongo.repositories.html
  */
 @Repository
-public interface MonumentRepository extends MongoRepository<Monument, String> {
+public interface MonumentRepository extends MongoRepository<Monument, ObjectId> {
 
     /**
      * Restituisce tutti i monumenti di una città.

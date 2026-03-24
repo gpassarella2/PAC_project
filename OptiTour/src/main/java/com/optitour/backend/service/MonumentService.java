@@ -2,6 +2,8 @@ package com.optitour.backend.service;
 
 import com.optitour.backend.model.Monument;
 import com.optitour.backend.repository.MonumentRepository;
+
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -40,6 +42,7 @@ public class MonumentService {
     }
 
     public Optional<Monument> getMonumentById(String id) {
-        return monumentRepository.findById(id);
+        ObjectId objectId = new ObjectId(id);
+        return monumentRepository.findById(objectId);
     }
 }
