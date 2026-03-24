@@ -27,7 +27,7 @@ import java.time.Instant;
  * Stateless Logout
  * Since JWTs are stateless, a "logout" requires storing the revoked token in
  * MongoDB (the {@code revoked_tokens} collection) until the token's natural
- * expiry. The {@link com.buddymaps.security.JwtAuthenticationFilter} checks
+ * expiry. The {@link com.optitour.backend.security.JwtAuthenticationFilter} checks
  * this blacklist on every request.
  */
 @Service
@@ -40,7 +40,7 @@ public class AuthService {
     private final PasswordEncoder      passwordEncoder;
     private final JwtTokenProvider     tokenProvider;
 
-    @Value("${buddymaps.jwt.expiration}")
+    @Value("${OptiTour.jwt.expiration}")
     private long jwtExpirationMs;
 
     public AuthService(UserRepository userRepository,
@@ -58,7 +58,7 @@ public class AuthService {
     /**
      * Invalidates the supplied JWT by adding it to the revoked-token blacklist.
      * Subsequent requests using this token will be rejected by
-     * {@link com.buddymaps.security.JwtAuthenticationFilter}.
+     * {@link com.optitour.backend.security.JwtAuthenticationFilter}.
      *
      * @param rawToken the raw JWT string (without "Bearer " prefix)
      * @param username the authenticated user's username

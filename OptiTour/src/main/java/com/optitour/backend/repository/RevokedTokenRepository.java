@@ -13,6 +13,5 @@ public interface RevokedTokenRepository extends MongoRepository<RevokedToken, St
     boolean existsByToken(String token);
 
     void deleteByUsername(String username);
-    
-    void deleteByEmail(String email);
+
 }

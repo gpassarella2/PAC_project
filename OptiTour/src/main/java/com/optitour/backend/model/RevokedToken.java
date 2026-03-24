@@ -8,7 +8,7 @@ import java.time.Instant;
 
 /**
  * RevokedToken entity – stores invalidated JWT tokens until their natural expiry,
- * enabling a stateless logout mechanism (UC3).
+ * enabling a stateless logout mechanism.
  */
 @Document(collection = "revoked_tokens")
 public class RevokedToken {

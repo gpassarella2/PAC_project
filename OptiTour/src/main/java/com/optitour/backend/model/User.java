@@ -11,7 +11,7 @@ import java.util.Objects;
 /**
  * User entity – represents an authenticated user in OptiTour.
  * Stored in the "users" MongoDB collection.
- * @Document: annotation that marks the class as a MongoDB document stored in the "users" collectio
+ * @Document: annotation that marks the class as a MongoDB document stored in the "users" collection
  */
 
 @Document(collection = "users")
