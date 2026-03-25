@@ -2,6 +2,8 @@ package com.optitour.backend.dto;
 
 import java.util.Objects;
 
+
+
 //DTO di risposta per un monumento.
 
 public class MonumentResponse {
