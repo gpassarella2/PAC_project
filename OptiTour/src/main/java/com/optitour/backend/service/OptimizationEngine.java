@@ -9,6 +9,8 @@ import com.graphhopper.GraphHopper;
 import com.graphhopper.ResponsePath;
 import com.graphhopper.config.CHProfile;
 import com.graphhopper.config.Profile;
+import com.graphhopper.json.Statement;
+import com.graphhopper.util.CustomModel;
 import com.graphhopper.util.shapes.GHPoint;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -45,7 +47,7 @@ public class OptimizationEngine {
     private String graphFolder; // dove salvare il grafo, preso da application properties
 
     private GraphHopper hopper;
-    private boolean graphHopperAvailable = false; // true se GraphHopper inizializzato correttamente, usato come guardia
+    boolean graphHopperAvailable = false; // true se GraphHopper inizializzato correttamente, usato come guardia
 
     // ── Lifecycle ─────────────────────────────────────────────────────────
 
@@ -60,9 +62,14 @@ public class OptimizationEngine {
             hopper = new GraphHopper();
             hopper.setOSMFile(osmFile);
             hopper.setGraphHopperLocation(graphFolder);
-            Profile footProfile = new Profile("foot").setWeighting("fastest");
+            
+            CustomModel customModel = new CustomModel()
+                    .addToSpeed(Statement.If("true", Statement.Op.LIMIT, "5"));
+            
+            Profile footProfile = new Profile("foot")
+                    .setCustomModel(customModel);
             hopper.setProfiles(List.of(footProfile));
-            hopper.getCHPreparationHandler().setCHProfiles(new CHProfile("foot")); //  preprocessing che rende i calcoli di routing molto più veloci
+            hopper.getCHPreparationHandler().setCHProfiles(List.of());//  preprocessing che rende i calcoli di routing molto più veloci
             hopper.importOrLoad(); // import se prima volta load se già usato quindi già nella cache
             graphHopperAvailable = true; // se arrivo qui ho inizializzato correttamente graphhopper quindi setto flag a true
             System.out.println("GraphHopper inizializzato correttamente.");
@@ -154,7 +161,7 @@ public class OptimizationEngine {
      * Costruisce la matrice delle distanze (n+1) × (n+1).
      * L'indice 0 corrisponde al punto di partenza, gli indici 1..n ai monumenti.
      */
-    private double[][] buildDistanceMatrix(double startLat, double startLon,
+    double[][] buildDistanceMatrix(double startLat, double startLon,
                                            List<Monument> monuments) {
         int n = monuments.size();
         int size = n + 1;
@@ -229,7 +236,7 @@ public class OptimizationEngine {
      * @param size numero totale di nodi (startPoint + monumenti)
      * @return array di indici che rappresenta il tour
      */
-    private int[] nearestNeighbour(double[][] dist, int size) {
+    int[] nearestNeighbour(double[][] dist, int size) {
         boolean[] visited = new boolean[size];
         int[] tour = new int[size];
         tour[0] = 0;
@@ -257,7 +264,7 @@ public class OptimizationEngine {
      * Inverte sottosequenze del tour finché non trova miglioramenti.
      * Termina quando nessuno scambio riduce la distanza totale.
      */
-    private int[] twoOpt(int[] tour, double[][] dist, int size) {
+    int[] twoOpt(int[] tour, double[][] dist, int size) {
         boolean improved = true;
         while (improved) {
             improved = false;
@@ -304,7 +311,7 @@ public class OptimizationEngine {
     }
 
     /** Calcola il costo totale del circuito chiuso */
-    private double tourCost(int[] tour, double[][] dist) {
+    double tourCost(int[] tour, double[][] dist) {
         int size = tour.length;
         double total = 0;
         for (int i = 0; i < size; i++) {
@@ -328,4 +335,11 @@ public class OptimizationEngine {
             long totalDurationSeconds) {}
 
  
+    public void setOsmFile(String osmFile) {
+        this.osmFile = osmFile;
+    }
+
+    public void setGraphFolder(String graphFolder) {
+        this.graphFolder = graphFolder;
+    }
 }
