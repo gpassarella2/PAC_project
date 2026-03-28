@@ -41,7 +41,7 @@ class TripControllerTest {
     @BeforeEach
     void setUp() {
         //set monumento reale
-        Monument monument = Monument.builder().name("Duomo").city("Bergamo").build();
+        Monument monument = Monument.builder().name("Duomo").city("Milano").build();
         validMonumentId = monumentRepository.save(monument).getId();
     }
 
@@ -59,9 +59,9 @@ class TripControllerTest {
         stage.setVisitDurationMinutes(120);
 
         CreateTripRequest request = new CreateTripRequest();
-        request.setName("Weekend a Bergamo");
-        request.setCity("Bergamo");
-        request.setStartPoint("Bergamo, Italy");
+        request.setName("Weekend a Milano");
+        request.setCity("Milano");
+        request.setStartPoint("Milano, Italy");
         request.setStages(List.of(stage));
 
         String userId = "user123";
@@ -76,7 +76,7 @@ class TripControllerTest {
         TripResponse body = response.getBody();
         assertNotNull(body, "Il body non deve essere nullo");
         assertNotNull(body.getId(), "Il viaggio creato deve avere un ID");
-        assertEquals("Weekend a Bergamo", body.getName());
+        assertEquals("Weekend a Milano", body.getName());
         assertEquals("DRAFT", body.getStatus());
     }
 }

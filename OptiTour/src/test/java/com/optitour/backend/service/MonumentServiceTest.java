@@ -18,7 +18,7 @@ class MonumentServiceTest {
 
     @Test
     void getMonumentsByCity_ShouldFetchFromApiAndSaveToDb() {
-        String city = "Dalmine"; 
+        String city = "Milano"; 
 
         // 1. Act: Chiamiamo il service. Questo chiamerà l'API vera e salverà nel DB vero.
         List<Monument> result = monumentService.getMonumentsByCity(city);

@@ -37,7 +37,7 @@ class MonumentControllerTest {
 
     @Test
     void getMonumentsByCity_ShouldReturn200AndList() {
-        String city = "Bergamo";
+        String city = "Milano";
         String url = "/api/monuments?city=" + city;
 
         //GET
@@ -48,13 +48,13 @@ class MonumentControllerTest {
         
         //body
         assertNotNull(response.getBody());
-        assertTrue(response.getBody().length > 0, " almeno un monumento per Bergamo");
+        assertTrue(response.getBody().length > 0, " almeno un monumento per Milano");
     }
 
     @Test
     void getMonumentById_WhenExists_ShouldReturn200() {
         // creazione di un monumento nel DB
-        Monument monument = Monument.builder().name("Colosseo").city("Roma").build();
+        Monument monument = Monument.builder().name("Duomo").city("Milano").build();
         Monument saved = monumentRepository.save(monument);
 
         // GET sull'endpoint /{id}
@@ -64,6 +64,6 @@ class MonumentControllerTest {
         //verificare che il controller risponda correttamente
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("Colosseo", response.getBody().getName());
+        assertEquals("Duomo", response.getBody().getName());
     }
 }

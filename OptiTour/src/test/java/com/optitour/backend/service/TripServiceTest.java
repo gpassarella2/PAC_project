@@ -36,7 +36,7 @@ class TripServiceTest {
         //monumento su cui eseguire test
         testMonument = Monument.builder()
                 .name("Monumento di Test")
-                .city("Bergamo")
+                .city("Milano")
                 .build();
         testMonument = monumentRepository.save(testMonument);
     }
@@ -55,9 +55,9 @@ class TripServiceTest {
         stageReq.setVisitDurationMinutes(60);
 
         CreateTripRequest request = new CreateTripRequest();
-        request.setName("Gita a Bergamo");
-        request.setCity("Bergamo");
-        request.setStartPoint("Bergamo, Italy"); 
+        request.setName("Gita a Milano");
+        request.setCity("Milano");
+        request.setStartPoint("Milano, Italy"); 
         request.setStages(List.of(stageReq));
 
         String userId = "user-test-123";
@@ -68,7 +68,7 @@ class TripServiceTest {
         //verifica salvataggio viaggio
         assertNotNull(savedTrip.getId(), "Il viaggio deve essere stato salvato in MongoDB e avere un ID");
         assertEquals(TripStatus.DRAFT, savedTrip.getStatus());
-        assertEquals("Gita a Bergamo", savedTrip.getName());
+        assertEquals("Gita a Milano", savedTrip.getName());
         assertEquals(userId, savedTrip.getUserId());
         
         //verifica che l'API di Nominatim abbia risposto con coordinate sensate

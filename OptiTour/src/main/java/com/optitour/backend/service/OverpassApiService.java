@@ -29,18 +29,37 @@ public class OverpassApiService {
 
     /**
      * Recupera tutti i monumenti e POI di una città da OpenStreetMap
+     * 
+     * aggiunti piu tentativi per evitare errori di timeout
      */
     public List<Monument> fetchMonumentsByCity(String city) {
         String query = buildQuery(city);
 
-        OverpassResponse response = restClient.post()
-                .uri(OVERPASS_URL)
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .body("data=" + URLEncoder.encode(query, StandardCharsets.UTF_8))
-                .retrieve()
-                .body(OverpassResponse.class);
+        int attempts = 3;
 
-        return parseResponse(response, city);
+        for (int i = 0; i < attempts; i++) {
+            try {
+                OverpassResponse response = restClient.post()
+                        .uri(OVERPASS_URL)
+                        .header("Content-Type", "application/x-www-form-urlencoded")
+                        .body("data=" + URLEncoder.encode(query, StandardCharsets.UTF_8))
+                        .retrieve()
+                        .body(OverpassResponse.class);
+
+                return parseResponse(response, city);
+
+            } catch (Exception e) {
+                if (i == attempts - 1) {
+                    throw e; 
+                }
+
+                try {
+                    Thread.sleep(2000); 
+                } catch (InterruptedException ignored) {}
+            }
+        }
+
+        return List.of();
     }
 
     
