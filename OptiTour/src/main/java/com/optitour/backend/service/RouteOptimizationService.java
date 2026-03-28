@@ -6,6 +6,8 @@ import com.optitour.backend.model.Trip;
 import com.optitour.backend.model.TripStage;
 import com.optitour.backend.repository.MonumentRepository;
 import com.optitour.backend.repository.TripRepository;
+
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -57,22 +59,23 @@ public class RouteOptimizationService {
         List<TripStage> stages = trip.getStages();
 
         // 1. Recupera i Monument dal DB
-        List<String> monumentIds = new ArrayList<>();
+        List<ObjectId> objectIds = new ArrayList<>();
         for (TripStage stage : stages) {
-            monumentIds.add(stage.getMonumentId());
+            objectIds.add(new ObjectId(stage.getMonumentId()));
         }
 
-        List<Monument> foundMonuments = monumentRepository.findAllById(monumentIds);
+        List<Monument> foundMonuments = monumentRepository.findAllById(objectIds);
+
         Map<String, Monument> monumentMap = new HashMap<>();
         for (Monument monument : foundMonuments) {
             monumentMap.put(monument.getId(), monument);
         }
 
         // 2. Verifica che tutti i monumenti esistano nel DB
-        for (String id : monumentIds) {
-            if (!monumentMap.containsKey(id)) {
+        for (TripStage stage : stages) {
+            if (!monumentMap.containsKey(stage.getMonumentId())) {
                 throw new IllegalStateException(
-                        "Monument non trovato nel DB: id=" + id +
+                        "Monument non trovato nel DB: id=" + stage.getMonumentId() +
                         ". Impossibile ottimizzare il trip id=" + trip.getId());
             }
         }
