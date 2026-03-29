@@ -68,12 +68,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        // Bypass JWT filter for authentication endpoints
-        String path = request.getServletPath();
-        if (path.startsWith("/api/auth/")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+    	// Bypass JWT filter ONLY for login and register
+    	String path = request.getServletPath();
+    	if (path.equals("/api/auth/login") || path.equals("/api/auth/register")) {
+    	    filterChain.doFilter(request, response);
+    	    return;
+    	}
 
         // Extract JWT from the Authorization header
         String token = extractToken(request);

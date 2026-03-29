@@ -18,3 +18,6 @@ build/
 out/
 
 .vscode/
+
+node_modules/
+dist/
