@@ -45,7 +45,7 @@ public class AuthController {
         this.tokenProvider = tokenProvider;
     }
 
-    // ─────────────────────── Register ──────────────────────────────
+    // ------------------------- Register -------------------------
 
     /** POST /api/auth/register */
     @PostMapping("/register")
@@ -54,9 +54,9 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.register(request));
     }
 
-    // ─────────────────────── Login ─────────────────────────────────
+    // ------------------------- Login -------------------------
 
-    /** POST /api/auth/login → returns JWT bearer token */
+    /** POST /api/auth/login -> returns JWT bearer token */
     @PostMapping("/login")
     public ResponseEntity<UserAuthResponse> login(
             @Valid @RequestBody UserLoginRequest request) {
@@ -75,7 +75,7 @@ public class AuthController {
                 .build());
     }
 
-    // ─────────────────────── Logout ────────────────────────────────
+    // ------------------------- Logout -------------------------
 
     /**
      * POST /api/auth/logout
@@ -88,13 +88,15 @@ public class AuthController {
             @AuthenticationPrincipal UserDetails currentUser) {
 
         String rawToken = extractToken(httpRequest);
+        System.out.println("logout in corso...");
         if (StringUtils.hasText(rawToken)) {
             authService.logout(rawToken, currentUser.getUsername());
+            System.out.println("logout di: " + currentUser.getUsername());
         }
         return ResponseEntity.ok(Map.of("message", "Logged out successfully."));
     }
 
-    // ─────────────────────── Change Password ───────────────────────
+    // ------------------------- Change Password -------------------------
 
     /**
      * POST /api/auth/change-password
@@ -111,7 +113,7 @@ public class AuthController {
                 "Password changed. Please log in again with your new password."));
     }
 
-    // ──────────────────────────── utility methods ─────────────────────────────────
+    // ------------------------- utility methods -------------------------
 
     private String extractToken(HttpServletRequest request) {
         String header = request.getHeader("Authorization");

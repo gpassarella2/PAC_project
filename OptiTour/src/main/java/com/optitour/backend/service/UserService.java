@@ -85,7 +85,7 @@ public class UserService {
         return toProfileResponse(userRepository.save(user));
     }
 
-    // ──────────────────────────── mapper ─────────────────────────────────
+    // ---------------------- mapper ----------------------
 
     /**
      * Maps a User entity to a UserProfileResponse DTO.

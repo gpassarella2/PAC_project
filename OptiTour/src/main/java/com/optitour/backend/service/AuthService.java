@@ -40,8 +40,7 @@ public class AuthService {
     private final PasswordEncoder      passwordEncoder;
     private final JwtTokenProvider     tokenProvider;
 
-    @Value("${OptiTour.jwt.expiration}")
-    private long jwtExpirationMs;
+    @Value("${OptiTour.jwt.expiration}") long jwtExpirationMs;
 
     public AuthService(UserRepository userRepository,
                        RevokedTokenRepository revokedTokenRepository,
@@ -53,7 +52,7 @@ public class AuthService {
         this.tokenProvider = tokenProvider;
     }
 
-    // ───────────────────────────── Logout ────────────────────────────
+    // ---------------------- Logout ----------------------
 
     /**
      * Invalidates the supplied JWT by adding it to the revoked-token blacklist.
@@ -91,7 +90,7 @@ public class AuthService {
         return revokedTokenRepository.existsByToken(rawToken);
     }
 
-    // ───────────────────────────── Change Password ──────────────────
+    // ---------------------- Change Password ----------------------
 
     /**
      * Changes the user's password after verifying the current one.

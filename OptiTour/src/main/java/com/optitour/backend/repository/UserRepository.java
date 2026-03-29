@@ -11,8 +11,8 @@ import java.util.Optional;
  */
 
 //MongoRepository<T, ID>:
-//T = User  → the document type stored in the collection.
-//ID = String → the type of the primary key (@Id).
+//T = User  -> the document type stored in the collection.
+//ID = String -> the type of the primary key (@Id).
 
 @Repository
 public interface UserRepository extends MongoRepository<User, String> {

@@ -3,7 +3,7 @@ package com.optitour.backend.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-/** Request DTO for changing the authenticated user's password (UC4). */
+/** Request DTO for changing the authenticated user's password. */
 public class ChangePasswordRequest {
 
     @NotBlank(message = "Current password is required")
