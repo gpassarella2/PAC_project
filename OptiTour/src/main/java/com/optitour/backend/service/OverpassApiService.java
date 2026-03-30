@@ -16,7 +16,7 @@ import java.util.List;
  *  qua potremmo anche aggiungere un filtro per diminuire il peso dei dati operando sulla queri a riga 47
  */
 @Service
-public class OverpassApiService {
+public class OverpassApiService implements OverpassApiMgmtIF{
 
     private static final String OVERPASS_URL = "https://overpass-api.de/api/interpreter";
 

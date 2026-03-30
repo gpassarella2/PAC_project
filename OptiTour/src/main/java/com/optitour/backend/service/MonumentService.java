@@ -14,7 +14,7 @@ import java.util.Optional;
  * Controlla se i monumenti della città sono già in MongoDB, se ci sono usa quelli, altrimenti chiama overpass
  */
 @Service
-public class MonumentService {
+public class MonumentService implements MonumentMgmtIF {
 
     private final MonumentRepository monumentRepository;
     private final OverpassApiService overpassApiService;

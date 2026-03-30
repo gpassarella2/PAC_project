@@ -29,7 +29,7 @@ import java.util.Optional;
  * in seguito per la fase di ottimizzazione del percorso.
  */
 @Service
-public class TripService {
+public class TripService implements TripMgmtIF{
 
     private static final String NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
 

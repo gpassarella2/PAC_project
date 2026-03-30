@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/api/monuments")
-public class MonumentController {
+public class MonumentController implements MonumentControllerIF{
 
     private final MonumentService monumentService;
 
