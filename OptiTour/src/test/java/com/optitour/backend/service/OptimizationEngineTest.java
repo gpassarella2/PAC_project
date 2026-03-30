@@ -46,7 +46,7 @@ class OptimizationEngineTest {
 
     @Test
     void tourContieneTuttiIMonumenti() {
-        OptimizationEngine.TspResult result = engine.optimise(
+        TspResult result = engine.optimise(
                 45.4641, 9.1919, monuments, stages);
 
         assertEquals(5, result.orderedStages().size());
@@ -54,7 +54,7 @@ class OptimizationEngineTest {
 
     @Test
     void tourNonDeveAvereMonumentiDuplicati() {
-        OptimizationEngine.TspResult result = engine.optimise(
+        TspResult result = engine.optimise(
                 45.4641, 9.1919, monuments, stages);
 
         Set<String> visti = new HashSet<>();
@@ -68,7 +68,7 @@ class OptimizationEngineTest {
 
     @Test
     void distanzaTotaleDeveEsserePositiva() {
-        OptimizationEngine.TspResult result = engine.optimise(
+        TspResult result = engine.optimise(
                 45.4641, 9.1919, monuments, stages);
 
         assertTrue(result.totalDistanceMeters() > 0);
@@ -76,7 +76,7 @@ class OptimizationEngineTest {
 
     @Test
     void durataTotaleDeveIncludereTempoVisita() {
-        OptimizationEngine.TspResult result = engine.optimise(
+        TspResult result = engine.optimise(
                 45.4641, 9.1919, monuments, stages);
 
         // visitMinutes totali = 60+90+45+30+60 = 285 min = 17100 secondi
@@ -98,7 +98,7 @@ class OptimizationEngineTest {
     }
     
     @Test
-    void twoOptNoneggioraNearestNeighbour() {
+    void twoOptNonPeggioraNearestNeighbour() {
         double[][] dist = engine.buildDistanceMatrix(45.4641, 9.1919, monuments);
         int size = monuments.size() + 1;
 
@@ -116,7 +116,7 @@ class OptimizationEngineTest {
  
     @Test
     void durataTotaleDeveEssereCalcolataCorrettamente() {
-        OptimizationEngine.TspResult result = engine.optimise(
+        TspResult result = engine.optimise(
                 45.4641, 9.1919, monuments, stages);
 
         // visitMinutes = 285min = 17100s

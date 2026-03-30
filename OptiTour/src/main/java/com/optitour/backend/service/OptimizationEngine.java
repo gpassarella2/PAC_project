@@ -38,7 +38,7 @@ import java.util.Locale;
  */
 
 @Service
-public class OptimizationEngine {
+public class OptimizationEngine implements OptimizationEngineMgmt {
 
     @Value("${optitour.graphhopper.osm-file:osm/map.osm.pbf}")
     private String osmFile; // percorso per il file osm, preso da application properties
@@ -102,7 +102,7 @@ public class OptimizationEngine {
      * @return {@link TspResult} con le TripStage riordinate e le metriche del percorso
      * @throws IllegalArgumentException se le liste sono vuote o di dimensioni diverse
      */
-    public TspResult optimise(double startLat, double startLon,
+     public TspResult optimise(double startLat, double startLon,
                               List<Monument> monuments,
                               List<TripStage> stages) {
 
@@ -320,20 +320,6 @@ public class OptimizationEngine {
         return total;
     }
     
- // ── TspResult ─────────────────────────────────────────────────────────
-
-    /**
-     * Risultato dell'ottimizzazione.
-     *
-     * @param orderedStages       TripStage nell'ordine ottimizzato
-     * @param totalDistanceMeters distanza totale del percorso in metri
-     * @param totalDurationSeconds durata totale in secondi (camminata + visite)
-     */
-    public record TspResult(
-            List<TripStage> orderedStages,
-            double totalDistanceMeters,
-            long totalDurationSeconds) {}
-
  
     public void setOsmFile(String osmFile) {
         this.osmFile = osmFile;

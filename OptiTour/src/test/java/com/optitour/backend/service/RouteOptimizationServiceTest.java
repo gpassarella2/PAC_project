@@ -21,7 +21,7 @@ class RouteOptimizationServiceTest {
 
     private MonumentRepository monumentRepository;
     private TripRepository tripRepository;
-    private OptimizationEngine optimizationEngine;
+    private OptimizationEngineMgmt optimizationEngine;
     private RouteOptimizationService service;
 
     private List<Monument> monuments;

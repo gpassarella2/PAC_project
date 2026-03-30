@@ -28,15 +28,15 @@ import java.util.Map;
  * modello con il risultato.
  */
 @Service
-public class RouteOptimizationService {
+public class RouteOptimizationService implements RouteOptimizationServiceMgmt {
 
     private final MonumentRepository monumentRepository;
     private final TripRepository tripRepository;
-    private final OptimizationEngine optimizationEngine;
+    private final OptimizationEngineMgmt optimizationEngine;
 
     public RouteOptimizationService(MonumentRepository monumentRepository,
                                     TripRepository tripRepository,
-                                    OptimizationEngine optimizationEngine) {
+                                    OptimizationEngineMgmt optimizationEngine) {
         this.monumentRepository = monumentRepository;
         this.tripRepository = tripRepository;
         this.optimizationEngine = optimizationEngine;
@@ -54,7 +54,7 @@ public class RouteOptimizationService {
      * @return il Trip aggiornato con stages riordinate e salvato su MongoDB
      * @throws IllegalStateException se un monumentId nelle stages non esiste nel DB
      */
-    public OptimizedTripResponse optimizeAndSave(Trip trip) {
+     public OptimizedTripResponse optimizeAndSave(Trip trip) {
 
         List<TripStage> stages = trip.getStages();
 
@@ -87,7 +87,7 @@ public class RouteOptimizationService {
         }
 
         // 4. Ottimizzazione del percorso
-        OptimizationEngine.TspResult result = optimizationEngine.optimise(
+        TspResult result = optimizationEngine.optimise(
                 trip.getStartLat(), trip.getStartLon(), monuments, stages);
 
         // 5. Aggiorna e salva il Trip
