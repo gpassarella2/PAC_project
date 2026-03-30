@@ -1,0 +1,94 @@
+\section{Strumenti utilizzati}
+
+Di seguito vengono illustrati gli strumenti e le tecnologie adottate per la realizzazione
+del progetto. La scelta dello stack tecnologico è stata orientata a garantire la massima
+integrazione tra la gestione dei dati geografici e un’architettura di tipo modulare.
+
+\begin{itemize}
+
+\item \textbf{Spring Boot:} Framework Java basato sull’ecosistema Spring, impiegato per implementare
+la logica di backend secondo il pattern architetturale MVC. Spring Boot
+facilita la gestione del Controller e l’integrazione del Model con i database, automatizzando
+la configurazione dell’infrastruttura. Questo approccio garantisce una
+chiara separazione delle responsabilità, rendendo l’applicazione scalabile, modulare
+e facilmente manutenibile.
+
+\item \textbf{GraphHopper:} motore di routing utilizzato per ottenere dati reali di distanza e
+tempo di percorrenza tra le coordinate GPS dei punti di interesse. Fornisce la
+componente pratica necessaria per calcolare percorsi realistici sulle strade esistenti,
+garantendo itinerari ottimizzati basati su tempi reali di percorrenza e condizioni
+stradali.
+
+\item \textbf{JUnit 4:} Framework per il testing unitario in Java, impiegato per validare il corretto
+funzionamento delle classi e dei metodi sviluppati. L’uso di test automatizzati
+consente di rilevare tempestivamente eventuali errori e di garantire la robustezza del
+codice.
+
+\item \textbf{MongoDB e MongoDB Compass:} MongoDB è il database NoSQL utilizzato per
+memorizzare i POI (Points of Interest) con strutture flessibili e attributi variabili
+provenienti da OpenStreetMap, come nome, descrizione, coordinate, categorie e
+immagini. Spring Data MongoDB facilita le operazioni CRUD e le query complesse.
+MongoDB Compass, invece, è lo strumento grafico che permette di esplorare
+visivamente le collezioni, verificare la correttezza dei documenti JSON e correggere
+manualmente eventuali dati errati, migliorando il controllo sulla qualità dei dati.
+
+\item \textbf{OpenStreetMap:} piattaforma open-source che fornisce dati geospaziali dettagliati.
+I dati di OpenStreetMap sono utilizzati da Nominatim per il geocoding, da Overpass
+API per interrogazioni sui monumenti e da React-Leaflet per la visualizzazione
+delle mappe interattive nel frontend. La natura collaborativa di OpenStreetMap
+garantisce dati aggiornati e accurati per il calcolo dei percorsi.
+
+\item \textbf{Nominatim:} servizio di geocoding utilizzato per trasformare indirizzi testuali inseriti
+dall’utente in coordinate geografiche precise ($lat/lon$), consentendo di posizionare
+correttamente il punto di partenza dei percorsi sulla mappa.
+
+\item \textbf{Overpass API:} interroga il database OpenStreetMap per individuare monumenti e
+POI nelle vicinanze del punto di interesse indicato dall’utente. Per evitare di sovraccaricare
+il servizio e garantire tempi di risposta rapidi, i dati vengono memorizzati
+localmente su MongoDB dopo la prima richiesta, rendendo più efficienti le ricerche
+successive.
+
+\item \textbf{React.js \& Node.js:} React gestisce lo stato dell’interfaccia utente, come la lista dei
+monumenti selezionati e le informazioni sul percorso ottimizzato, mentre Node.js
+offre l’ambiente di esecuzione e la gestione dei pacchetti tramite npm. Insieme,
+permettono di costruire un frontend dinamico, reattivo e facilmente aggiornabile.
+
+\item \textbf{React-Leaflet:} libreria che connette React alle mappe interattive di OpenStreetMap.
+Consente di posizionare marker sui monumenti, visualizzare linee di percorso ottimizzate
+calcolate dal backend e rendere l’esperienza dell’utente più intuitiva grazie
+a mappe dinamiche e interattive.
+
+\item \textbf{Axios:} libreria per gestire chiamate HTTP asincrone. Permette al frontend di inviare
+richieste al backend e ricevere le risposte in formato JSON senza ricaricare la pagina,
+garantendo un’esperienza utente fluida e immediata.
+
+\item \textbf{Eclipse:} IDE principale per la scrittura del codice Java, il debugging del backend e
+la gestione del progetto tramite Maven o Gradle. Offre strumenti avanzati di refactoring,
+analisi del codice e integrazione con sistemi di versionamento, migliorando
+l’efficienza dello sviluppo.
+
+\item \textbf{CodeMR:} strumento di analisi statica del codice sorgente, che estrae metriche di
+coesione e accoppiamento delle classi. Aiuta a identificare classi troppo complesse
+e suggerisce possibili rifattorizzazioni, migliorando la manutenibilità del software.
+
+\item \textbf{Postman:} Strumento essenziale per il testing delle API REST sviluppate con Spring
+Boot. Consente di effettuare richieste HTTP, validare le risposte del server e automatizzare
+test, facilitando così il debug e l’integrazione tra i diversi componenti
+del sistema.
+
+\item \textbf{StarUML \& Diagrams.net:} strumenti utilizzati per la modellazione dei sistemi.
+StarUML serve per diagrammi formali (casi d’uso, classi, deployment), mentre
+Diagrams.net è utile per schemi logici, flussi di dati e rappresentazioni più informali,
+favorendo la chiarezza della progettazione.
+
+\item \textbf{GitHub \& GitHub Desktop:} strumenti di controllo di versione che permettono
+di salvare lo storico dei file, gestire branch multipli e sincronizzare il lavoro tra
+diversi membri del team, garantendo una collaborazione efficiente e tracciabilità
+delle modifiche.
+
+\item \textbf{WhatsApp:} applicazione di messaggistica utilizzata come strumento di comunicazione
+interna tra i membri del team. Consente di coordinare le attività di sviluppo,
+discutere problemi tecnici e organizzare riunioni in tempo reale, garantendo un
+flusso comunicativo rapido ed efficiente.
+
+\end{itemize}
