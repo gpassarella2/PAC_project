@@ -1,7 +1,7 @@
 package com.optitour.backend.controller;
 
 import com.optitour.backend.dto.UserProfileResponse;
-import com.optitour.backend.service.UserService;
+import com.optitour.backend.service.UserServiceIF;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,9 +17,9 @@ import java.util.Map;
 @RequestMapping("/api/user")
 public class UserController {
 
-    private final UserService userService;
+    private final UserServiceIF userService;
 
-    public UserController(UserService userService) {
+    public UserController(UserServiceIF userService) {
         this.userService = userService;
     }
 

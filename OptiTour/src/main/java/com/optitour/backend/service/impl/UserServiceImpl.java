@@ -1,9 +1,10 @@
-package com.optitour.backend.service;
+package com.optitour.backend.service.impl;
 
 import com.optitour.backend.dto.UserRegisterRequest;
 import com.optitour.backend.dto.UserProfileResponse;
 import com.optitour.backend.model.User;
 import com.optitour.backend.repository.UserRepository;
+import com.optitour.backend.service.UserServiceIF;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,14 +18,14 @@ import java.util.NoSuchElementException;
  */
 
 @Service
-public class UserService {
+public class UserServiceImpl implements UserServiceIF {
 
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }

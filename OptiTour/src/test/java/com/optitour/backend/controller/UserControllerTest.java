@@ -1,7 +1,8 @@
 package com.optitour.backend.controller;
 
 import com.optitour.backend.dto.UserProfileResponse;
-import com.optitour.backend.service.UserService;
+import com.optitour.backend.service.impl.UserServiceImpl;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -22,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class UserControllerTest {
 
-    @Mock private UserService userService;
+    @Mock private UserServiceImpl userService;
     @Mock private UserDetails userDetails;
 
     @InjectMocks

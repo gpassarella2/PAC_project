@@ -1,9 +1,10 @@
-package com.optitour.backend.service;
+package com.optitour.backend.service.impl;
 
 import com.optitour.backend.model.RevokedToken ;
 import com.optitour.backend.model.User;
 import com.optitour.backend.repository.RevokedTokenRepository ;
 import com.optitour.backend.repository.UserRepository;
+import com.optitour.backend.service.AuthServiceIF;
 import com.optitour.backend.dto.ChangePasswordRequest ;
 import com.optitour.backend.Security.JwtTokenProvider;
 
@@ -31,9 +32,9 @@ import java.time.Instant;
  * this blacklist on every request.
  */
 @Service
-public class AuthService {
+public class AuthServiceImpl implements AuthServiceIF{
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
+    private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     private final UserRepository       userRepository;
     private final RevokedTokenRepository revokedTokenRepository;
@@ -41,8 +42,12 @@ public class AuthService {
     private final JwtTokenProvider     tokenProvider;
 
     @Value("${OptiTour.jwt.expiration}") long jwtExpirationMs;
+    
+    public void setJwtExpirationMs(long value) {
+        this.jwtExpirationMs = value;
+    }
 
-    public AuthService(UserRepository userRepository,
+    public AuthServiceImpl(UserRepository userRepository,
                        RevokedTokenRepository revokedTokenRepository,
                        PasswordEncoder passwordEncoder,
                        JwtTokenProvider tokenProvider) {

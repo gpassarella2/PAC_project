@@ -5,6 +5,7 @@ import com.optitour.backend.model.RevokedToken;
 import com.optitour.backend.model.User;
 import com.optitour.backend.repository.RevokedTokenRepository;
 import com.optitour.backend.repository.UserRepository;
+import com.optitour.backend.service.impl.AuthServiceImpl;
 import com.optitour.backend.Security.JwtTokenProvider;
 
 import org.junit.jupiter.api.Test;
@@ -38,7 +39,7 @@ class AuthServiceTest {
     private JwtTokenProvider tokenProvider;
 
     @InjectMocks
-    private AuthService authService;
+    private AuthServiceImpl authService;
 
     // Imposta manualmente il valore del JWT expiration
     private final long jwtExpirationMs = 3600000; // 1 ora
@@ -55,7 +56,7 @@ class AuthServiceTest {
         when(revokedTokenRepository.existsByToken(token)).thenReturn(false);
 
         // Forza il valore di jwtExpirationMs
-        authService.jwtExpirationMs = jwtExpirationMs;
+        authService.setJwtExpirationMs(jwtExpirationMs);
 
         authService.logout(token, username);
 

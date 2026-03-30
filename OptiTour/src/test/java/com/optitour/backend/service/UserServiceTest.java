@@ -4,6 +4,7 @@ import com.optitour.backend.dto.UserRegisterRequest;
 import com.optitour.backend.dto.UserProfileResponse;
 import com.optitour.backend.model.User;
 import com.optitour.backend.repository.UserRepository;
+import com.optitour.backend.service.impl.UserServiceImpl;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +31,7 @@ class UserServiceTest {
     private PasswordEncoder passwordEncoder; // Mock dell'encoder password
 
     @InjectMocks
-    private UserService userService; // Il service sotto test, con le dipendenze mockate
+    private UserServiceImpl userService; // Il service sotto test, con le dipendenze mockate
 
     // ---------------------------- REGISTER  -------------------------------------
 

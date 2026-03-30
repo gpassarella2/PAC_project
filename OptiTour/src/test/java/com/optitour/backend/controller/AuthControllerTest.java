@@ -3,9 +3,10 @@ package com.optitour.backend.controller;
 import com.optitour.backend.dto.*;
 import com.optitour.backend.model.User;
 import com.optitour.backend.repository.UserRepository;
+import com.optitour.backend.service.impl.AuthServiceImpl;
+import com.optitour.backend.service.impl.UserServiceImpl;
 import com.optitour.backend.Security.JwtTokenProvider;
-import com.optitour.backend.service.AuthService;
-import com.optitour.backend.service.UserService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -29,8 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class AuthControllerTest {
 
-    @Mock private UserService userService;
-    @Mock private AuthService authService;
+    @Mock private UserServiceImpl userService;
+    @Mock private AuthServiceImpl authService;
     @Mock private UserRepository userRepository;
     @Mock private AuthenticationManager authManager;
     @Mock private JwtTokenProvider tokenProvider;

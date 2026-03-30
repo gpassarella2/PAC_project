@@ -8,8 +8,9 @@ import com.optitour.backend.dto.UserProfileResponse;
 import com.optitour.backend.model.User;
 import com.optitour.backend.repository.UserRepository ;
 import com.optitour.backend.Security.JwtTokenProvider;
-import com.optitour.backend.service.AuthService;
-import com.optitour.backend.service.UserService;
+import com.optitour.backend.service.AuthServiceIF;
+import com.optitour.backend.service.UserServiceIF;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -27,14 +28,14 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final UserService           userService;
-    private final AuthService           authService;
+    private final UserServiceIF           userService;
+    private final AuthServiceIF           authService;
     private final UserRepository        userRepository;
     private final AuthenticationManager authManager;
     private final JwtTokenProvider      tokenProvider;
 
-    public AuthController(UserService userService,
-                          AuthService authService,
+    public AuthController(UserServiceIF userService,
+                          AuthServiceIF authService,
                           UserRepository userRepository,
                           AuthenticationManager authManager,
                           JwtTokenProvider tokenProvider) {
