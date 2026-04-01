@@ -19,6 +19,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+
 
 import java.time.Instant;
 import java.util.Optional;
@@ -51,6 +53,7 @@ class AuthControllerTest {
         // Registra il resolver per @AuthenticationPrincipal
         mockMvc = MockMvcBuilders.standaloneSetup(authController)
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
+                .setMessageConverters(new MappingJackson2HttpMessageConverter())
                 .build();
     }
 
