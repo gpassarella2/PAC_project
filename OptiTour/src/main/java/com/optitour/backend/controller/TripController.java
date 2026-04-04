@@ -2,8 +2,11 @@ package com.optitour.backend.controller;
 
 import com.optitour.backend.dto.CreateTripRequest;
 import com.optitour.backend.dto.TripResponse;
+import com.optitour.backend.dto.OptimizedTripResponse;
+import com.optitour.backend.service.RouteOptimizationServiceMgmt;
 import com.optitour.backend.model.Trip;
 import com.optitour.backend.model.Trip.TripStatus;
+import com.optitour.backend.service.TripMgmtIF;
 import com.optitour.backend.service.TripService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,10 +23,12 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/trips")
 public class TripController {
 
-    private final TripService tripService;
+    private final TripMgmtIF tripService;
+    private final RouteOptimizationServiceMgmt routeOptimizationService;
 
-    public TripController(TripService tripService) {
+    public TripController(TripMgmtIF tripService, RouteOptimizationServiceMgmt routeOptimizationService) {
         this.tripService = tripService;
+        this.routeOptimizationService = routeOptimizationService;
     }
 
     //Crea un nuovo viaggio.
@@ -84,6 +89,24 @@ public class TripController {
         }
 
         return ResponseEntity.ok(toResponse(trip));
+    }
+    
+    /**
+     * POST /api/trips/{id}/optimize
+     * Calcola il percorso ottimale per il viaggio e aggiorna le tappe.
+     * Restituisce l'OptimizedTripResponse con le tappe riordinate e le metriche
+     * di distanza/durata calcolate dall'algoritmo TSP.
+     */
+    @PostMapping("/{id}/optimize")
+    public ResponseEntity<OptimizedTripResponse> optimizeTrip(@PathVariable String id) {
+        Optional<Trip> tripOpt = tripService.getTripById(id);
+ 
+        if (tripOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+ 
+        OptimizedTripResponse result = routeOptimizationService.optimizeAndSave(tripOpt.get());
+        return ResponseEntity.ok(result);
     }
 
 

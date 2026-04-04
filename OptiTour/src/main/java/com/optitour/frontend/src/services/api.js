@@ -39,3 +39,12 @@ export const deleteTrip = (id) =>
 export const updateTripStatus = (id, status) =>
   api.put(`/api/trips/${id}/status`, null, { params: { status } });
 
+// GET /api/monuments/{id}
+export const getMonumentById = (id) =>
+  api.get(`/api/monuments/${id}`);
+
+// POST /api/trips/{id}/optimize
+// Ottimizza il percorso e restituisce OptimizedTripResponse
+// con le tappe complete (name, lat, lon, type, address)
+export const optimizeTrip = (id) =>
+  api.post(`/api/trips/${id}/optimize`);
