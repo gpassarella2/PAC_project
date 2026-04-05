@@ -14,3 +14,8 @@ api.interceptors.request.use((config) => {
 });
 
 export default api;
+
+// GET /api/monuments?city=...
+// Recupera la lista dei monumenti filtrati per città
+export const getMonumentsByCity = (city) =>
+  api.get('/api/monuments', { params: { city } });
