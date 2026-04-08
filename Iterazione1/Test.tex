@@ -39,7 +39,85 @@ L’analisi statica conferma che OptiTour presenta una struttura solida. Il soft
 
 
 \newpage
+\newpage
 \subsection{Test: Junit}
+Per garantire l'affidabilità del sistema e la correttezza della logica di business, è stata implementata una suite di test automatizzati. Di seguito vengono riportati gli esiti dei test eseguiti per le diverse componenti.
+
+\subsubsection*{1. Autenticazione e Gestione Utenti}
+I test relativi all'autenticazione coprono i flussi di registrazione, login (con generazione del token JWT) e gestione del profilo. Come si può osservare nelle \autoref{fig:test_auth_controller} e \autoref{fig:test_auth_service}, sono stati verificati sia gli endpoint che la logica di business sottostante.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.65\textwidth]{C:/Users/giorg/Desktop/uni/PAC_project/Iterazione1/Diagrammi/Test/AuthControllerTest.png}
+    \caption{Test degli endpoint di autenticazione.}
+    \label{fig:test_auth_controller}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.65\textwidth]{C:/Users/giorg/Desktop/uni/PAC_project/Iterazione1/Diagrammi/Test/AuthServiceTest.png}
+    \caption{Test della logica di autenticazione.}
+    \label{fig:test_auth_service}
+\end{figure}
+
+Allo stesso modo, le \autoref{fig:test_user_controller} e \autoref{fig:test_user_service} mostrano il superamento dei test relativi alla gestione anagrafica degli utenti.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.65\textwidth]{C:/Users/giorg/Desktop/uni/PAC_project/Iterazione1/Diagrammi/Test/UserControllerTest.png}
+    \caption{Test degli endpoint profilo utente.}
+    \label{fig:test_user_controller}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.65\textwidth]{C:/Users/giorg/Desktop/uni/PAC_project/Iterazione1/Diagrammi/Test/UserServiceTest.png}
+    \caption{Test della logica gestione utente.}
+    \label{fig:test_user_service}
+\end{figure}
+
+\subsubsection*{2. Gestione Monumenti}
+I test verificano il corretto recupero dei dati, validando sia l'integrità delle risposte (\autoref{fig:test_monument_controller}) sia il meccanismo di salvataggio locale dopo la chiamata a Overpass API (\autoref{fig:test_monument_service}).
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.65\textwidth]{C:/Users/giorg/Desktop/uni/PAC_project/Iterazione1/Diagrammi/Test/MonumentControllerTest.png}
+    \caption{Test degli endpoint monumenti.}
+    \label{fig:test_monument_controller}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.65\textwidth]{C:/Users/giorg/Desktop/uni/PAC_project/Iterazione1/Diagrammi/Test/MonumentServiceTest.png}
+    \caption{Test integrazione Overpass API.}
+    \label{fig:test_monument_service}
+\end{figure}
+
+\subsubsection*{3. Motore di Ottimizzazione e Viaggi}
+Questa sezione rappresenta il cuore algoritmico del sistema. La \autoref{fig:test_opt_engine} illustra la validazione del TSP, mentre nelle \autoref{fig:test_route_service} e \autoref{fig:test_trip_service} vengono testate l'integrazione con Nominatim e la persistenza finale dei viaggi ottimizzati.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.60\textwidth]{C:/Users/giorg/Desktop/uni/PAC_project/Iterazione1/Diagrammi/Test/OptimizationEngineTest.png}
+    \caption{Validazione approfondita dell'algoritmo di ottimizzazione TSP.}
+    \label{fig:test_opt_engine}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.65\textwidth]{C:/Users/giorg/Desktop/uni/PAC_project/Iterazione1/Diagrammi/Test/RouteOptimizationServiceTest.png}
+    \caption{Test del servizio di ottimizzazione.}
+    \label{fig:test_route_service}
+\end{figure}
+
+
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.65\textwidth]{C:/Users/giorg/Desktop/uni/PAC_project/Iterazione1/Diagrammi/Test/TripServiceTest.png}
+    \caption{Test creazione viaggi con Nominatim.}
+    \label{fig:test_trip_service}
+\end{figure}
+
+
 
 \newpage
 \subsection{API Esposte}
