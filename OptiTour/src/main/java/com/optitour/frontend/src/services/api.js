@@ -48,3 +48,7 @@ export const getMonumentById = (id) =>
 // con le tappe complete (name, lat, lon, type, address)
 export const optimizeTrip = (id) =>
   api.post(`/api/trips/${id}/optimize`);
+// GET /api/monuments?city=...
+// Recupera la lista dei monumenti filtrati per città
+export const getMonumentsByCity = (city) =>
+  api.get('/api/monuments', { params: { city } });
