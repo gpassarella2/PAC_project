@@ -40,3 +40,114 @@ L’analisi statica conferma che OptiTour presenta una struttura solida. Il soft
 
 \newpage
 \subsection{Test: Junit}
+
+\newpage
+\subsection{API Esposte}
+In questa sezione vengono descritte le principali API esposte dal backend tramite i controller di Spring Boot, necessarie per supportare i casi d'uso sviluppati in questa prima fase e testate con successo tramite Postman.
+
+\subsubsection*{1. Autenticazione e Profilo Utente}
+
+\textbf{Registrazione Utente}
+\begin{itemize}
+    \item \textbf{Endpoint:} \texttt{POST /api/auth/register}
+    \item \textbf{Descrizione:} Registra un nuovo utente nel sistema creando un account personale (come mostrato in Figura \autoref{fig:api_register}).
+    \item \textbf{Payload:}
+    \begin{itemize}
+        \item \texttt{username} (string) - L'username scelto dall'utente.
+        \item \texttt{email} (string) - L'indirizzo email dell'utente.
+        \item \texttt{password} (string) - La password dell'account.
+    \end{itemize}
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{C:/Users/giorg/Desktop/uni/PAC_project/Iterazione1/Diagrammi/API/Register.png}
+    \caption{Test su Postman: Registrazione di un nuovo utente nel sistema.}
+    \label{fig:api_register}
+\end{figure}
+
+\textbf{Autenticazione (Login)}
+\begin{itemize}
+    \item \textbf{Endpoint:} \texttt{POST /api/auth/login}
+    \item \textbf{Descrizione:} Autentica l'utente validando le credenziali e restituisce il token JWT di sessione (vedi Figura \autoref{fig:api_login}).
+    \item \textbf{Payload:}
+    \begin{itemize}
+        \item \texttt{usernameOrEmail} (string) - L'username o l'email dell'utente.
+        \item \texttt{password} (string) - La password dell'account.
+    \end{itemize}
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{C:/Users/giorg/Desktop/uni/PAC_project/Iterazione1/Diagrammi/API/Login.png}
+    \caption{Test su Postman: Login utente e generazione del token di autenticazione JWT.}
+    \label{fig:api_login}
+\end{figure}
+
+\vspace{0.5cm}
+\subsubsection*{2. Gestione Monumenti}
+
+\textbf{Ricerca Monumenti per Città}
+\begin{itemize}
+    \item \textbf{Endpoint:} \texttt{GET /api/monuments}
+    \item \textbf{Descrizione:} Recupera la lista dei monumenti per una specifica città (vedi Figura \autoref{fig:api_monuments}). Se non presenti nel DB, innesca la chiamata verso Overpass API.
+    \item \textbf{Parametri:}
+    \begin{itemize}
+        \item \texttt{city} (string) - Query parameter con il nome della città.
+    \end{itemize}
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{C:/Users/giorg/Desktop/uni/PAC_project/Iterazione1/Diagrammi/API/StartingPoint.png}
+    \caption{Test su Postman: Recupero della lista dei monumenti per la città di Bergamo.}
+    \label{fig:api_monuments}
+\end{figure}
+
+\vspace{0.5cm}
+\subsubsection*{3. Gestione Viaggi e Ottimizzazione}
+
+\textbf{Creazione di un Viaggio}
+\begin{itemize}
+    \item \textbf{Endpoint:} \texttt{POST /api/trips}
+    \item \textbf{Descrizione:} Crea un nuovo itinerario manuale associato all'utente, salvando punto di partenza, tappe e stime temporali di visita in stato DRAFT. I dettagli della richiesta e della risposta sono illustrati in Figura \autoref{fig:api_create_trip_req} e Figura \autoref{fig:api_create_trip_resp}.
+    \item \textbf{Parametri e Payload:}
+    \begin{itemize}
+        \item \texttt{userId} (string) - Query parameter con l'ID dell'utente.
+        \item \texttt{name} (string) - Nome assegnato al viaggio.
+        \item \texttt{city} (string) - Città del viaggio.
+        \item \texttt{startPoint} (string) - Punto di partenza.
+        \item \texttt{stages} (array) - Lista delle tappe (monumenti) selezionate.
+    \end{itemize}
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{C:/Users/giorg/Desktop/uni/PAC_project/Iterazione1/Diagrammi/API/CreateTripReq.png}
+    \caption{Test su Postman: Payload di richiesta per la creazione di un nuovo viaggio.}
+    \label{fig:api_create_trip_req}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{C:/Users/giorg/Desktop/uni/PAC_project/Iterazione1/Diagrammi/API/CreateTripResp.png}
+    \caption{Test su Postman: Risposta del server con il salvataggio del viaggio in stato DRAFT.}
+    \label{fig:api_create_trip_resp}
+\end{figure}
+
+\textbf{Ottimizzazione Percorso}
+\begin{itemize}
+    \item \textbf{Endpoint:} \texttt{POST /api/trips/\{id\}/optimize}
+    \item \textbf{Descrizione:} Avvia l'algoritmo di ottimizzazione (TSP) sulle tappe. Restituisce il nuovo ordine calcolato aggiornando lo stato in SAVED, come evidenziato in Figura \autoref{fig:api_trip_optimized}.
+    \item \textbf{Parametri:}
+    \begin{itemize}
+        \item \texttt{\{id\}} (string) - ID del viaggio da ottimizzare.
+    \end{itemize}
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{C:/Users/giorg/Desktop/uni/PAC_project/Iterazione1/Diagrammi/API/TripOptimized.png}
+    \caption{Test su Postman: Esecuzione dell'algoritmo di ottimizzazione TSP. La risposta mostra l'itinerario riordinato con calcolo di distanza e tempi totali.}
+    \label{fig:api_trip_optimized}
+\end{figure}
