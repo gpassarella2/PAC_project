@@ -1,0 +1,76 @@
+\section{Ottimizzazione del percorso}
+\vspace{-5pt} % Riduce spazio sotto il titolo
+Dato un insieme di monumenti e un punto di partenza, si cerca un percorso chiuso minimo che visiti tutti i monumenti una sola volta e torni al punto di partenza.
+L'algoritmo implementato combina due fasi principali:
+\vspace{-5pt}
+\begin{enumerate}
+    \setlength{\itemsep}{0pt} % Azzera spazio tra i punti
+    \setlength{\parskip}{0pt}
+    \item \textbf{Heuristica Nearest Neighbour}: costruisce un tour iniziale partendo dal nodo di partenza e visitando il nodo più vicino non ancora visitato.
+    \item \textbf{Ottimizzazione 2-opt}: migliora il tour iniziale invertendo coppie di archi quando ciò riduce la distanza totale.
+\end{enumerate}
+
+\vspace{-10pt}
+\subsection*{Pseudocodice}
+\vspace{-5pt}
+
+\begin{algorithm}[H]
+\caption{Costruzione matrice delle distanze}
+\begin{algorithmic}[1]
+\Function{buildDistanceMatrix}{startPoint, monuments}
+    \State nodes $\gets$ [startPoint] + monuments, size $\gets$ numero di nodi
+    \State dist $\gets$ matrice vuota di dimensione size $\times$ size
+    \For{i = 0 \textbf{to} size-1}
+        \For{j = 0 \textbf{to} size-1}
+            \If{i = j} \State dist[i][j] $\gets 0$
+            \Else \State dist[i][j] $\gets$ distanza(nodes[i], nodes[j])
+            \EndIf
+        \EndFor
+    \EndFor
+    \State \Return dist
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\vspace{-15pt} % Salto negativo tra gli algoritmi
+
+\begin{algorithm}[H]
+\caption{Nearest Neighbour}
+\begin{algorithmic}[1]
+\Function{nearestNeighbour}{dist}
+    \State size $\gets$ numero di nodi, visited $\gets$ array[size] = false
+    \State tour[0] $\gets$ 0, visited[0] $\gets$ true
+    \For{step = 1 \textbf{to} size-1}
+        \State current $\gets$ tour[step-1], bestNext $\gets$ nodo più vicino non visitato
+        \State tour[step] $\gets$ bestNext, visited[bestNext] $\gets$ true
+    \EndFor
+    \State \Return tour
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\vspace{-15pt}
+
+\begin{algorithm}[H]
+\caption{2-opt}
+\begin{algorithmic}[1]
+\Function{twoOpt}{tour, dist}
+    \State improved $\gets$ true
+    \While{improved}
+        \State improved $\gets$ false
+        \For{i = 0 \textbf{to} size-2}
+            \For{j = i+2 \textbf{to} size-1}
+                \If{i = 0 \textbf{and} j = size-1} \textbf{continue} \EndIf
+                \If{scambio riduce distanza} \State inverti sottosequenza da i+1 a j, improved $\gets$ true
+                \EndIf
+            \EndFor
+        \EndFor
+    \EndWhile
+    \State \Return tour
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\subsection*{Analisi della complessità}
+\vspace{-5pt}
+Nella fase di costruzione della matrice delle distanze, l'algoritmo impiega due cicli annidati per calcolare i percorsi tra tutti i nodi, risultando in una complessità temporale pari a $O(n^2)$, dove $n$ rappresenta il numero totale di nodi (il punto di partenza unito ai monumenti da visitare). Successivamente, l'euristica costruttiva \textit{Nearest Neighbour} valuta, nel caso peggiore, tutti i nodi rimanenti a ogni passo per individuare la destinazione più vicina. Anche in questo caso, la ricerca porta a una complessità temporale di $O(n^2)$. Infine, nella fase di ottimizzazione locale tramite l'algoritmo \textit{2-opt}, vengono confrontate iterativamente coppie di archi nel tentativo di ridurre il costo totale del percorso. Nel caso peggiore, i cicli annidati necessari per queste valutazioni e le relative operazioni di scambio portano a una complessità pari a $O(n^3)$. Di conseguenza, la complessità asintotica totale dell'intero algoritmo è dominata da quest'ultima fase, attestandosi su $O(n^3)$.
