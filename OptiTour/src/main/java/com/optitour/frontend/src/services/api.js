@@ -50,10 +50,6 @@ export const getUserProfile = () =>
 export const updateUserProfile = (data) =>
   api.patch('/api/user/profile', data);
 
-
-export default api;
-export default api;
-
 // POST /api/trips?userId=...  body: { name, city, startPoint, stages[] }
 export const createTrip = (userId, data) =>
   api.post('/api/trips', data, { params: { userId } });
@@ -91,3 +87,5 @@ export const optimizeTrip = (id) =>
 // Recupera la lista dei monumenti filtrati per città
 export const getMonumentsByCity = (city) =>
   api.get('/api/monuments', { params: { city } });
+
+export default api;

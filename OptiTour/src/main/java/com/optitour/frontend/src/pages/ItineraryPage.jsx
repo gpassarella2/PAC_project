@@ -14,6 +14,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 //  - Popup: finestra informativa che si apre al click su un Marker
 //  - useMap: per accedere all'istanza della mappa dall'interno
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import "leaflet/dist/leaflet.css";
 
 // Libreria Leaflet "pura" usata per creare icone personalizzate
 // e per il plugin di routing
