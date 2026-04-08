@@ -69,7 +69,7 @@ In questa sezione vengono descritte le principali API esposte dal backend tramit
 \textbf{Autenticazione (Login)}
 \begin{itemize}
     \item \textbf{Endpoint:} \texttt{POST /api/auth/login}
-    \item \textbf{Descrizione:} Autentica l'utente validando le credenziali e restituisce il token JWT di sessione (vedi Figura \autoref{fig:api_login}).
+    \item \textbf{Descrizione:} Autentica l'utente validando le credenziali e restituisce il token JWT di sessione (vedi \autoref{fig:api_login}).
     \item \textbf{Payload:}
     \begin{itemize}
         \item \texttt{usernameOrEmail} (string) - L'username o l'email dell'utente.
@@ -90,7 +90,7 @@ In questa sezione vengono descritte le principali API esposte dal backend tramit
 \textbf{Ricerca Monumenti per Città}
 \begin{itemize}
     \item \textbf{Endpoint:} \texttt{GET /api/monuments}
-    \item \textbf{Descrizione:} Recupera la lista dei monumenti per una specifica città (vedi Figura \autoref{fig:api_monuments}). Se non presenti nel DB, innesca la chiamata verso Overpass API.
+    \item \textbf{Descrizione:} Recupera la lista dei monumenti per una specifica città (vedi \autoref{fig:api_monuments}). Se non presenti nel DB, innesca la chiamata verso Overpass API.
     \item \textbf{Parametri:}
     \begin{itemize}
         \item \texttt{city} (string) - Query parameter con il nome della città.
@@ -110,7 +110,7 @@ In questa sezione vengono descritte le principali API esposte dal backend tramit
 \textbf{Creazione di un Viaggio}
 \begin{itemize}
     \item \textbf{Endpoint:} \texttt{POST /api/trips}
-    \item \textbf{Descrizione:} Crea un nuovo itinerario manuale associato all'utente, salvando punto di partenza, tappe e stime temporali di visita in stato DRAFT. I dettagli della richiesta e della risposta sono illustrati in Figura \autoref{fig:api_create_trip_req} e Figura \autoref{fig:api_create_trip_resp}.
+    \item \textbf{Descrizione:} Crea un nuovo itinerario manuale associato all'utente, salvando punto di partenza, tappe e stime temporali di visita in stato DRAFT. I dettagli della richiesta e della risposta sono illustrati in \autoref{fig:api_create_trip_req} e \autoref{fig:api_create_trip_resp}.
     \item \textbf{Parametri e Payload:}
     \begin{itemize}
         \item \texttt{userId} (string) - Query parameter con l'ID dell'utente.
@@ -138,7 +138,7 @@ In questa sezione vengono descritte le principali API esposte dal backend tramit
 \textbf{Ottimizzazione Percorso}
 \begin{itemize}
     \item \textbf{Endpoint:} \texttt{POST /api/trips/\{id\}/optimize}
-    \item \textbf{Descrizione:} Avvia l'algoritmo di ottimizzazione (TSP) sulle tappe. Restituisce il nuovo ordine calcolato aggiornando lo stato in SAVED, come evidenziato in Figura \autoref{fig:api_trip_optimized}.
+    \item \textbf{Descrizione:} Avvia l'algoritmo di ottimizzazione (TSP) sulle tappe. Restituisce il nuovo ordine calcolato aggiornando lo stato in SAVED, come evidenziato in \autoref{fig:api_trip_optimized}.
     \item \textbf{Parametri:}
     \begin{itemize}
         \item \texttt{\{id\}} (string) - ID del viaggio da ottimizzare.
