@@ -8,6 +8,8 @@ import MonumentsPage from './pages/MonumentsPage';
 import ItineraryPage from './pages/ItineraryPage';
 import MyTripsPage from './pages/MyTripsPage';
 
+
+
 // Componente che serve a definire il routing e contesto globale(AuthContext)
 // Contesto globale -> tutti i componenti in AuthProvider possono accedere allo stato di autenticazione
 

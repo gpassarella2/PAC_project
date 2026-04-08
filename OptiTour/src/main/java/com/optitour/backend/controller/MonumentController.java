@@ -3,6 +3,7 @@ package com.optitour.backend.controller;
 import com.optitour.backend.dto.MonumentResponse;
 import com.optitour.backend.model.Monument;
 import com.optitour.backend.service.MonumentService;
+import com.optitour.backend.service.MonumentMgmtIF;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,9 +18,9 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/monuments")
 public class MonumentController {
 
-    private final MonumentService monumentService;
+    private final MonumentMgmtIF monumentService;
 
-    public MonumentController(MonumentService monumentService) {
+    public MonumentController(MonumentMgmtIF monumentService) {
         this.monumentService = monumentService;
     }
 
