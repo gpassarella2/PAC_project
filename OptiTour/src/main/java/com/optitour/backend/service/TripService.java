@@ -48,7 +48,10 @@ public class TripService implements TripMgmtIF{
     //Crea un nuovo viaggio e lo salva in MongoDB con status DRAFT.
     
     public Trip createTrip(CreateTripRequest request, String userId) {
-
+    	
+    	if (!request.getStartPoint().toLowerCase().contains(request.getCity().toLowerCase())) {
+    	    throw new IllegalArgumentException("Il punto di partenza deve trovarsi nella città selezionata: " + request.getCity());
+    	}
         // Converte startPoint in coordinate 
         double[] coords = geocode(request.getStartPoint());
 

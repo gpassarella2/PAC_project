@@ -26,7 +26,7 @@ public class MonumentService implements MonumentMgmtIF {
     }
     //se city=bergamo restituisce i monumenti di bergamo, potremmo aggiungere un filtro per selezionare solo alcuni monumenti
     public List<Monument> getMonumentsByCity(String city) {
-        List<Monument> cached = monumentRepository.findByCity(city);
+        List<Monument> cached = monumentRepository.findByCityIgnoreCase(city);
 
         if (!cached.isEmpty()) {
             return cached;

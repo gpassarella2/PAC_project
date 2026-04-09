@@ -21,7 +21,7 @@ public interface MonumentRepository extends MongoRepository<Monument, ObjectId> 
      * Restituisce tutti i monumenti di una città.
      * Usato da MonumentService per controllare se la città è già in cache.
      */
-    List<Monument> findByCity(String city);
+    List<Monument> findByCityIgnoreCase(String city);
 
     /**
      * Restituisce tutti i monumenti di una città filtrati per paese.
