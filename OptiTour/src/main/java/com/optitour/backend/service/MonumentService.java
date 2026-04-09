@@ -24,21 +24,36 @@ public class MonumentService implements MonumentMgmtIF {
         this.monumentRepository = monumentRepository;
         this.overpassApiService = overpassApiService;
     }
-    //se city=bergamo restituisce i monumenti di bergamo, potremmo aggiungere un filtro per selezionare solo alcuni monumenti
     public List<Monument> getMonumentsByCity(String city) {
-        List<Monument> cached = monumentRepository.findByCityIgnoreCase(city);
+        if (city == null || city.isEmpty()) return List.of();
+
+        // Normalizza la città (prima lettera maiuscola, resto minuscolo)
+        String normalizedCity = capitalize(city.trim());
+
+        // Cerca i monumenti nel DB in maniera case-insensitive
+        List<Monument> cached = monumentRepository.findByCityIgnoreCase(normalizedCity);
 
         if (!cached.isEmpty()) {
             return cached;
         }
 
-        List<Monument> fetched = overpassApiService.fetchMonumentsByCity(city);
+        // Se non ci sono, chiama il servizio esterno
+        List<Monument> fetched = overpassApiService.fetchMonumentsByCity(normalizedCity);
 
+        // Salva nel DB per usi futuri
         if (!fetched.isEmpty()) {
+            // Assicurati che la città salvata sia normalizzata
+            fetched.forEach(m -> m.setCity(normalizedCity));
             monumentRepository.saveAll(fetched);
         }
 
         return fetched;
+    }
+
+    // Metodo di utilità per capitalizzare
+    private String capitalize(String input) {
+        if (input == null || input.isEmpty()) return input;
+        return input.substring(0, 1).toUpperCase() + input.substring(1).toLowerCase();
     }
 
     public Optional<Monument> getMonumentById(String id) {
