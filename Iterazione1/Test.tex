@@ -86,7 +86,7 @@ I test verificano il corretto recupero dei dati, validando sia l'integrità dell
     \label{fig:test_monument_controller}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.65\textwidth]{Iterazione1/Diagrammi/Test/MonumentServiceTest.png}
     \caption{Test integrazione Overpass API.}
@@ -94,28 +94,34 @@ I test verificano il corretto recupero dei dati, validando sia l'integrità dell
 \end{figure}
 
 \subsubsection*{3. Motore di Ottimizzazione e Viaggi}
-Questa sezione rappresenta il cuore algoritmico del sistema. La \autoref{fig:test_opt_engine} illustra la validazione del TSP, mentre nelle \autoref{fig:test_route_service} e \autoref{fig:test_trip_service} vengono testate l'integrazione con Nominatim e la persistenza finale dei viaggi ottimizzati.
+Questa sezione rappresenta il cuore algoritmico del sistema. La \autoref{fig:test_opt_engine} illustra la validazione del TSP, mentre nelle \autoref{fig:test_route_service} e \autoref{fig:test_trip_service} vengono testate l'integrazione con Nominatim e la persistenza finale dei viaggi ottimizzati. Inoltre, la \autoref{fig:test_trip_controller} mostra il superamento dei test degli endpoint relativi ai viaggi.
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.60\textwidth]{Iterazione1/Diagrammi/Test/OptimizationEngineTest.png}
-    \caption{Validazione approfondita dell'algoritmo di ottimizzazione TSP.}
-    \label{fig:test_opt_engine}
+\centering
+\includegraphics[width=0.65\textwidth]{Iterazione1/Diagrammi/Test/TripServiceTest.png}
+\caption{Test creazione viaggi con Nominatim.}
+\label{fig:test_trip_service}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{Iterazione1/Diagrammi/Test/TripControllerTest.png}
+\caption{Test degli endpoint relativi ai viaggi.}
+\label{fig:test_trip_controller}
+
 \end{figure}
 \begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.65\textwidth]{Iterazione1/Diagrammi/Test/RouteOptimizationServiceTest.png}
-    \caption{Test del servizio di ottimizzazione.}
-    \label{fig:test_route_service}
+\centering
+\includegraphics[width=0.60\textwidth]{Iterazione1/Diagrammi/Test/OptimizationEngineTest.png}
+\caption{Validazione approfondita dell'algoritmo di ottimizzazione TSP.}
+\label{fig:test_opt_engine}
 \end{figure}
-
-
 
 \begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.65\textwidth]{Iterazione1/Diagrammi/Test/TripServiceTest.png}
-    \caption{Test creazione viaggi con Nominatim.}
-    \label{fig:test_trip_service}
+\centering
+\includegraphics[width=0.65\textwidth]{Iterazione1/Diagrammi/Test/RouteOptimizationServiceTest.png}
+\caption{Test del servizio di ottimizzazione.}
+\label{fig:test_route_service}
 \end{figure}
+
 
 
 
