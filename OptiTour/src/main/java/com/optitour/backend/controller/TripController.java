@@ -2,13 +2,20 @@ package com.optitour.backend.controller;
 
 import com.optitour.backend.dto.CreateTripRequest;
 import com.optitour.backend.dto.TripResponse;
+import com.optitour.backend.repository.UserRepository;
+import java.util.Map;
+import java.util.stream.Collectors;
+import com.optitour.backend.model.User;
 import com.optitour.backend.dto.OptimizedTripResponse;
 import com.optitour.backend.service.RouteOptimizationServiceMgmt;
 import com.optitour.backend.model.Trip;
 import com.optitour.backend.model.Trip.TripStatus;
+import com.optitour.backend.model.User;
 import com.optitour.backend.service.TripMgmtIF;
 import com.optitour.backend.service.TripService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,10 +32,13 @@ public class TripController {
 
     private final TripMgmtIF tripService;
     private final RouteOptimizationServiceMgmt routeOptimizationService;
+    private final UserRepository userRepository;
 
-    public TripController(TripMgmtIF tripService, RouteOptimizationServiceMgmt routeOptimizationService) {
+    public TripController(TripMgmtIF tripService, RouteOptimizationServiceMgmt routeOptimizationService,
+                          UserRepository userRepository) {
         this.tripService = tripService;
         this.routeOptimizationService = routeOptimizationService;
+        this.userRepository = userRepository;
     }
 
     //Crea un nuovo viaggio.
@@ -108,6 +118,43 @@ public class TripController {
         OptimizedTripResponse result = routeOptimizationService.optimizeAndSave(tripOpt.get());
         return ResponseEntity.ok(result);
     }
+    
+    @GetMapping("/public")
+    public ResponseEntity<List<TripResponse>> getPublicTrips() {
+        List<Trip> trips = tripService.getPublicTrips();
+
+        // Batch-resolve username per evitare N+1 query
+        // raccoglie tutti gli userId univoci, carica gli utenti in un'unica query
+        List<String> userIds = trips.stream()
+                .map(Trip::getUserId)
+                .distinct()
+                .collect(Collectors.toList());
+        Map<String, String> usernameById = userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, User::getUsername));
+
+        List<TripResponse> response = trips.stream()
+                .map(t -> toResponse(t, usernameById.get(t.getUserId())))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{id}/publish")
+    public ResponseEntity<TripResponse> publishTrip(@PathVariable String id,
+                                         @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
+        Trip trip = tripService.publishTrip(id, user.getId());
+        return ResponseEntity.ok(toResponse(trip));
+    }
+    
+    @PostMapping("/{id}/unpublish")
+    public ResponseEntity<TripResponse> unpublishTrip(@PathVariable String id,
+                                           @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
+        Trip trip = tripService.unpublishTrip(id, user.getId());
+        return ResponseEntity.ok(toResponse(trip));
+    }
 
 
     //Elimina un viaggio tramite ID.
@@ -117,11 +164,17 @@ public class TripController {
         tripService.deleteTrip(id);
         return ResponseEntity.noContent().build();
     }
+    
+    
 
 
-    //Converte un Trip in TripResponse.
-
+    // Converte un Trip in TripResponse (senza autore, per trip privati).
     private TripResponse toResponse(Trip trip) {
+        return toResponse(trip, null);
+    }
+
+    // Converte un Trip in TripResponse con username autore (per il catalogo pubblico).
+    private TripResponse toResponse(Trip trip, String authorUsername) {
         List<TripResponse.TripStageResponse> stageResponses = trip.getStages().stream()
                 .map(s -> new TripResponse.TripStageResponse(
                         s.getMonumentId(),
@@ -132,6 +185,9 @@ public class TripController {
                 trip.getId(), trip.getUserId(), trip.getName(), trip.getCity(),
                 trip.getStartPoint(), trip.getStartLat(), trip.getStartLon(),
                 stageResponses, trip.getStatus().name(),
-                trip.getCreatedAt(), trip.getUpdatedAt());
+                trip.getCreatedAt(), trip.getUpdatedAt(),
+                trip.isPublic(), trip.getPublishedAt(), authorUsername);
     }
+    
+    
 }

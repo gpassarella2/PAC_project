@@ -22,4 +22,10 @@ public interface TripMgmtIF {
     void deleteTrip(String tripId);
 
     void deleteTripsByUser(String userId);
+
+	Trip publishTrip(String id, String id2);
+
+	Trip unpublishTrip(String id, String id2);
+
+	List<Trip> getPublicTrips();
 }

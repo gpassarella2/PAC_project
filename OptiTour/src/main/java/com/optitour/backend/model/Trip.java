@@ -54,7 +54,9 @@ public class Trip {
     // Timestamps
     private Instant createdAt;
     private Instant updatedAt;
-
+    
+    private boolean isPublic = false;
+    private Instant publishedAt; 
     /**
      * Stati possibili di un viaggio.
      */
@@ -206,6 +208,22 @@ public class Trip {
 
 	public void setStartLon(double startLon) {
 		this.startLon = startLon;
+	}
+	
+	public boolean isPublic() {
+		return isPublic;
+	}
+	
+	public void setPublic(boolean isPublic) {
+	    this.isPublic = isPublic;
+	}
+
+	public Instant getPublishedAt() {
+	    return publishedAt;
+	}
+
+	public void setPublishedAt(Instant publishedAt) {
+	    this.publishedAt = publishedAt;
 	}
 
 	@Override

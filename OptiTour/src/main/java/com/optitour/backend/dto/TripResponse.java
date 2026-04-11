@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * DTO di risposta per un viaggio.
  * Contiene tutti i dati del viaggio da restituire al frontend.
@@ -21,6 +23,9 @@ public class TripResponse {
     private String status;
     private Instant createdAt;
     private Instant updatedAt;
+    private boolean isPublic;
+    private Instant publishedAt;
+    private String authorUsername; // popolato solo per i trip pubblici
 
     // tappa
 
@@ -83,7 +88,8 @@ public class TripResponse {
     public TripResponse(String id, String userId, String name, String city,
                         String startPoint, double startLat, double startLon,
                         List<TripStageResponse> stages, String status,
-                        Instant createdAt, Instant updatedAt) {
+                        Instant createdAt, Instant updatedAt, 
+                        boolean isPublic, Instant publishedAt, String authorUsername) {
         this.id = id;
         this.userId = userId;
         this.name = name;
@@ -95,8 +101,21 @@ public class TripResponse {
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.isPublic = isPublic;
+        this.publishedAt = publishedAt;
+        this.authorUsername = authorUsername;
     }
+    
+    public String getAuthorUsername() { return authorUsername; }
+	public void setAuthorUsername(String authorUsername) { this.authorUsername = authorUsername; }
 
+	
+	@JsonProperty("isPublic")
+	public boolean isPublic() { return isPublic; }
+	public void setPublic(boolean isPublic) { this.isPublic = isPublic; }
+	public Instant getPublishedAt() { return publishedAt; }
+	public void setPublishedAt(Instant publishedAt) { this.publishedAt = publishedAt; }
+	
 	public String getId() {
 		return id;
 	}

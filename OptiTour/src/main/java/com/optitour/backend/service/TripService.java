@@ -151,4 +151,44 @@ public class TripService implements TripMgmtIF{
             results[0].getLonAsDouble()
         };
     }
+    
+    // metodo per pubblicare un viaggio
+    public Trip publishTrip(String tripId, String userId) {
+        Trip trip = tripRepository.findById(tripId)
+            .orElseThrow(() -> new RuntimeException("Trip non trovato"));
+
+        // sicurezza: solo il proprietario
+        if (!trip.getUserId().equals(userId)) {
+            throw new RuntimeException("Non autorizzato");
+        }
+
+        // controllo: deve avere tappe
+        if (trip.getStages() == null || trip.getStages().isEmpty()) {
+            throw new RuntimeException("Trip senza tappe");
+        }
+
+        trip.setPublic(true);
+        trip.setPublishedAt(Instant.now());
+
+        return tripRepository.save(trip);
+    }
+    
+    public Trip unpublishTrip(String tripId, String userId) {
+        Trip trip = tripRepository.findById(tripId)
+            .orElseThrow(() -> new RuntimeException("Trip non trovato"));
+
+        if (!trip.getUserId().equals(userId)) {
+            throw new RuntimeException("Non autorizzato");
+        }
+
+        trip.setPublic(false);
+        trip.setPublishedAt(null);
+
+        return tripRepository.save(trip);
+    }
+    
+    // restituisce tutti i viaggi pubblici
+    public List<Trip> getPublicTrips() {
+        return tripRepository.findByIsPublicTrueOrderByPublishedAtDesc();
+    }
 }
