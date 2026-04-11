@@ -7,6 +7,7 @@ import HomePage from './pages/HomePage';
 import MonumentsPage from './pages/MonumentsPage';
 import ItineraryPage from './pages/ItineraryPage';
 import MyTripsPage from './pages/MyTripsPage';
+import ExplorePage from './pages/ExplorePage';
 
 
 
@@ -60,6 +61,16 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <MyTripsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Catalogo dei viaggi pubblici, protetto */}
+          <Route
+            path="/explore"
+            element={
+              <ProtectedRoute>
+                <ExplorePage />
               </ProtectedRoute>
             }
           />

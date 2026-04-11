@@ -33,6 +33,11 @@ export default function Header() {
                 {user.username}
               </span>
 
+              {/* Link al catalogo pubblico */}
+              <Link to="/explore" id="nav-explore" className="btn btn-ghost btn-sm">
+                Esplora
+              </Link>
+
               {/* Link alla pagina dei viaggi salvati */}
               <Link to="/my-trips" id="nav-my-trips" className="btn btn-ghost btn-sm">
                 I miei viaggi

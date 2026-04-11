@@ -88,4 +88,16 @@ export const optimizeTrip = (id) =>
 export const getMonumentsByCity = (city) =>
   api.get('/api/monuments', { params: { city } });
 
+// POST /api/trips/{id}/publish
+export const publishTrip = (id) =>
+  api.post(`/api/trips/${id}/publish`);
+ 
+// POST /api/trips/{id}/unpublish
+export const unpublishTrip = (id) =>
+  api.post(`/api/trips/${id}/unpublish`);
+ 
+// GET /api/trips/public
+export const getPublicTrips = () =>
+  api.get('/api/trips/public');
+
 export default api;

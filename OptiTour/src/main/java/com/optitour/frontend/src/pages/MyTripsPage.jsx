@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // per navigare tra le pagine
 import { useAuth } from '../context/AuthContext'; // per ottenere l'utente loggato
 import Header from '../components/Header';
-import { getTripsByUser, deleteTrip } from '../services/api'; // chiamate al backend
+import { getTripsByUser, deleteTrip, publishTrip, unpublishTrip } from '../services/api'; // chiamate al backend
 
 // ─── Funzioni di utilità ───────────────────────────────────────────────
 
@@ -86,6 +86,9 @@ export default function MyTripsPage() {
   // Viaggio selezionato per eliminazione — null se finestra è chiusa, oggetto trip se è aperta
   const [deleteModal, setDeleteModal] = useState(null);
 
+  // Messaggio di errore per publish/unpublish
+  const [publishError, setPublishError] = useState('');
+
   // ─── Caricamento dati all'apertura della pagina ──────────────────────
   // useEffect con [user] significa: esegui quando il componente appare
   // e ogni volta che cambia l'oggetto user
@@ -121,6 +124,25 @@ export default function MyTripsPage() {
       setTrips(prev => prev.filter(t => t.id !== deleteModal.id));
     } catch { /* se fallisce ignora silenziosamente — il viaggio rimane in lista */ }
     setDeleteModal(null); // chiude il modal in ogni caso
+  };
+
+  // Pubblica o annulla pubblicazione di un viaggio
+  const handlePublish = async (trip) => {
+    setPublishError('');
+    try {
+      const res = trip.isPublic
+        ? await unpublishTrip(trip.id)
+        : await publishTrip(trip.id);
+      // aggiorna la card localmente senza ricaricare tutto
+      setTrips(prev => prev.map(t => t.id === trip.id
+        ? { ...t, isPublic: res.data.isPublic, publishedAt: res.data.publishedAt }
+        : t
+      ));
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Errore durante la pubblicazione';
+      setPublishError(msg);
+      setTimeout(() => setPublishError(''), 4000);
+    }
   };
 
   // Raccoglie tutti gli stati unici presenti nei viaggi per popolare il filtro a tendina.
@@ -177,6 +199,7 @@ export default function MyTripsPage() {
 
         {/* Messaggio di errore — visibile solo se error è non vuoto */}
         {error && <div className="error-msg">{error}</div>}
+        {publishError && <div className="error-msg">{publishError}</div>}
 
         {/* Stato vuoto — mostrato quando il caricamento è finito ma non ci sono risultati */}
         {!loading && !error && filtered.length === 0 && (
@@ -227,17 +250,36 @@ export default function MyTripsPage() {
                   )}
                 </div>
 
-                {/* Footer card: data creazione + pulsante elimina */}
+                {/* Indicatore pubblicazione */}
+                {trip.isPublic && (
+                  <div style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 500 }}>
+                    🌐 Pubblicato nel catalogo
+                  </div>
+                )}
+
+                {/* Footer card: data creazione + pulsanti */}
                 <div className="trip-card-footer">
                   <span className="trip-card-date">{formatDate(trip.createdAt)}</span>
-                  <button
-                    id={`btn-delete-${trip.id}`}
-                    className="btn btn-danger btn-sm"
-                    // stopPropagation evita che il click sul pulsante attivi anche il click della card
-                    onClick={e => { e.stopPropagation(); setDeleteModal(trip); }}
-                  >
-                    Elimina
-                  </button>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    {/* Pubblica disponibile solo per trip ottimizzati o completati */}
+                    {trip.status !== 'DRAFT' && (
+                      <button
+                        id={`btn-publish-${trip.id}`}
+                        className={`btn btn-sm ${trip.isPublic ? 'btn-secondary' : 'btn-ghost'}`}
+                        title={trip.isPublic ? 'Rimuovi dal catalogo pubblico' : 'Pubblica nel catalogo pubblico'}
+                        onClick={e => { e.stopPropagation(); handlePublish(trip); }}
+                      >
+                        {trip.isPublic ? 'Annulla' : 'Pubblica'}
+                      </button>
+                    )}
+                    <button
+                      id={`btn-delete-${trip.id}`}
+                      className="btn btn-danger btn-sm"
+                      onClick={e => { e.stopPropagation(); setDeleteModal(trip); }}
+                    >
+                      Elimina
+                    </button>
+                  </div>
                 </div>
               </div>
             );
