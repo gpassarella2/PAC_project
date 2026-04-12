@@ -8,6 +8,7 @@ import MonumentsPage from './pages/MonumentsPage';
 import ItineraryPage from './pages/ItineraryPage';
 import MyTripsPage from './pages/MyTripsPage';
 import ExplorePage from './pages/ExplorePage';
+import SurprisePage from './pages/SurprisePage';
 
 
 
@@ -71,6 +72,16 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <ExplorePage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Pagina viaggio a sorpresa, protetta */}
+          <Route
+            path="/surprise"
+            element={
+              <ProtectedRoute>
+                <SurprisePage />
               </ProtectedRoute>
             }
           />

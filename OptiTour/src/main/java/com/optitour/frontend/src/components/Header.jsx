@@ -38,6 +38,11 @@ export default function Header() {
                 Esplora
               </Link>
 
+              {/* Link viaggio a sorpresa */}
+              <Link to="/surprise" id="nav-surprise" className="btn btn-ghost btn-sm">
+                Sorpresa
+              </Link>
+
               {/* Link alla pagina dei viaggi salvati */}
               <Link to="/my-trips" id="nav-my-trips" className="btn btn-ghost btn-sm">
                 I miei viaggi

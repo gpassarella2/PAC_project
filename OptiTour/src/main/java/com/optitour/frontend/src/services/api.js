@@ -88,16 +88,26 @@ export const optimizeTrip = (id) =>
 export const getMonumentsByCity = (city) =>
   api.get('/api/monuments', { params: { city } });
 
+
 // POST /api/trips/{id}/publish
 export const publishTrip = (id) =>
   api.post(`/api/trips/${id}/publish`);
- 
+
 // POST /api/trips/{id}/unpublish
 export const unpublishTrip = (id) =>
   api.post(`/api/trips/${id}/unpublish`);
- 
+
 // GET /api/trips/public
 export const getPublicTrips = () =>
   api.get('/api/trips/public');
+
+
+// GET /api/trips/random/catalog — viaggio casuale dal catalogo pubblico
+export const getRandomCatalogTrip = (city) =>
+  api.get('/api/trips/random/catalog', { params: city ? { city } : {} });
+
+// POST /api/trips/random/generate?city=...&availableMinutes=...
+export const generateRandomTrip = (city, availableMinutes) =>
+  api.post('/api/trips/random/generate', null, { params: { city, availableMinutes } });
 
 export default api;

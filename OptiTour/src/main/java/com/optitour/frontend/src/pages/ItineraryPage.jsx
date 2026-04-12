@@ -185,6 +185,10 @@ export default function ItineraryPage() {
         status: 'SAVED',                                          // Segna il viaggio come ottimizzato
         totalDistanceMeters: optimized.totalDistanceMeters,       // Distanza totale del percorso
         totalDurationSeconds: optimized.totalDurationSeconds,     // Durata totale del percorso
+        stages: (optimized.stages || []).map(s => ({
+        monumentId: s.monumentId,
+        visitDurationMinutes: s.visitDurationMinutes,
+        })) // Aggiorna le tappe con i dati ottimizzati
       }));
 
       // Sostituisce le tappe con quelle ottimizzate (già complete di tutti i campi)
@@ -295,11 +299,21 @@ export default function ItineraryPage() {
               </div>
             )}
 
-            {/* Durata totale del percorso a piedi/in auto (visibile solo dopo l'ottimizzazione) */}
+            {/* Durata spostamenti (visibile solo dopo l'ottimizzazione) */}
             {trip.totalDurationSeconds != null && (
               <div className="itin-stat">
-                <span className="itin-stat-label">Percorso</span>
-                <span className="itin-stat-val">{formatDuration(trip.totalDurationSeconds)}</span>
+                <span className="itin-stat-label">Spostamenti</span>
+                <span className="itin-stat-val">{formatDuration(trip.totalDurationSeconds-totalVisitMinutes*60)}</span>
+              </div>
+            )}
+
+            {/* Durata totale = visita + spostamenti (visibile solo dopo l'ottimizzazione) */}
+            {trip.totalDurationSeconds != null && (
+              <div className="itin-stat" style={{ gridColumn: '1 / -1', background: 'var(--accent-soft)', borderColor: '#bfdbfe' }}>
+                <span className="itin-stat-label" style={{ color: 'var(--accent)' }}>Durata totale</span>
+                <span className="itin-stat-val" style={{ color: 'var(--accent)' }}>
+                  {formatDuration(trip.totalDurationSeconds)}
+                </span>
               </div>
             )}
           </div>
