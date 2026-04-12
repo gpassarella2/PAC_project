@@ -187,4 +187,119 @@ class TripControllerTest {
                 "Il trip più recente deve essere primo nella lista");
         assertEquals("Primo", body[1].getName());
     }
+    
+    private Trip savePublicTrip(String userId, String name, String city) {
+        Trip trip = new Trip();
+        trip.setUserId(userId);
+        trip.setName(name);
+        trip.setCity(city);
+        trip.setStartPoint(city + ", Italy");
+        trip.setStages(List.of());
+        trip.setStatus(Trip.TripStatus.SAVED);
+        trip.setPublic(true);
+        trip.setPublishedAt(java.time.Instant.now());
+        trip.setCreatedAt(java.time.Instant.now());
+        trip.setUpdatedAt(java.time.Instant.now());
+        return tripRepository.save(trip);
+    }
+    
+    @Test
+    void getRandomFromCatalog_ShouldReturn200WhenPublicTripExists() {
+        savePublicTrip("u-cat-1", "Tour Navigli", "Milano");
+     
+        ResponseEntity<TripResponse> response =
+                restTemplate.getForEntity("/api/trips/random/catalog", TripResponse.class);
+     
+        assertEquals(HttpStatus.OK, response.getStatusCode(),
+                "Deve restituire 200 OK se esiste almeno un trip pubblico");
+        assertNotNull(response.getBody(), "Il body non deve essere nullo");
+        assertTrue(response.getBody().isPublic(), "Il trip restituito deve essere pubblico");
+    }
+     
+    @Test
+    void getRandomFromCatalog_ShouldReturn404WhenCatalogIsEmpty() {
+        // nessun trip nel DB
+        ResponseEntity<TripResponse> response =
+                restTemplate.getForEntity("/api/trips/random/catalog", TripResponse.class);
+     
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode(),
+                "Deve restituire 404 se il catalogo è vuoto");
+    }
+     
+    @Test
+    void getRandomFromCatalog_ShouldReturnAnyPublicTripWhenNoCityFilter() {
+        savePublicTrip("u-cat-2", "Giro Milano", "Milano");
+        savePublicTrip("u-cat-3", "Giro Roma",   "Roma");
+     
+        ResponseEntity<TripResponse> response =
+                restTemplate.getForEntity("/api/trips/random/catalog", TripResponse.class);
+     
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        // senza filtro deve restituire uno qualsiasi dei due
+        assertNotNull(response.getBody().getName());
+    }
+    
+    @Test
+    void getRandomFromCatalog_WithCityFilter_ShouldReturn200ForMatchingCity() {
+        savePublicTrip("u-cat-4", "Tour Duomo", "Milano");
+        savePublicTrip("u-cat-5", "Tour Colosseo", "Roma");
+     
+        ResponseEntity<TripResponse> response =
+                restTemplate.getForEntity("/api/trips/random/catalog?city=Milano", TripResponse.class);
+     
+        assertEquals(HttpStatus.OK, response.getStatusCode(),
+                "Deve restituire 200 OK se esiste un trip pubblico per la città richiesta");
+        assertEquals("Milano", response.getBody().getCity(),
+                "Il trip restituito deve essere della città filtrata");
+    }
+     
+    @Test
+    void getRandomFromCatalog_WithCityFilter_ShouldReturn404WhenNoCityMatch() {
+        // solo trip per Milano, nessuno per Firenze
+        savePublicTrip("u-cat-6", "Giro Brera", "Milano");
+     
+        ResponseEntity<TripResponse> response =
+                restTemplate.getForEntity("/api/trips/random/catalog?city=Firenze", TripResponse.class);
+     
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode(),
+                "Deve restituire 404 se non ci sono trip pubblici per la città richiesta");
+    }
+     
+    @Test
+    void getRandomFromCatalog_WithCityFilter_ShouldBeCaseInsensitive() {
+        savePublicTrip("u-cat-7", "Passeggiata Navigli", "Milano");
+     
+        // ricerca con tutto minuscolo
+        ResponseEntity<TripResponse> response =
+                restTemplate.getForEntity("/api/trips/random/catalog?city=milano", TripResponse.class);
+     
+        assertEquals(HttpStatus.OK, response.getStatusCode(),
+                "Il filtro città deve essere case-insensitive");
+        assertEquals("Milano", response.getBody().getCity());
+    }
+     
+    @Test
+    void getRandomFromCatalog_WithCityFilter_ShouldNotReturnPrivateTrips() {
+        // trip privato per Milano
+        Trip privateTrip = new Trip();
+        privateTrip.setUserId("u-cat-8");
+        privateTrip.setName("Privato Milano");
+        privateTrip.setCity("Milano");
+        privateTrip.setStartPoint("Milano, Italy");
+        privateTrip.setStages(List.of());
+        privateTrip.setStatus(Trip.TripStatus.DRAFT);
+        privateTrip.setPublic(false);
+        privateTrip.setCreatedAt(java.time.Instant.now());
+        privateTrip.setUpdatedAt(java.time.Instant.now());
+        tripRepository.save(privateTrip);
+     
+        ResponseEntity<TripResponse> response =
+                restTemplate.getForEntity("/api/trips/random/catalog?city=Milano", TripResponse.class);
+     
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode(),
+                "Non deve restituire trip privati anche se la città corrisponde");
+    }
+     
+    
+    
 }
