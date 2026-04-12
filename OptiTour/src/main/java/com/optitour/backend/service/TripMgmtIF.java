@@ -1,6 +1,7 @@
 package com.optitour.backend.service;
 
 import com.optitour.backend.dto.CreateTripRequest;
+import com.optitour.backend.dto.UpdateTripRequest;
 import com.optitour.backend.model.Trip;
 import com.optitour.backend.model.Trip.TripStatus;
 
@@ -22,4 +23,6 @@ public interface TripMgmtIF {
     void deleteTrip(String tripId);
 
     void deleteTripsByUser(String userId);
+    
+    Trip updateTrip(String tripId, UpdateTripRequest request);
 }

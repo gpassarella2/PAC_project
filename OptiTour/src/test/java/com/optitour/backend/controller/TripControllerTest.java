@@ -90,4 +90,61 @@ class TripControllerTest {
             // il test non fallisce, ma viene ignorato
         }
     }
+    
+    @Test
+    void updateTrip_ShouldReturn200AndUpdatedTrip() {
+
+        //trip da aggiornare
+        CreateTripRequest.TripStageRequest stage = new CreateTripRequest.TripStageRequest();
+        stage.setMonumentId(validMonumentId);
+        stage.setVisitDurationMinutes(120);
+
+        CreateTripRequest createRequest = new CreateTripRequest();
+        createRequest.setName("Trip originale");
+        createRequest.setCity("Milano");
+        createRequest.setStartPoint("Milano, Italy");
+        createRequest.setStages(List.of(stage));
+
+        String userId = "user123";
+        String baseUrl = "/api/trips?userId=" + userId;
+
+        ResponseEntity<TripResponse> createResponse =
+                restTemplate.postForEntity(baseUrl, createRequest, TripResponse.class);
+
+        if (createResponse.getStatusCode() != HttpStatus.OK || createResponse.getBody() == null) {
+            System.out.println("Skip test: creazione trip fallita o servizio esterno non disponibile");
+            return;
+        }
+
+        String tripId = createResponse.getBody().getId();
+
+        //richiesta di modifica di tale trip
+        CreateTripRequest.TripStageRequest newStage = new CreateTripRequest.TripStageRequest();
+        newStage.setMonumentId(validMonumentId);
+        newStage.setVisitDurationMinutes(60);
+
+        com.optitour.backend.dto.UpdateTripRequest updateRequest =
+                new com.optitour.backend.dto.UpdateTripRequest();
+
+        updateRequest.setName("Trip aggiornato");
+        updateRequest.setCity("Roma");
+        updateRequest.setStartPoint("Roma, Italy");
+        updateRequest.setStages(List.of(newStage));
+
+        //PUT
+        String url = "/api/trips/" + tripId;
+
+        ResponseEntity<TripResponse> response =
+                restTemplate.exchange(url, org.springframework.http.HttpMethod.PUT,
+                        new org.springframework.http.HttpEntity<>(updateRequest),
+                        TripResponse.class);
+
+        //Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        TripResponse body = response.getBody();
+        assertNotNull(body);
+        assertEquals("Trip aggiornato", body.getName());
+        assertEquals("Roma", body.getCity());
+    }
 }

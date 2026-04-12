@@ -7,7 +7,7 @@ import HomePage from './pages/HomePage';
 import MonumentsPage from './pages/MonumentsPage';
 import ItineraryPage from './pages/ItineraryPage';
 import MyTripsPage from './pages/MyTripsPage';
-
+import EditTripPage from './pages/EditTripPage';
 
 
 // Componente che serve a definire il routing e contesto globale(AuthContext)
@@ -63,7 +63,16 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-
+          {/*Pagina per la modifica di un viaggio */}
+          <Route
+            path="/edit-trip/:id"
+            element={
+              <ProtectedRoute>
+                <EditTripPage />
+              </ProtectedRoute>
+            }
+            
+          />          
           {/* Qualsiasi route non valida reindirizza alla home */}
           <Route path="*" element={<Navigate to="/" replace />} />
 

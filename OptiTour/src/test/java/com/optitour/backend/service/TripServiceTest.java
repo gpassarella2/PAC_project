@@ -11,9 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.optitour.backend.dto.CreateTripRequest;
+import com.optitour.backend.dto.UpdateTripRequest;
 import com.optitour.backend.model.Monument;
 import com.optitour.backend.model.Trip;
 import com.optitour.backend.model.Trip.TripStatus;
+import com.optitour.backend.model.TripStage;
 import com.optitour.backend.repository.MonumentRepository;
 import com.optitour.backend.repository.TripRepository;
 
@@ -33,6 +35,7 @@ class TripServiceTest {
 
     @BeforeEach
     void setUp() {
+    	
         //monumento su cui eseguire test
         testMonument = Monument.builder()
                 .name("Monumento di Test")
@@ -78,6 +81,77 @@ class TripServiceTest {
         // verifica della tappa
         assertEquals(1, savedTrip.getStages().size());
         assertEquals(testMonument.getId(), savedTrip.getStages().get(0).getMonumentId());
+    }
+    
+    //test metodo di aggiornamento viaggio
+    @Test
+    void updateTrip_ShouldModifyDuration_AddAndRemoveStages() {
+
+        //nuovo monumento
+        final Monument monument2 = monumentRepository.save(
+                Monument.builder()
+                        .name("Duomo")
+                        .city("Milano")
+                        .build()
+        );
+
+        // trip di interesse
+        CreateTripRequest.TripStageRequest stage1 = new CreateTripRequest.TripStageRequest();
+        stage1.setMonumentId(testMonument.getId().toString());
+        stage1.setVisitDurationMinutes(60);
+
+        CreateTripRequest.TripStageRequest stage2 = new CreateTripRequest.TripStageRequest();
+        stage2.setMonumentId(monument2.getId().toString());
+        stage2.setVisitDurationMinutes(30);
+
+        CreateTripRequest create = new CreateTripRequest();
+        create.setName("Trip");
+        create.setCity("Milano");
+        create.setStartPoint("Milano, Italy");
+        create.setStages(List.of(stage1, stage2));
+
+        Trip trip = tripService.createTrip(create, "user1");
+
+
+        // modifica durata
+        CreateTripRequest.TripStageRequest updatedStage1 = new CreateTripRequest.TripStageRequest();
+        updatedStage1.setMonumentId(testMonument.getId().toString());
+        updatedStage1.setVisitDurationMinutes(120);
+
+        // nuovo monumento 
+        final Monument monument3 = monumentRepository.save(
+                Monument.builder()
+                        .name("Castello Sforzesco")
+                        .city("Milano")
+                        .build()
+        );
+
+        CreateTripRequest.TripStageRequest newStage = new CreateTripRequest.TripStageRequest();
+        newStage.setMonumentId(monument3.getId().toString());
+        newStage.setVisitDurationMinutes(45);
+
+        UpdateTripRequest update = new UpdateTripRequest();
+        update.setStages(List.of(updatedStage1, newStage));
+
+        Trip updated = tripService.updateTrip(trip.getId(), update);
+
+        assertEquals(2, updated.getStages().size());
+
+        // durata della tappa aggiornata
+        TripStage s1 = updated.getStages().stream()
+                .filter(s -> s.getMonumentId().equals(testMonument.getId()))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(120, s1.getVisitDurationMinutes());
+
+        // nuova tappa presente
+        assertTrue(updated.getStages().stream()
+                .anyMatch(s -> s.getMonumentId().equals(monument3.getId())));
+
+        // tappa rimossa
+        assertTrue(updated.getStages().stream()
+                .noneMatch(s -> s.getMonumentId().equals(monument2.getId())));
     }
 
 }

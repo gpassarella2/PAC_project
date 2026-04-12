@@ -2,6 +2,7 @@ package com.optitour.backend.controller;
 
 import com.optitour.backend.dto.CreateTripRequest;
 import com.optitour.backend.dto.TripResponse;
+import com.optitour.backend.dto.UpdateTripRequest;
 import com.optitour.backend.dto.OptimizedTripResponse;
 import com.optitour.backend.service.RouteOptimizationServiceMgmt;
 import com.optitour.backend.model.Trip;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -108,7 +110,20 @@ public class TripController {
         OptimizedTripResponse result = routeOptimizationService.optimizeAndSave(tripOpt.get());
         return ResponseEntity.ok(result);
     }
-
+    
+    /** PUT /api/trips/{id} — aggiorna nome, città, partenza e tappe */
+    @PutMapping("/{id}")
+    public ResponseEntity<TripResponse> updateTrip(@PathVariable String id,
+                                                   @RequestBody UpdateTripRequest request) {
+        try {
+            Trip trip = tripService.updateTrip(id, request);
+            return ResponseEntity.ok(toResponse(trip));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 
     //Elimina un viaggio tramite ID.
      

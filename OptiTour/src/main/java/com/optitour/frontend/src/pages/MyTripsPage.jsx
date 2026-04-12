@@ -227,19 +227,33 @@ export default function MyTripsPage() {
                   )}
                 </div>
 
-                {/* Footer card: data creazione + pulsante elimina */}
-                <div className="trip-card-footer">
-                  <span className="trip-card-date">{formatDate(trip.createdAt)}</span>
-                  <button
-                    id={`btn-delete-${trip.id}`}
-                    className="btn btn-danger btn-sm"
-                    // stopPropagation evita che il click sul pulsante attivi anche il click della card
-                    onClick={e => { e.stopPropagation(); setDeleteModal(trip); }}
-                  >
-                    Elimina
-                  </button>
-                </div>
-              </div>
+				{/* Footer card: data creazione + pulsanti elimina/modifica */}
+				<div className="trip-card-footer">
+				  <span className="trip-card-date">{formatDate(trip.createdAt)}</span>
+				  <div style={{ display: 'flex', gap: '6px' }}>
+				    {/* Pulsante Modifica: naviga alla pagina di modifica viaggio */}
+				    <button
+						id={`btn-edit-${trip.id}`}
+						className="btn btn-edit btn-sm"
+						onClick={e => {
+						  e.stopPropagation(); 
+						  navigate(`/edit-trip/${trip.id}`);
+						}}
+				    >
+				      Modifica
+				    </button>
+
+				    {/* Pulsante Elimina */}
+				    <button
+				      id={`btn-delete-${trip.id}`}
+				      className="btn btn-danger btn-sm"
+				      onClick={e => { e.stopPropagation(); setDeleteModal(trip); }}
+				    >
+				      Elimina
+				    </button>
+				  </div>
+				</div>
+				</div>
             );
           })}
         </div>
@@ -295,6 +309,19 @@ export default function MyTripsPage() {
           padding-top: 10px; border-top: 1px solid var(--border);
         }
         .trip-card-date { font-size: 0.75rem; color: var(--text-dim); }
+		/* Pulsante Modifica stile*/
+		.btn-edit {
+		  background-color: #d4f4d4;  /* verde chiaro */
+		  color: #1b7a1b;             /* testo verde scuro */
+		  border: 1px solid #1b7a1b;  /* bordo verde scuro */
+		  transition: all 0.2s;
+		}
+
+		.btn-edit:hover {
+		  background-color: #22c55e;  /* verde pieno (tipo success) */
+		  color: #ffffff;             /* testo bianco */
+		  border-color: #22c55e;
+		}
       `}</style>
     </div>
   );
