@@ -157,6 +157,37 @@ public class TripController {
     }
 
 
+    /**
+     * GET /api/trips/random/catalog
+     * Restituisce un viaggio pubblico scelto casualmente dal catalogo.
+     * La selezione casuale è delegata a TripService.
+     */
+    @GetMapping("/random/catalog")
+    public ResponseEntity<TripResponse> getRandomFromCatalog(
+            @RequestParam(required = false) String city) {
+        try {
+            Trip random = tripService.getRandomPublicTrip(city);
+            return ResponseEntity.ok(toResponse(random));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
+     * POST /api/trips/random/generate?city=...&availableMinutes=...
+     * Crea un viaggio con monumenti scelti casualmente per la città e il tempo indicati.
+     */
+    @PostMapping("/random/generate")
+    public ResponseEntity<TripResponse> generateRandomTrip(
+            @RequestParam String city,
+            @RequestParam int availableMinutes,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
+        Trip trip = tripService.generateRandomTrip(city, availableMinutes, user.getId());
+        return ResponseEntity.ok(toResponse(trip));
+    }
+
     //Elimina un viaggio tramite ID.
      
     @DeleteMapping("/{id}")
@@ -186,7 +217,8 @@ public class TripController {
                 trip.getStartPoint(), trip.getStartLat(), trip.getStartLon(),
                 stageResponses, trip.getStatus().name(),
                 trip.getCreatedAt(), trip.getUpdatedAt(),
-                trip.isPublic(), trip.getPublishedAt(), authorUsername);
+                trip.isPublic(), trip.getPublishedAt(), authorUsername,
+                trip.getTotalDistanceMeters(), trip.getTotalDurationSeconds());
     }
     
     

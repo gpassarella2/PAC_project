@@ -9,6 +9,8 @@ import com.optitour.backend.model.TripStage;
 import com.optitour.backend.repository.MonumentRepository;
 import com.optitour.backend.repository.TripRepository;
 
+
+
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -17,6 +19,8 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.stream.Collectors;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,11 +40,14 @@ public class TripService implements TripMgmtIF{
     private final TripRepository tripRepository;
     private final MonumentRepository monumentRepository;
     private final RestClient restClient;
+    private final MonumentService monumentService;
 
     public TripService(TripRepository tripRepository,
-                       MonumentRepository monumentRepository) {
+                       MonumentRepository monumentRepository,
+                       MonumentService monumentService) {
         this.tripRepository = tripRepository;
         this.monumentRepository = monumentRepository;
+        this.monumentService = monumentService;
         this.restClient = RestClient.create();
     }
 
@@ -126,6 +133,153 @@ public class TripService implements TripMgmtIF{
     }
 
     /**
+     * Genera un viaggio casuale per la città specificata tenendo conto
+     * sia dei tempi di visita che degli spostamenti stimati tra i monumenti.
+     *
+     * Algoritmo greedy con stima degli spostamenti:
+     *  1. Geocodifica il punto di partenza (centro città).
+     *  2. Mescola la lista dei monumenti in modo casuale.
+     *  3. Parte dalla posizione di partenza e, a ogni passo,
+     *     cerca il prossimo monumento non ancora selezionato che rientra
+     *     nel budget residuo (tempo di visita + spostamento stimato via haversine).
+     *  4. Aggiorna la posizione corrente dopo ogni monumento aggiunto.
+     *
+     * La stima dello spostamento usa la stessa velocità a piedi dell'engine:
+     * 5 km/h → 720 secondi per km.
+     */
+    public Trip generateRandomTrip(String city, int availableMinutes, String userId) {
+    	List<Monument> allMonuments = new ArrayList<>(monumentService.getMonumentsByCity(city));
+    	if (allMonuments.isEmpty()) {
+    	    throw new RuntimeException("Nessun monumento trovato per la città: " + city);
+    	}
+
+        // Punto di partenza: geocodifica il centro città
+        String startPoint = city;
+        double[] coords = geocode(startPoint);
+        double startLat = coords[0];
+        double startLon = coords[1];
+
+        // Tieni solo i monumenti con coordinate valide e nel raggio della città.
+        // I monumenti a (0,0) non sono usabili per routing né per la mappa.
+        // Il centro città geocodificato è il riferimento: tutto ciò che è
+        // entro 15 km appartiene all'area urbana.
+        if (startLat == 0.0 && startLon == 0.0) {
+            throw new RuntimeException(
+                "Impossibile trovare le coordinate di " + city + ". Verifica il nome della città.");
+        }
+
+        final double MAX_RADIUS_KM = 10.0;
+        final double refLat = startLat;
+        final double refLon = startLon;
+        
+        System.out.println("Monumenti totali: " + allMonuments.size());
+
+        for (Monument m : allMonuments) {
+            System.out.println(m.getName() + " -> " + m.getLat() + ", " + m.getLon());
+        }
+        
+        allMonuments = allMonuments.stream()
+                .filter(m -> m.getLat() != 0.0 && m.getLon() != 0.0)
+                .filter(m -> haversineKm(refLat, refLon, m.getLat(), m.getLon()) <= MAX_RADIUS_KM)
+                .collect(Collectors.toList());
+
+        System.out.println("Monumenti dopo filtro: " + allMonuments.size());
+        
+        if (allMonuments.isEmpty()) {
+            throw new RuntimeException(
+                "Nessun monumento trovato entro " + (int) MAX_RADIUS_KM + " km da " + city + ".");
+        }
+
+        // Mescola casualmente per introdurre varietà tra le esecuzioni
+        Collections.shuffle(allMonuments);
+
+        List<TripStage> stages = new ArrayList<>();
+        List<Monument> remaining = new ArrayList<>(allMonuments);
+        long budgetSeconds = availableMinutes * 60L;
+        long usedSeconds = 0;
+        double currentLat = startLat;
+        double currentLon = startLon;
+
+        while (!remaining.isEmpty() && stages.size() < 10) {
+            // Cerca il primo monumento nell'ordine casuale che rientra nel budget
+            Monument chosen = null;
+            for (Monument candidate : remaining) {
+                int visitMin = estimateVisitMinutes(candidate);
+                long travelToSec = estimateTravelSeconds(currentLat, currentLon,
+                                       candidate.getLat(), candidate.getLon());
+                long returnSec = estimateTravelSeconds(candidate.getLat(), candidate.getLon(),
+                                       startLat, startLon);
+                long needed = travelToSec + visitMin * 60L + returnSec;
+
+                if (usedSeconds + needed <= budgetSeconds) {
+                    chosen = candidate;
+                    usedSeconds += travelToSec + visitMin * 60L; // il ritorno NON lo consumi ancora
+                    break;
+                }
+            }
+            if (chosen == null) break; // nessun monumento rimanente entra nel budget
+
+            int visitMin = estimateVisitMinutes(chosen);
+            stages.add(TripStage.builder()
+                    .monumentId(chosen.getId())
+                    .visitDurationMinutes(visitMin)
+                    .build());
+            currentLat = chosen.getLat();
+            currentLon = chosen.getLon();
+            remaining.remove(chosen);
+        }
+        
+        if (stages.isEmpty()) {
+            throw new RuntimeException(
+                "Tempo disponibile insufficiente per raggiungere almeno un monumento.");
+        }
+
+        Trip trip = Trip.builder()
+                .userId(userId)
+                .name("Sorpresa a " + city)
+                .city(city)
+                .startPoint(startPoint)
+                .startLat(startLat)
+                .startLon(startLon)
+                .stages(stages)
+                .status(Trip.TripStatus.DRAFT)
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+
+        return tripRepository.save(trip);
+    }
+
+    /**
+     * Calcola la distanza in km tra due coordinate (haversine).
+     * Usata per filtrare i monumenti fuori città prima della selezione greedy.
+     */
+    private double haversineKm(double lat1, double lon1, double lat2, double lon2) {
+        final double R = 6371.0; // raggio Terra in km
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    /**
+     * Stima il tempo di percorrenza a piedi tra due coordinate via haversine.
+     * Velocità: 5 km/h = 720 s/km (stessa costante usata da OptimizationEngine).
+     */
+    private long estimateTravelSeconds(double lat1, double lon1, double lat2, double lon2) {
+        final double R = 6_371_000; // raggio Terra in metri
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double distanceMeters = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return Math.round(distanceMeters / 1000.0 * 720); // 720 s/km
+    }
+
+    /**
      * Converte un indirizzo in coordinate lat/lon tramite Nominatim.
      * RestClient deserializza automaticamente il JSON in NominatimResponse[].
      * Chiamato una sola volta alla creazione del viaggio.
@@ -150,6 +304,26 @@ public class TripService implements TripMgmtIF{
             results[0].getLatAsDouble(),
             results[0].getLonAsDouble()
         };
+    }
+    
+    // restituisce tutti i viaggi pubblici
+    public List<Trip> getPublicTrips() {
+        return tripRepository.findByIsPublicTrueOrderByPublishedAtDesc();
+    }
+
+    // restituisce un viaggio pubblico casuale
+    public Trip getRandomPublicTrip(String city) {
+        List<Trip> publicTrips = (city == null || city.isBlank())
+            ? tripRepository.findByIsPublicTrueOrderByPublishedAtDesc()
+            : tripRepository.findByIsPublicTrueAndCityIgnoreCaseOrderByPublishedAtDesc(city);
+
+        if (publicTrips.isEmpty()) {
+            String msg = (city == null || city.isBlank())
+                ? "Nessun viaggio pubblico disponibile nel catalogo."
+                : "Nessun viaggio pubblico disponibile per la città: " + city;
+            throw new RuntimeException(msg);
+        }
+        return publicTrips.get((int)(Math.random() * publicTrips.size()));
     }
     
     // metodo per pubblicare un viaggio
@@ -187,8 +361,16 @@ public class TripService implements TripMgmtIF{
         return tripRepository.save(trip);
     }
     
-    // restituisce tutti i viaggi pubblici
-    public List<Trip> getPublicTrips() {
-        return tripRepository.findByIsPublicTrueOrderByPublishedAtDesc();
+    private int estimateVisitMinutes(Monument m) {
+        if (m.getEstimatedVisitMinutes() != null) return m.getEstimatedVisitMinutes();
+        if (m.getType() == null) return 30;
+        return switch (m.getType()) {
+            case "museum"     -> 90;
+            case "castle"     -> 60;
+            case "ruins"      -> 45;
+            case "monument", "memorial" -> 20;
+            case "artwork", "viewpoint" -> 15;
+            default           -> 30;
+        };
     }
 }

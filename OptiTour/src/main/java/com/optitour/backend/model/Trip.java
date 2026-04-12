@@ -56,7 +56,11 @@ public class Trip {
     private Instant updatedAt;
     
     private boolean isPublic = false;
-    private Instant publishedAt; 
+    private Instant publishedAt;
+
+    // Metriche del percorso ottimizzato (popolate dopo l'ottimizzazione)
+    private Double totalDistanceMeters;
+    private Long totalDurationSeconds; 
     /**
      * Stati possibili di un viaggio.
      */
@@ -210,6 +214,11 @@ public class Trip {
 		this.startLon = startLon;
 	}
 	
+	public Double getTotalDistanceMeters() { return totalDistanceMeters; }
+	public void setTotalDistanceMeters(Double totalDistanceMeters) { this.totalDistanceMeters = totalDistanceMeters; }
+	public Long getTotalDurationSeconds() { return totalDurationSeconds; }
+	public void setTotalDurationSeconds(Long totalDurationSeconds) { this.totalDurationSeconds = totalDurationSeconds; }
+
 	public boolean isPublic() {
 		return isPublic;
 	}

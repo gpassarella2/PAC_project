@@ -2,9 +2,8 @@ package com.optitour.backend.dto;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 
 /**
  * DTO di risposta per un viaggio.
@@ -25,6 +24,8 @@ public class TripResponse {
     private Instant updatedAt;
     private boolean isPublic;
     private Instant publishedAt;
+    private Double totalDistanceMeters;
+    private Long totalDurationSeconds;
     private String authorUsername; // popolato solo per i trip pubblici
 
     // tappa
@@ -88,8 +89,9 @@ public class TripResponse {
     public TripResponse(String id, String userId, String name, String city,
                         String startPoint, double startLat, double startLon,
                         List<TripStageResponse> stages, String status,
-                        Instant createdAt, Instant updatedAt, 
-                        boolean isPublic, Instant publishedAt, String authorUsername) {
+                        Instant createdAt, Instant updatedAt,
+                        boolean isPublic, Instant publishedAt, String authorUsername,
+                        Double totalDistanceMeters, Long totalDurationSeconds) {
         this.id = id;
         this.userId = userId;
         this.name = name;
@@ -104,18 +106,24 @@ public class TripResponse {
         this.isPublic = isPublic;
         this.publishedAt = publishedAt;
         this.authorUsername = authorUsername;
+        this.totalDistanceMeters = totalDistanceMeters;
+        this.totalDurationSeconds = totalDurationSeconds;
     }
-    
-    public String getAuthorUsername() { return authorUsername; }
+
+	public Double getTotalDistanceMeters() { return totalDistanceMeters; }
+	public void setTotalDistanceMeters(Double v) { this.totalDistanceMeters = v; }
+	public Long getTotalDurationSeconds() { return totalDurationSeconds; }
+	public void setTotalDurationSeconds(Long v) { this.totalDurationSeconds = v; }
+
+	public String getAuthorUsername() { return authorUsername; }
 	public void setAuthorUsername(String authorUsername) { this.authorUsername = authorUsername; }
 
-	
 	@JsonProperty("isPublic")
 	public boolean isPublic() { return isPublic; }
 	public void setPublic(boolean isPublic) { this.isPublic = isPublic; }
 	public Instant getPublishedAt() { return publishedAt; }
 	public void setPublishedAt(Instant publishedAt) { this.publishedAt = publishedAt; }
-	
+
 	public String getId() {
 		return id;
 	}

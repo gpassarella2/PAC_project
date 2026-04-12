@@ -39,4 +39,6 @@ public interface TripRepository extends MongoRepository<Trip, String> {
     
     
     List<Trip> findByIsPublicTrueOrderByPublishedAtDesc();
+    
+    List<Trip> findByIsPublicTrueAndCityIgnoreCaseOrderByPublishedAtDesc(String city);
 }

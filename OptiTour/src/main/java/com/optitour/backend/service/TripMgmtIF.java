@@ -23,9 +23,13 @@ public interface TripMgmtIF {
 
     void deleteTripsByUser(String userId);
 
+	List<Trip> getPublicTrips();
+
+	Trip generateRandomTrip(String city, int availableMinutes, String userId);
+
+	Trip getRandomPublicTrip(String city);
+
 	Trip publishTrip(String id, String id2);
 
 	Trip unpublishTrip(String id, String id2);
-
-	List<Trip> getPublicTrips();
 }
