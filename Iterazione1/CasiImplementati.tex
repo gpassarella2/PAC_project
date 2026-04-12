@@ -1,0 +1,137 @@
+\section{Casi d'uso implementati}
+In questa fase sono stati sviluppati i seguenti casi d'uso ritenuti prioritari per lo sviluppo di OptiTour.
+
+\begin{table}[hbt!]
+    \centering
+    \begin{tabular}{ll}
+        \hline
+        \textbf{ID} & \textbf{Titolo} \\
+        \hline
+        UC1.1 & Registrazione \\
+        UC1.2 & Login \\
+        UC1.3 & Logout \\
+        UC11 & Imposta punto di partenza \\
+        UC12.1 & Creazione itinerario manuale \\
+        UC13 & Scelta tempistiche \\
+        UC3 & Visualizza percorsi \\
+        UC16 & Elimina viaggio \\
+        UC14 & Ottimizzazione percorso \\
+        \hline
+    \end{tabular}
+    \caption{Iterazione 1}
+\end{table}
+
+\subsection*{UC1.1: Registrazione}
+\textbf{Attori:} Utente, Sistema. \\
+\textbf{Descrizione:} Un nuovo utente può creare un account personale fornendo i dati richiesti. \\
+\textbf{Flusso degli eventi:}
+\begin{enumerate}
+    \setlength{\itemsep}{0pt}
+    \setlength{\parskip}{0pt}
+    \item L'utente accede alla pagina di registrazione.
+    \item Inserisce i propri dati personali e le credenziali.
+    \item Il sistema verifica i dati e crea il nuovo account.
+    \item L'utente viene reindirizzato alla pagina di login.
+\end{enumerate}
+
+\subsection*{UC1.2: Login}
+\textbf{Attori:} Utente, Sistema. \\
+\textbf{Descrizione:} Un utente registrato può accedere al proprio account inserendo le proprie credenziali. \\
+\textbf{Flusso degli eventi:}
+\begin{enumerate}
+    \setlength{\itemsep}{0pt}
+    \setlength{\parskip}{0pt}
+    \item L'utente accede alla pagina di login.
+    \item Inserisce email e password.
+    \item Il sistema verifica le credenziali e autentica l'utente.
+    \item L'utente viene reindirizzato alla home.
+\end{enumerate}
+
+\subsection*{UC1.3: Logout}
+\textbf{Attori:} Utente, Sistema. \\
+\textbf{Descrizione:} L'utente può terminare la propria sessione in modo sicuro. \\
+\textbf{Flusso degli eventi:}
+\begin{enumerate}
+    \setlength{\itemsep}{0pt}
+    \setlength{\parskip}{0pt}
+    \item L'utente clicca sul pulsante di logout.
+    \item Il sistema termina la sessione corrente.
+    \item L'utente viene reindirizzato alla pagina di login.
+\end{enumerate}
+
+\subsection*{UC11: Imposta punto di partenza}
+\textbf{Attori:} Utente, Sistema \\
+\textbf{Descrizione:} L'utente inserisce un indirizzo testuale come punto di partenza del viaggio. Il sistema converte automaticamente l'indirizzo in coordinate geografiche tramite il servizio esterno Nominatim e le salva nel viaggio. \\
+\textbf{Flusso degli eventi:}
+\begin{enumerate}
+    \setlength{\itemsep}{0pt}
+    \setlength{\parskip}{0pt}
+    \item L'utente inserisce un indirizzo di partenza nel campo apposito.
+    \item Il sistema invia l'indirizzo al servizio Nominatim.
+    \item Nominatim restituisce le coordinate geografiche corrispondenti.
+    \item Le coordinate vengono salvate nel viaggio e la mappa si aggiorna sul punto selezionato.
+\end{enumerate}
+
+\subsection*{UC12.1: Creazione itinerario manuale}
+\textbf{Attori:} Utente, Sistema. \\
+\textbf{Descrizione:} L'utente seleziona manualmente i monumenti che desidera visitare. I monumenti vengono recuperati da Overpass API la prima volta e salvati in MongoDB per evitare chiamate ripetute al servizio esterno. \\
+\textbf{Flusso degli eventi:}
+\begin{enumerate}
+    \setlength{\itemsep}{0pt}
+    \setlength{\parskip}{0pt}
+    \item L'utente cerca i monumenti di una città.
+    \item Il sistema verifica se i monumenti sono già presenti in MongoDB.
+    \item Se non presenti, il sistema li recupera tramite Overpass API e li salva nel database.
+    \item I monumenti vengono mostrati sulla mappa.
+    \item L'utente seleziona i monumenti che desidera visitare.
+    \item L'utente conferma la selezione e il sistema salva il viaggio con stato DRAFT.
+\end{enumerate}
+
+\subsection*{UC13: Scelta tempistiche}
+\textbf{Attori:} Utente, Sistema. \\
+\textbf{Descrizione:} L'utente può definire per ciascun monumento selezionato il tempo che intende dedicare alla visita, espresso in minuti. \\
+\textbf{Flusso degli eventi:}
+\begin{enumerate}
+    \setlength{\itemsep}{0pt}
+    \setlength{\parskip}{0pt}
+    \item L'utente seleziona un monumento durante la creazione del viaggio.
+    \item Inserisce il tempo di visita desiderato in minuti.
+    \item Il sistema salva il tempo di visita associato a quella tappa del viaggio.
+\end{enumerate}
+
+\subsection*{UC3.2: Visualizza percorsi}
+\textbf{Attori:} Utente, Sistema. \\
+\textbf{Descrizione:} L'utente può visualizzare i propri viaggi e di visualizzare i dettagli del singolo viaggio. \\
+\textbf{Flusso degli eventi:}
+\begin{enumerate}
+    \setlength{\itemsep}{0pt}
+    \setlength{\parskip}{0pt}
+    \item L'utente accede alla sezione dei propri viaggi.
+    \item Il sistema recupera tutti i viaggi dell'utente dal database.
+    \item L'utente può selezionare un singolo viaggio per visualizzarne i dettagli.
+\end{enumerate}
+
+\subsection*{UC16: Elimina viaggio}
+\textbf{Attori:} Utente, Sistema. \\
+\textbf{Descrizione:} L'utente può eliminare un viaggio esistente. \\
+\textbf{Flusso degli eventi:}
+\begin{enumerate}
+    \setlength{\itemsep}{0pt}
+    \setlength{\parskip}{0pt}
+    \item L'utente seleziona il viaggio che desidera eliminare.
+    \item Conferma l'operazione di eliminazione.
+    \item Il sistema rimuove il viaggio dal database.
+\end{enumerate}
+
+\subsection*{UC14: Ottimizzazione percorso}
+\textbf{Attori:} Utente, Sistema \\
+\textbf{Descrizione:} Il sistema ottimizza l'ordine delle tappe del viaggio, calcolando il percorso più efficiente tra i monumenti selezionati a partire dal punto di partenza definito dall'utente. \\
+\textbf{Flusso degli eventi:}
+\begin{enumerate}
+    \setlength{\itemsep}{0pt}
+    \setlength{\parskip}{0pt}
+    \item Il sistema recupera il viaggio con stato DRAFT.
+    \item Legge le coordinate del punto di partenza e di ogni monumento dal database.
+    \item Applica l'algoritmo di ottimizzazione per calcolare il percorso ottimale.
+    \item Il viaggio viene aggiornato con il nuovo ordine delle tappe e lo stato viene impostato a SAVED.
+\end{enumerate}
