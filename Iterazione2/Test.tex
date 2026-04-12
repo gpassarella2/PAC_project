@@ -1,0 +1,55 @@
+\section{Test}
+In questa sezione vengono descritte le attività di testing svolte durante questa iterazione, con l’obiettivo di verificare la correttezza, l’affidabilità e la stabilità delle nuove funzionalità introdotte. I test sono stati condotti sia a livello di singoli componenti, per validare la logica di business, sia a livello di integrazione, per assicurare il corretto funzionamento delle API esposte e la comunicazione tra frontend e backend. Particolare attenzione è stata dedicata alla verifica degli endpoint relativi alla gestione dei viaggi e delle nuove funzionalità introdotte, includendo operazioni di visualizzazione del catalogo pubblico, consultazione dello storico, applicazione dei filtri di ricerca, gestione dei percorsi preferiti e aggiornamento dello stato dei viaggi come completati. Sono state inoltre testate le funzionalità di creazione di itinerari casuali e di modifica delle tappe, comprensive del ricalcolo del percorso ottimizzato tramite il motore TSP.
+
+
+\subsection{Test: CodeMR}
+
+\subsection{Test: Junit}
+
+\subsection{API Esposte}
+
+In questa sezione vengono descritte le principali API esposte dal backend tramite i controller di Spring Boot, necessarie per supportare i casi d’uso sviluppati e testate tramite Postman.
+
+\begin{enumerate}
+
+\item \textbf{Gestione Viaggi}
+
+\textbf{Aggiornamento di un Viaggio}
+
+\begin{itemize}
+    \item \textbf{Endpoint:} PUT /api/trips/\{id\}
+
+    \item \textbf{Descrizione:} Permette di aggiornare un viaggio esistente modificandone le informazioni principali, come la durata per ciascuna tappa, l’aggiunta e la rimozione di tappe con le relative tempistiche. 
+    I dettagli della richiesta e della risposta sono illustrati in \autoref{fig:updateTripRequest} e Figura \autoref{fig:updateTripResponse}.
+
+    \item \textbf{Parametri:}
+    \begin{itemize}
+        \item \{id\} (string) - ID del viaggio da aggiornare.
+    \end{itemize}
+
+    \item \textbf{Payload:}
+    \begin{itemize}
+        \item name (string) - Nome del viaggio.
+        \item city (string) - Città del viaggio.
+        \item startPoint (string) - Punto di partenza.
+        \item stages (array) - Lista aggiornata delle tappe del viaggio.
+    \end{itemize}
+
+\end{itemize}
+
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Iterazione2/Diagrammi/API/updateTripApi.png}
+    \caption{Test su Postman: Payload di richiesta per l’aggiornamento di un viaggio.}
+    \label{fig:updateTripRequest}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Iterazione2/Diagrammi/API/updateTripApiResponse.png}
+    \caption{Test su Postman: Risposta del server dopo l’aggiornamento del viaggio.}
+    \label{fig:updateTripResponse}
+\end{figure}
+
