@@ -84,7 +84,7 @@ In questa fase sono stati sviluppati i seguenti casi d'uso ritenuti prioritari p
     \item Se non presenti, il sistema li recupera tramite Overpass API e li salva nel database.
     \item I monumenti vengono mostrati sulla mappa.
     \item L'utente seleziona i monumenti che desidera visitare.
-    \item L'utente conferma la selezione e il sistema salva il viaggio con stato DRAFT.
+    \item L'utente conferma la selezione e il sistema salva il viaggio.
 \end{enumerate}
 
 \subsection*{UC13: Scelta tempistiche}
@@ -130,7 +130,7 @@ In questa fase sono stati sviluppati i seguenti casi d'uso ritenuti prioritari p
 \begin{enumerate}
     \setlength{\itemsep}{0pt}
     \setlength{\parskip}{0pt}
-    \item Il sistema recupera il viaggio con stato DRAFT.
+    \item Il sistema recupera il viaggio tramite l'ID.
     \item Legge le coordinate del punto di partenza e di ogni monumento dal database.
     \item Applica l'algoritmo di ottimizzazione per calcolare il percorso ottimale.
     \item Il viaggio viene aggiornato con il nuovo ordine delle tappe e lo stato viene impostato a SAVED.
