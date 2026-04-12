@@ -59,9 +59,9 @@ public class Trip {
      * Stati possibili di un viaggio.
      */
     public enum TripStatus {
-        DRAFT,      // in fase di creazione
         SAVED,      // salvato dall'utente
-        COMPLETED   // viaggio completato
+        COMPLETED,   // viaggio completato
+        STARRED		// viaggio aggiunto ai rpeferiti
     }
 
     // Costruttori 

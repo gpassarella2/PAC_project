@@ -67,7 +67,7 @@ class TripServiceTest {
 
         //verifica salvataggio viaggio
         assertNotNull(savedTrip.getId(), "Il viaggio deve essere stato salvato in MongoDB e avere un ID");
-        assertEquals(TripStatus.DRAFT, savedTrip.getStatus());
+        assertEquals(TripStatus.SAVED, savedTrip.getStatus());
         assertEquals("Gita a Milano", savedTrip.getName());
         assertEquals(userId, savedTrip.getUserId());
         

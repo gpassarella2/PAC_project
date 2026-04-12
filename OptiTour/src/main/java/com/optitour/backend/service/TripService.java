@@ -10,8 +10,10 @@ import com.optitour.backend.repository.MonumentRepository;
 import com.optitour.backend.repository.TripRepository;
 
 import org.bson.types.ObjectId;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -21,134 +23,193 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Service che gestisce la logica dei viaggi (Trip). Quando viene creato un nuovo
- * viaggio, il punto di partenza (startPoint) viene prima convertito in coordinate
- * geografiche utilizzando Nominatim tramite un metodo privato. Successivamente
- * viene verificato che tutti i monumenti selezionati esistano nel database MongoDB.
- * Infine il Trip viene salvato con stato DRAFT, così da poter essere utilizzato
- * in seguito per la fase di ottimizzazione del percorso.
+ * Service che gestisce la logica dei viaggi (Trip). Quando viene creato un
+ * nuovo viaggio, il punto di partenza (startPoint) viene prima convertito in
+ * coordinate geografiche utilizzando Nominatim tramite un metodo privato.
+ * Successivamente viene verificato che tutti i monumenti selezionati esistano
+ * nel database MongoDB. Infine il Trip viene salvato con stato DRAFT, così da
+ * poter essere utilizzato in seguito per la fase di ottimizzazione del
+ * percorso.
  */
 @Service
-public class TripService implements TripMgmtIF{
+public class TripService implements TripMgmtIF {
 
-    private static final String NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
+	private static final String NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
 
-    private final TripRepository tripRepository;
-    private final MonumentRepository monumentRepository;
-    private final RestClient restClient;
+	private final TripRepository tripRepository;
+	private final MonumentRepository monumentRepository;
+	private final RestClient restClient;
 
-    public TripService(TripRepository tripRepository,
-                       MonumentRepository monumentRepository) {
-        this.tripRepository = tripRepository;
-        this.monumentRepository = monumentRepository;
-        this.restClient = RestClient.create();
-    }
+	public TripService(TripRepository tripRepository, MonumentRepository monumentRepository) {
+		this.tripRepository = tripRepository;
+		this.monumentRepository = monumentRepository;
+		this.restClient = RestClient.create();
+	}
 
-    
-    //Crea un nuovo viaggio e lo salva in MongoDB con status DRAFT.
-    
-    public Trip createTrip(CreateTripRequest request, String userId) {
-    	
-    	if (!request.getStartPoint().toLowerCase().contains(request.getCity().toLowerCase())) {
-    	    throw new IllegalArgumentException("Il punto di partenza deve trovarsi nella città selezionata: " + request.getCity());
-    	}
-        // Converte startPoint in coordinate 
-        double[] coords = geocode(request.getStartPoint());
+	// Crea un nuovo viaggio e lo salva in MongoDB con status DRAFT.
 
-        // Costruisce la lista delle tappe
-        List<TripStage> stages = new ArrayList<>();
-        for (CreateTripRequest.TripStageRequest stageReq : request.getStages()) {
-        	Optional<Monument> monument = monumentRepository.findById(new ObjectId(stageReq.getMonumentId()));
+	public Trip createTrip(CreateTripRequest request, String userId) {
 
-            TripStage stage = TripStage.builder()
-                    .monumentId(monument.get().getId())
-                    .visitDurationMinutes(stageReq.getVisitDurationMinutes())
-                    .build();
+		if (!request.getStartPoint().toLowerCase().contains(request.getCity().toLowerCase())) {
+			throw new IllegalArgumentException(
+					"Il punto di partenza deve trovarsi nella città selezionata: " + request.getCity());
+		}
+		// Converte startPoint in coordinate
+		double[] coords = geocode(request.getStartPoint());
 
-            stages.add(stage);
-        }
+		// Costruisce la lista delle tappe
+		List<TripStage> stages = new ArrayList<>();
+		for (CreateTripRequest.TripStageRequest stageReq : request.getStages()) {
+			Optional<Monument> monument = monumentRepository.findById(new ObjectId(stageReq.getMonumentId()));
 
-        Trip trip = Trip.builder()
-                .userId(userId)
-                .name(request.getName())
-                .city(request.getCity())
-                .startPoint(request.getStartPoint())
-                .startLat(coords[0])
-                .startLon(coords[1])
-                .stages(stages)
-                .status(TripStatus.DRAFT)
-                .createdAt(Instant.now())
-                .updatedAt(Instant.now())
-                .build();
+			TripStage stage = TripStage.builder().monumentId(monument.get().getId())
+					.visitDurationMinutes(stageReq.getVisitDurationMinutes()).build();
 
-        return tripRepository.save(trip);
-    }
+			stages.add(stage);
+		}
 
-    //tutti i viaggi di un utente
-    public List<Trip> getTripsByUser(String userId) {
-        return tripRepository.findByUserId(userId);
-    }
+		Trip trip = Trip.builder().userId(userId).name(request.getName()).city(request.getCity())
+				.startPoint(request.getStartPoint()).startLat(coords[0]).startLon(coords[1]).stages(stages)
+				.status(TripStatus.SAVED).createdAt(Instant.now()).updatedAt(Instant.now()).build();
 
-    //tutti i viaggi di un utente per stato
-    public List<Trip> getTripsByUserAndStatus(String userId, TripStatus status) {
-        return tripRepository.findByUserIdAndStatus(userId, status);
-    }
+		return tripRepository.save(trip);
+	}
 
-    //trova viaggio tramite id
-    public Optional<Trip> getTripById(String tripId) {
-        return tripRepository.findById(tripId);
-    }
+	// tutti i viaggi di un utente
+	public List<Trip> getTripsByUser(String userId) {
+		return tripRepository.findByUserId(userId);
+	}
 
-    //aggiorna stato
-    public Trip updateTripStatus(String tripId, TripStatus status) {
-        Optional<Trip> trip = tripRepository.findById(tripId);
+	// tutti i viaggi di un utente per stato
+	public List<Trip> getTripsByUserAndStatus(String userId, TripStatus status) {
+		return tripRepository.findByUserIdAndStatus(userId, status);
+	}
 
-        if (trip.isEmpty()) return null;
+	// trova viaggio tramite id
+	public Optional<Trip> getTripById(String tripId) {
+		return tripRepository.findById(tripId);
+	}
 
-        trip.get().setStatus(status);
-        trip.get().setUpdatedAt(Instant.now());
-        return tripRepository.save(trip.get());
-    }
+	// aggiorna stato
+	public Trip updateTripStatus(String tripId, TripStatus status) {
+		Optional<Trip> trip = tripRepository.findById(tripId);
 
-    /**
-     * Elimina un viaggio tramite ID.
-     */
-    public void deleteTrip(String tripId) {
-        tripRepository.deleteById(tripId);
-    }
+		if (trip.isEmpty())
+			return null;
 
-    /**
-     * Elimina tutti i viaggi di un utente.
-     * Chiamato quando l'utente elimina il proprio account.
-     */
-    public void deleteTripsByUser(String userId) {
-        tripRepository.deleteByUserId(userId);
-    }
+		trip.get().setStatus(status);
+		trip.get().setUpdatedAt(Instant.now());
+		return tripRepository.save(trip.get());
+	}
 
-    /**
-     * Converte un indirizzo in coordinate lat/lon tramite Nominatim.
-     * RestClient deserializza automaticamente il JSON in NominatimResponse[].
-     * Chiamato una sola volta alla creazione del viaggio.
-     */
-    private double[] geocode(String address) {
-        String url = NOMINATIM_URL + "?q="
-                + URLEncoder.encode(address, StandardCharsets.UTF_8)
-                + "&format=json&limit=1";
+	/**
+	 * Elimina un viaggio tramite ID.
+	 */
+	public void deleteTrip(String tripId) {
+		tripRepository.deleteById(tripId);
+	}
 
-        NominatimResponse[] results = restClient
-                .get()
-                .uri(url)
-                .header("User-Agent", "OptiTour/1.0")
-                .retrieve()
-                .body(NominatimResponse[].class);
+	/**
+	 * Elimina tutti i viaggi di un utente. Chiamato quando l'utente elimina il
+	 * proprio account.
+	 */
+	public void deleteTripsByUser(String userId) {
+		tripRepository.deleteByUserId(userId);
+	}
 
-        if (results == null || results.length == 0) {
-            return new double[]{0.0, 0.0};
-        }
+	// metodi: preferiti, storico, completa viaggio
+	// ---------------------------------------
 
-        return new double[]{
-            results[0].getLatAsDouble(),
-            results[0].getLonAsDouble()
-        };
-    }
+	/**
+	 * Aggiunge il viaggio ai preferiti impostando lo stato a STARRED. Verifica che
+	 * il viaggio appartenga all'utente richiedente (findOwnerTrip).
+	 */
+	@Override
+	public Trip saveToFavorites(String tripId, String userId) {
+		Trip trip = findOwnedTrip(tripId, userId);
+		trip.setStatus(TripStatus.STARRED);
+		trip.setUpdatedAt(Instant.now());
+		return tripRepository.save(trip);
+	}
+
+	/**
+	 * Rimuove il viaggio dai preferiti riportandolo allo stato SAVED. Verifica che
+	 * il viaggio appartenga all'utente richiedente (findOwnerTrip).
+	 */
+	@Override
+	public Trip removeFromFavorites(String tripId, String userId) {
+		Trip trip = findOwnedTrip(tripId, userId);
+		trip.setStatus(TripStatus.SAVED);
+		trip.setUpdatedAt(Instant.now());
+		return tripRepository.save(trip);
+	}
+
+	/**
+	 * Imposta il viaggio come COMPLETED. Verifica che il viaggio appartenga
+	 * all'utente richiedente (findOwnerTrip).
+	 */
+	@Override
+	public Trip completeTrip(String tripId, String userId) {
+		Trip trip = findOwnedTrip(tripId, userId);
+		trip.setStatus(TripStatus.COMPLETED);
+		trip.setUpdatedAt(Instant.now());
+		return tripRepository.save(trip);
+	}
+	
+	/**
+	 * riporta un viaggio COMPLETED allo stato SAVED. Verifica che il viaggio appartenga
+	 * all'utente richiedente (findOwnerTrip).
+	 */
+	@Override
+	public Trip restoreTrip(String tripId, String userId) {
+	    Trip trip = findOwnedTrip(tripId, userId);
+	    trip.setStatus(TripStatus.SAVED);
+	    trip.setUpdatedAt(Instant.now());
+	    return tripRepository.save(trip);
+	}
+
+	/**
+	 * Restituisce tutti i viaggi COMPLETED dell'utente (storico).
+	 */
+	@Override
+	public List<Trip> getTripHistory(String userId) {
+		return tripRepository.findByUserIdAndStatus(userId, TripStatus.COMPLETED);
+	}
+
+	// Helpers ------------------------------------------------------------------------------------------
+	/**
+	 * Converte un indirizzo in coordinate lat/lon tramite Nominatim. RestClient
+	 * deserializza automaticamente il JSON in NominatimResponse[]. Chiamato una
+	 * sola volta alla creazione del viaggio.
+	 */
+	private double[] geocode(String address) {
+		String url = NOMINATIM_URL + "?q=" + URLEncoder.encode(address, StandardCharsets.UTF_8)
+				+ "&format=json&limit=1";
+
+		NominatimResponse[] results = restClient.get().uri(url).header("User-Agent", "OptiTour/1.0").retrieve()
+				.body(NominatimResponse[].class);
+
+		if (results == null || results.length == 0) {
+			return new double[] { 0.0, 0.0 };
+		}
+
+		return new double[] { results[0].getLatAsDouble(), results[0].getLonAsDouble() };
+	}
+
+	// Helpers per preferiti, storico, completa viaggio -------------------------------------------------
+
+	/**
+	 * Recupera un viaggio e verifica che appartenga all'utente indicato. Lancia 404
+	 * se non trovato, 403 se l'utente non è il proprietario.
+	 */
+	private Trip findOwnedTrip(String tripId, String userId) {
+		Trip trip = tripRepository.findById(tripId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Viaggio non trovato: " + tripId));
+
+		if (!trip.getUserId().equals(userId)) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Non sei il proprietario di questo viaggio");
+		}
+		return trip;
+	}
+
 }
