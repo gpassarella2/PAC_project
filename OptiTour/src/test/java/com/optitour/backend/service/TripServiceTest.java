@@ -3,6 +3,7 @@ package com.optitour.backend.service;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -83,75 +84,203 @@ class TripServiceTest {
         assertEquals(testMonument.getId(), savedTrip.getStages().get(0).getMonumentId());
     }
     
-    //test metodo di aggiornamento viaggio
-    @Test
-    void updateTrip_ShouldModifyDuration_AddAndRemoveStages() {
+ //test update
 
-        //nuovo monumento
-        final Monument monument2 = monumentRepository.save(
-                Monument.builder()
-                        .name("Duomo")
-                        .city("Milano")
-                        .build()
+    @Test
+    void updateTrip_ShouldThrow404IfTripNotFound() {
+        UpdateTripRequest request = new UpdateTripRequest();
+        request.setStages(List.of()); // stages vuota, non importa
+
+        assertThrows(NoSuchElementException.class, () ->
+            tripService.updateTrip("id-inesistente", request),
+            "Deve lanciare NoSuchElementException se il trip non esiste"
+        );
+    }
+
+    @Test
+    void updateTrip_ShouldThrowIllegalArgumentIfMonumentNotFound() {
+        Trip trip = createTestTrip("user-test-123");
+
+        CreateTripRequest.TripStageRequest badStage = new CreateTripRequest.TripStageRequest();
+        badStage.setMonumentId(new org.bson.types.ObjectId().toString()); // id valido ma inesistente
+        badStage.setVisitDurationMinutes(30);
+
+        UpdateTripRequest request = new UpdateTripRequest();
+        request.setStages(List.of(badStage));
+
+        assertThrows(IllegalArgumentException.class, () ->
+            tripService.updateTrip(trip.getId(), request),
+            "Deve lanciare IllegalArgumentException se il monumento non esiste"
+        );
+    }
+    private Trip createTestTrip(String userId) {
+        CreateTripRequest.TripStageRequest stageReq = new CreateTripRequest.TripStageRequest();
+        stageReq.setMonumentId(testMonument.getId());
+        stageReq.setVisitDurationMinutes(60);
+
+        CreateTripRequest request = new CreateTripRequest();
+        request.setName("Gita a Milano");
+        request.setCity("Milano");
+        request.setStartPoint("Milano, Italy");
+        request.setStages(List.of(stageReq));
+
+        return tripService.createTrip(request, userId);
+    }
+    @Test
+    void updateTrip_ShouldNotChangeName_OrCity_OrStartPoint() {
+        Trip trip = createTestTrip("user-test-123");
+        String originalName       = trip.getName();
+        String originalCity       = trip.getCity();
+        String originalStartPoint = trip.getStartPoint();
+        double originalLat        = trip.getStartLat();
+        double originalLon        = trip.getStartLon();
+
+        CreateTripRequest.TripStageRequest stageReq = new CreateTripRequest.TripStageRequest();
+        stageReq.setMonumentId(testMonument.getId().toString());
+        stageReq.setVisitDurationMinutes(99);
+
+        UpdateTripRequest request = new UpdateTripRequest();
+        request.setStages(List.of(stageReq));
+
+        Trip updated = tripService.updateTrip(trip.getId(), request);
+
+        assertEquals(originalName,       updated.getName(),       "Il nome non deve cambiare");
+        assertEquals(originalCity,       updated.getCity(),       "La città non deve cambiare");
+        assertEquals(originalStartPoint, updated.getStartPoint(), "Lo startPoint non deve cambiare");
+        assertEquals(originalLat,        updated.getStartLat(),   0.0001, "La latitudine non deve cambiare");
+        assertEquals(originalLon,        updated.getStartLon(),   0.0001, "La longitudine non deve cambiare");
+    }
+
+    @Test
+    void updateTrip_ShouldUpdateVisitDuration() {
+        Trip trip = createTestTrip("user-test-123");
+
+        CreateTripRequest.TripStageRequest stageReq = new CreateTripRequest.TripStageRequest();
+        stageReq.setMonumentId(testMonument.getId().toString());
+        stageReq.setVisitDurationMinutes(120); // era 60 nell'helper
+
+        UpdateTripRequest request = new UpdateTripRequest();
+        request.setStages(List.of(stageReq));
+
+        Trip updated = tripService.updateTrip(trip.getId(), request);
+
+        assertEquals(1, updated.getStages().size());
+        assertEquals(120, updated.getStages().get(0).getVisitDurationMinutes());
+        assertEquals(testMonument.getId(), updated.getStages().get(0).getMonumentId());
+    }
+
+    @Test
+    void updateTrip_ShouldAddNewStage() {
+        Trip trip = createTestTrip("user-test-123"); // 1 tappa: testMonument
+
+        Monument extra = monumentRepository.save(
+            Monument.builder().name("Pinacoteca Brera").city("Milano").build()
         );
 
-        // trip di interesse
-        CreateTripRequest.TripStageRequest stage1 = new CreateTripRequest.TripStageRequest();
-        stage1.setMonumentId(testMonument.getId().toString());
-        stage1.setVisitDurationMinutes(60);
+        CreateTripRequest.TripStageRequest s1 = new CreateTripRequest.TripStageRequest();
+        s1.setMonumentId(testMonument.getId().toString());
+        s1.setVisitDurationMinutes(60);
 
-        CreateTripRequest.TripStageRequest stage2 = new CreateTripRequest.TripStageRequest();
-        stage2.setMonumentId(monument2.getId().toString());
-        stage2.setVisitDurationMinutes(30);
+        CreateTripRequest.TripStageRequest s2 = new CreateTripRequest.TripStageRequest();
+        s2.setMonumentId(extra.getId().toString());
+        s2.setVisitDurationMinutes(45);
+
+        UpdateTripRequest request = new UpdateTripRequest();
+        request.setStages(List.of(s1, s2));
+
+        Trip updated = tripService.updateTrip(trip.getId(), request);
+
+        assertEquals(2, updated.getStages().size());
+        assertTrue(updated.getStages().stream().anyMatch(s -> s.getMonumentId().equals(extra.getId())),
+            "La nuova tappa deve essere presente");
+
+        monumentRepository.delete(extra);
+    }
+
+    @Test
+    void updateTrip_ShouldRemoveStage() {
+        // crea trip con 2 tappe
+        Monument extra = monumentRepository.save(
+            Monument.builder().name("Castello Sforzesco").city("Milano").build()
+        );
+
+        CreateTripRequest.TripStageRequest s1 = new CreateTripRequest.TripStageRequest();
+        s1.setMonumentId(testMonument.getId().toString());
+        s1.setVisitDurationMinutes(60);
+
+        CreateTripRequest.TripStageRequest s2 = new CreateTripRequest.TripStageRequest();
+        s2.setMonumentId(extra.getId().toString());
+        s2.setVisitDurationMinutes(30);
 
         CreateTripRequest create = new CreateTripRequest();
-        create.setName("Trip");
+        create.setName("Gita a Milano");
         create.setCity("Milano");
         create.setStartPoint("Milano, Italy");
-        create.setStages(List.of(stage1, stage2));
+        create.setStages(List.of(s1, s2));
 
-        Trip trip = tripService.createTrip(create, "user1");
+        Trip trip = tripService.createTrip(create, "user-test-123");
 
+        // update: tengo solo testMonument, rimuovo extra
+        CreateTripRequest.TripStageRequest onlyOne = new CreateTripRequest.TripStageRequest();
+        onlyOne.setMonumentId(testMonument.getId().toString());
+        onlyOne.setVisitDurationMinutes(60);
 
-        // modifica durata
-        CreateTripRequest.TripStageRequest updatedStage1 = new CreateTripRequest.TripStageRequest();
-        updatedStage1.setMonumentId(testMonument.getId().toString());
-        updatedStage1.setVisitDurationMinutes(120);
+        UpdateTripRequest request = new UpdateTripRequest();
+        request.setStages(List.of(onlyOne));
 
-        // nuovo monumento 
-        final Monument monument3 = monumentRepository.save(
-                Monument.builder()
-                        .name("Castello Sforzesco")
-                        .city("Milano")
-                        .build()
+        Trip updated = tripService.updateTrip(trip.getId(), request);
+
+        assertEquals(1, updated.getStages().size());
+        assertFalse(updated.getStages().stream().anyMatch(s -> s.getMonumentId().equals(extra.getId())),
+            "La tappa rimossa non deve essere presente");
+
+        monumentRepository.delete(extra);
+    }
+
+    @Test
+    void updateTrip_ShouldPersistChanges_InDatabase() {
+        Trip trip = createTestTrip("user-test-123");
+
+        Monument extra = monumentRepository.save(
+            Monument.builder().name("Pinacoteca Brera").city("Milano").build()
         );
 
         CreateTripRequest.TripStageRequest newStage = new CreateTripRequest.TripStageRequest();
-        newStage.setMonumentId(monument3.getId().toString());
-        newStage.setVisitDurationMinutes(45);
+        newStage.setMonumentId(extra.getId().toString());
+        newStage.setVisitDurationMinutes(90);
 
-        UpdateTripRequest update = new UpdateTripRequest();
-        update.setStages(List.of(updatedStage1, newStage));
+        UpdateTripRequest request = new UpdateTripRequest();
+        request.setStages(List.of(newStage));
 
-        Trip updated = tripService.updateTrip(trip.getId(), update);
+        tripService.updateTrip(trip.getId(), request);
 
-        assertEquals(2, updated.getStages().size());
+        // rilegge dal DB per verificare la persistenza reale
+        Trip fromDb = tripRepository.findById(trip.getId()).orElseThrow();
+        assertEquals(1, fromDb.getStages().size());
+        assertEquals(extra.getId(), fromDb.getStages().get(0).getMonumentId());
+        assertEquals(90, fromDb.getStages().get(0).getVisitDurationMinutes());
 
-        // durata della tappa aggiornata
-        TripStage s1 = updated.getStages().stream()
-                .filter(s -> s.getMonumentId().equals(testMonument.getId()))
-                .findFirst()
-                .orElseThrow();
+        monumentRepository.delete(extra);
+    }
 
-        assertEquals(120, s1.getVisitDurationMinutes());
+    @Test
+    void updateTrip_ShouldRefresh_UpdatedAt() throws InterruptedException {
+        Trip trip = createTestTrip("user-test-123");
+        java.time.Instant before = trip.getUpdatedAt();
 
-        // nuova tappa presente
-        assertTrue(updated.getStages().stream()
-                .anyMatch(s -> s.getMonumentId().equals(monument3.getId())));
+        Thread.sleep(50);
 
-        // tappa rimossa
-        assertTrue(updated.getStages().stream()
-                .noneMatch(s -> s.getMonumentId().equals(monument2.getId())));
+        CreateTripRequest.TripStageRequest stageReq = new CreateTripRequest.TripStageRequest();
+        stageReq.setMonumentId(testMonument.getId().toString());
+        stageReq.setVisitDurationMinutes(90);
+
+        UpdateTripRequest request = new UpdateTripRequest();
+        request.setStages(List.of(stageReq));
+
+        Trip updated = tripService.updateTrip(trip.getId(), request);
+
+        assertTrue(updated.getUpdatedAt().isAfter(before),
+            "updatedAt deve essere aggiornato dopo la modifica");
     }
 
 }
