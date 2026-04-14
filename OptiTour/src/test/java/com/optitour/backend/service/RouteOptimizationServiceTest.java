@@ -59,7 +59,7 @@ class RouteOptimizationServiceTest {
                 .startLat(45.4854)
                 .startLon(9.2045)
                 .stages(stages)
-                .status(Trip.TripStatus.DRAFT)
+                .status(Trip.TripStatus.SAVED)
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
                 .build();
