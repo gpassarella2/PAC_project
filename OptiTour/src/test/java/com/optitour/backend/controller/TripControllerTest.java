@@ -90,4 +90,109 @@ class TripControllerTest {
             // il test non fallisce, ma viene ignorato
         }
     }
+    
+    
+    @Test
+    @WithMockUser(username = "testuser")
+    void updateTrip_ShouldReturn200AndUpdatedStages() throws Exception {
+        Trip trip = createTrip();
+
+        Monument extra = monumentRepository.save(
+            Monument.builder().name("Castello Sforzesco").city("Milano").build()
+        );
+
+        CreateTripRequest.TripStageRequest stageReq = new CreateTripRequest.TripStageRequest();
+        stageReq.setMonumentId(extra.getId());
+        stageReq.setVisitDurationMinutes(45);
+
+        com.optitour.backend.dto.UpdateTripRequest update =
+            new com.optitour.backend.dto.UpdateTripRequest();
+        update.setStages(List.of(stageReq));
+
+        mockMvc.perform(put("/api/trips/" + trip.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(update)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.stages.length()", is(1)));
+
+        monumentRepository.delete(extra);
+    }
+
+    @Test
+    @WithMockUser(username = "testuser")
+    void updateTrip_ShouldNotChangeName_InResponse() throws Exception {
+        Trip trip = createTrip();
+
+        CreateTripRequest.TripStageRequest stageReq = new CreateTripRequest.TripStageRequest();
+        stageReq.setMonumentId(validMonumentId);
+        stageReq.setVisitDurationMinutes(30);
+
+        com.optitour.backend.dto.UpdateTripRequest update =
+            new com.optitour.backend.dto.UpdateTripRequest();
+        update.setStages(List.of(stageReq));
+
+        mockMvc.perform(put("/api/trips/" + trip.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(update)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Weekend a Milano"))
+                .andExpect(jsonPath("$.city").value("Milano"));
+    }
+
+    @Test
+    @WithMockUser(username = "testuser")
+    void updateTrip_ShouldReturn404IfTripNotFound() throws Exception {
+        CreateTripRequest.TripStageRequest stageReq = new CreateTripRequest.TripStageRequest();
+        stageReq.setMonumentId(validMonumentId);
+        stageReq.setVisitDurationMinutes(60);
+
+        com.optitour.backend.dto.UpdateTripRequest update =
+            new com.optitour.backend.dto.UpdateTripRequest();
+        update.setStages(List.of(stageReq));
+
+        mockMvc.perform(put("/api/trips/id-inesistente")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(update)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "testuser")
+    void updateTrip_ShouldReturn400IfMonumentNotFound() throws Exception {
+        Trip trip = createTrip();
+
+        CreateTripRequest.TripStageRequest stageReq = new CreateTripRequest.TripStageRequest();
+        stageReq.setMonumentId(new org.bson.types.ObjectId().toString());
+        stageReq.setVisitDurationMinutes(30);
+
+        com.optitour.backend.dto.UpdateTripRequest update =
+            new com.optitour.backend.dto.UpdateTripRequest();
+        update.setStages(List.of(stageReq));
+
+        mockMvc.perform(put("/api/trips/" + trip.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(update)))
+                .andExpect(status().isBadRequest());
+    }
+/*test per aggiornamento e valutare se è ancora nei preferiti
+    @Test
+    @WithMockUser(username = "testuser")
+    void updateTrip_ShouldPreserveStatus_InResponse() throws Exception {
+        Trip trip = createTrip();
+        tripService.saveToFavorites(trip.getId(), userId);
+
+        CreateTripRequest.TripStageRequest stageReq = new CreateTripRequest.TripStageRequest();
+        stageReq.setMonumentId(validMonumentId);
+        stageReq.setVisitDurationMinutes(90);
+
+        com.optitour.backend.dto.UpdateTripRequest update =
+            new com.optitour.backend.dto.UpdateTripRequest();
+        update.setStages(List.of(stageReq));
+
+        mockMvc.perform(put("/api/trips/" + trip.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(update)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("STARRED"));
+    }*/
 }

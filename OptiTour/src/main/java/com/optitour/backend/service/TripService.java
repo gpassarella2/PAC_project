@@ -2,6 +2,7 @@ package com.optitour.backend.service;
 
 import com.optitour.backend.dto.CreateTripRequest;
 import com.optitour.backend.dto.NominatimResponse;
+import com.optitour.backend.dto.UpdateTripRequest;
 import com.optitour.backend.model.Monument;
 import com.optitour.backend.model.Trip;
 import com.optitour.backend.model.Trip.TripStatus;
@@ -18,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 /**
@@ -25,7 +27,6 @@ import java.util.Optional;
  * viaggio, il punto di partenza (startPoint) viene prima convertito in coordinate
  * geografiche utilizzando Nominatim tramite un metodo privato. Successivamente
  * viene verificato che tutti i monumenti selezionati esistano nel database MongoDB.
- * Infine il Trip viene salvato con stato DRAFT, così da poter essere utilizzato
  * in seguito per la fase di ottimizzazione del percorso.
  */
 @Service
@@ -151,4 +152,36 @@ public class TripService implements TripMgmtIF{
             results[0].getLonAsDouble()
         };
     }
+
+
+	public Trip updateTrip(String tripId, UpdateTripRequest request) {
+	    Trip trip = tripRepository.findById(tripId)
+	            .orElseThrow(() -> new NoSuchElementException("Trip non trovato: " + tripId));
+
+	    if (request.getName() != null)       trip.setName(request.getName());
+	    if (request.getCity() != null)       trip.setCity(request.getCity());
+
+	    if (request.getStartPoint() != null) {
+	        trip.setStartPoint(request.getStartPoint());
+	        double[] coords = geocode(request.getStartPoint());
+	        trip.setStartLat(coords[0]);
+	        trip.setStartLon(coords[1]);
+	    }
+
+	    if (request.getStages() != null) {
+	        List<TripStage> stages = new ArrayList<>();
+	        for (CreateTripRequest.TripStageRequest stageReq : request.getStages()) {
+	            Monument m = monumentRepository.findById(new ObjectId(stageReq.getMonumentId()))
+	                    .orElseThrow(() -> new IllegalArgumentException(
+	                            "Monumento non trovato: " + stageReq.getMonumentId()));
+	            stages.add(TripStage.builder()
+	                    .monumentId(m.getId())
+	                    .visitDurationMinutes(stageReq.getVisitDurationMinutes())
+	                    .build());
+	        }
+	        trip.setStages(stages);
+	    }
+	    trip.setUpdatedAt(Instant.now());
+	    return tripRepository.save(trip);
+	}
 }
