@@ -1,6 +1,7 @@
 package com.optitour.backend.service;
 
 import com.optitour.backend.dto.CreateTripRequest;
+import com.optitour.backend.dto.UpdateTripRequest;
 import com.optitour.backend.model.Trip;
 import com.optitour.backend.model.Trip.TripStatus;
 
@@ -63,4 +64,5 @@ public interface TripMgmtIF {
      * @return lista di viaggi con status COMPLETED
      */
     List<Trip> getTripHistory(String userId);
+    Trip updateTrip(String tripId, UpdateTripRequest request);
 }

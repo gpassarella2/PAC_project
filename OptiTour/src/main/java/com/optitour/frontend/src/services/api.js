@@ -132,4 +132,9 @@ export const optimizeTrip = (id) =>
 export const getMonumentsByCity = (city) =>
   api.get('/api/monuments', { params: { city } });
 
+
+// PUT /api/trips/{id}  { name, city, startPoint, stages[] }
+export const updateTrip = (id, data) =>
+  api.put(`/api/trips/${id}`, data);
+
 export default api;
