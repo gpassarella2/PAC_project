@@ -1,0 +1,254 @@
+\section{Test}
+In questa sezione vengono descritte le attività di testing, finalizzate alla verifica della qualità e dell’affidabilità del sistema.
+\subsection{Test: CodeMR}
+L’analisi statica conferma che OptiTour presenta una struttura solida. Il software risulta pulito e privo di componenti critici. L’assenza di “classi problematiche” dimostra che il codice è stato sviluppato con cura, mantenendo ogni modulo isolato e facilmente gestibile. Questo garantisce che il sistema sia semplice da manutenere e pronto per le iterazioni successive del progetto.
+
+\begin{figure}[H]
+    \centering
+    % --- 2. COMPLESSITÀ ---
+    \begin{minipage}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Iterazione1/Diagrammi/codeMR/complessità.png}
+        \caption{Analisi della complessità.}
+        \label{fig:IT1_Complexity_MVC}
+    \end{minipage}
+    \hfill
+    % --- 3. ACCOPPIAMENTO ---
+    \begin{minipage}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Iterazione1/Diagrammi/codeMR/Accoppiamento.png}
+        \caption{Grado di accoppiamento.}
+        \label{fig:IT1_Coupling_MVC}
+    \end{minipage}
+    \hfill
+    % --- 4. COESIONE ---
+    \begin{minipage}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Iterazione1/Diagrammi/codeMR/MancanzaCoesione.png}
+        \caption{Livello di coesione.}
+        \label{fig:IT1_Cohesion_MVC}
+    \end{minipage}
+\end{figure}
+% --- 1. STRUTTURA DEI PACKAGE ---
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Iterazione1/Diagrammi/codeMR/StrutturaPackage.png}
+    \caption{Distribuzione dei componenti: organizzazione delle classi nei package Model, View/DTO, Service e Controller.}
+    \label{fig:IT1_MVC_Structure}
+\end{figure}
+
+
+\newpage
+\newpage
+\subsection{Test: Junit}
+Per garantire l'affidabilità del sistema e la correttezza della logica di business, è stata implementata una suite di test automatizzati. Di seguito vengono riportati gli esiti dei test eseguiti per le diverse componenti.
+
+\subsubsection*{1. Autenticazione e Gestione Utenti}
+I test relativi all'autenticazione coprono i flussi di registrazione, login (con generazione del token JWT) e gestione del profilo. Come si può osservare nelle \autoref{fig:test_auth_controller} e \autoref{fig:test_auth_service}, sono stati verificati sia gli endpoint che la logica di business sottostante.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.65\textwidth]{Iterazione1/Diagrammi/Test/AuthControllerTest.png}
+    \caption{Test degli endpoint di autenticazione.}
+    \label{fig:test_auth_controller}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.65\textwidth]{Iterazione1/Diagrammi/Test/AuthServiceTest.png}
+    \caption{Test della logica di autenticazione.}
+    \label{fig:test_auth_service}
+\end{figure}
+
+Allo stesso modo, le \autoref{fig:test_user_controller} e \autoref{fig:test_user_service} mostrano il superamento dei test relativi alla gestione anagrafica degli utenti.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.65\textwidth]{Iterazione1/Diagrammi/Test/UserControllerTest.png}
+    \caption{Test degli endpoint profilo utente.}
+    \label{fig:test_user_controller}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.65\textwidth]{Iterazione1/Diagrammi/Test/UserServiceTest.png}
+    \caption{Test della logica gestione utente.}
+    \label{fig:test_user_service}
+\end{figure}
+
+\subsubsection*{2. Gestione Monumenti}
+I test verificano il corretto recupero dei dati, validando sia l'integrità delle risposte (\autoref{fig:test_monument_controller}) sia il meccanismo di salvataggio locale dopo la chiamata a Overpass API (\autoref{fig:test_monument_service}).
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.65\textwidth]{Iterazione1/Diagrammi/Test/MonumentControllerTest.png}
+    \caption{Test degli endpoint monumenti.}
+    \label{fig:test_monument_controller}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\textwidth]{Iterazione1/Diagrammi/Test/MonumentServiceTest.png}
+    \caption{Test integrazione Overpass API.}
+    \label{fig:test_monument_service}
+\end{figure}
+
+\subsubsection*{3. Motore di Ottimizzazione e Viaggi}
+Questa sezione rappresenta il cuore algoritmico del sistema. La \autoref{fig:test_opt_engine} illustra la validazione del TSP, mentre nelle \autoref{fig:test_route_service} e \autoref{fig:test_trip_service} vengono testate l'integrazione con Nominatim e la persistenza finale dei viaggi ottimizzati. Inoltre, la \autoref{fig:test_trip_controller} mostra il superamento dei test degli endpoint relativi ai viaggi.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{Iterazione1/Diagrammi/Test/TripServiceTest.png}
+\caption{Test creazione viaggi con Nominatim.}
+\label{fig:test_trip_service}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{Iterazione1/Diagrammi/Test/TripControllerTest.png}
+\caption{Test degli endpoint relativi ai viaggi.}
+\label{fig:test_trip_controller}
+
+\end{figure}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.60\textwidth]{Iterazione1/Diagrammi/Test/OptimizationEngineTest.png}
+\caption{Validazione approfondita dell'algoritmo di ottimizzazione TSP.}
+\label{fig:test_opt_engine}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.65\textwidth]{Iterazione1/Diagrammi/Test/RouteOptimizationServiceTest.png}
+\caption{Test del servizio di ottimizzazione.}
+\label{fig:test_route_service}
+\end{figure}
+
+
+
+
+\newpage
+\subsection{API Esposte}
+In questa sezione vengono descritte le principali API esposte dal backend tramite i controller di Spring Boot, necessarie per supportare i casi d'uso sviluppati in questa prima fase e testate con successo tramite Postman.
+
+\subsubsection*{1. Autenticazione e Profilo Utente}
+
+\textbf{Registrazione Utente}
+\begin{itemize}
+    \item \textbf{Endpoint:} \texttt{POST /api/auth/register}
+    \item \textbf{Descrizione:} Registra un nuovo utente nel sistema creando un account personale (come mostrato in Figura \autoref{fig:api_register}).
+    \item \textbf{Payload:}
+    \begin{itemize}
+        \item \texttt{username} (string) - L'username scelto dall'utente.
+        \item \texttt{email} (string) - L'indirizzo email dell'utente.
+        \item \texttt{password} (string) - La password dell'account.
+    \end{itemize}
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{Iterazione1/Diagrammi/API/Register.png}
+    \caption{Test su Postman: Registrazione di un nuovo utente nel sistema.}
+    \label{fig:api_register}
+\end{figure}
+
+\textbf{Autenticazione (Login)}
+\begin{itemize}
+    \item \textbf{Endpoint:} \texttt{POST /api/auth/login}
+    \item \textbf{Descrizione:} Autentica l'utente validando le credenziali e restituisce il token JWT di sessione (vedi \autoref{fig:api_login}).
+    \item \textbf{Payload:}
+    \begin{itemize}
+        \item \texttt{usernameOrEmail} (string) - L'username o l'email dell'utente.
+        \item \texttt{password} (string) - La password dell'account.
+    \end{itemize}
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{Iterazione1/Diagrammi/API/Login.png}
+    \caption{Test su Postman: Login utente e generazione del token di autenticazione JWT.}
+    \label{fig:api_login}
+\end{figure}
+
+\vspace{0.5cm}
+\subsubsection*{2. Gestione Monumenti}
+
+\textbf{Ricerca Monumenti per Città}
+\begin{itemize}
+    \item \textbf{Endpoint:} \texttt{GET /api/monuments}
+    \item \textbf{Descrizione:} Recupera la lista dei monumenti per una specifica città (vedi \autoref{fig:api_monuments}). Se non presenti nel DB, innesca la chiamata verso Overpass API.
+    \item \textbf{Parametri:}
+    \begin{itemize}
+        \item \texttt{city} (string) - Query parameter con il nome della città.
+    \end{itemize}
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{Iterazione1/Diagrammi/API/StartingPoint.png}
+    \caption{Test su Postman: Recupero della lista dei monumenti per la città di Bergamo.}
+    \label{fig:api_monuments}
+\end{figure}
+
+\vspace{0.5cm}
+\subsubsection*{3. Gestione Viaggi e Ottimizzazione}
+
+\textbf{Creazione di un Viaggio}
+\begin{itemize}
+    \item \textbf{Endpoint:} \texttt{POST /api/trips}
+    \item \textbf{Descrizione:} Crea un nuovo itinerario manuale associato all'utente, salvando punto di partenza, tappe e stime temporali di visita in stato DRAFT. I dettagli della richiesta e della risposta sono illustrati in \autoref{fig:api_create_trip_req} e \autoref{fig:api_create_trip_resp}.
+    \item \textbf{Parametri e Payload:}
+    \begin{itemize}
+        \item \texttt{userId} (string) - Query parameter con l'ID dell'utente.
+        \item \texttt{name} (string) - Nome assegnato al viaggio.
+        \item \texttt{city} (string) - Città del viaggio.
+        \item \texttt{startPoint} (string) - Punto di partenza.
+        \item \texttt{stages} (array) - Lista delle tappe (monumenti) selezionate.
+    \end{itemize}
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{Iterazione1/Diagrammi/API/CreateTripReq.png}
+    \caption{Test su Postman: Payload di richiesta per la creazione di un nuovo viaggio.}
+    \label{fig:api_create_trip_req}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{Iterazione1/Diagrammi/API/CreateTripResp.png}
+    \caption{Test su Postman: Risposta del server con il salvataggio del viaggio in stato DRAFT.}
+    \label{fig:api_create_trip_resp}
+\end{figure}
+
+\textbf{Ottimizzazione Percorso}
+\begin{itemize}
+    \item \textbf{Endpoint:} \texttt{POST /api/trips/\{id\}/optimize}
+    \item \textbf{Descrizione:} Avvia l'algoritmo di ottimizzazione (TSP) sulle tappe. Restituisce il nuovo ordine calcolato aggiornando lo stato in SAVED, come evidenziato in \autoref{fig:api_trip_optimized}.
+    \item \textbf{Parametri:}
+    \begin{itemize}
+        \item \texttt{\{id\}} (string) - ID del viaggio da ottimizzare.
+    \end{itemize}
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{Iterazione1/Diagrammi/API/TripOptimized.png}
+    \caption{Test su Postman: Esecuzione dell'algoritmo di ottimizzazione TSP. La risposta mostra l'itinerario riordinato con calcolo di distanza e tempi totali.}
+    \label{fig:api_trip_optimized}
+\end{figure}
+
+\textbf{Eliminazione di un Viaggio}
+\begin{itemize}
+    \item \textbf{Endpoint:} \texttt{DELETE /api/trips/\{id\}}
+    \item \textbf{Descrizione:} Permette l'eliminazione di un itinerario dal database (vedi \autoref{fig:api_delete_trip}).
+    \item \textbf{Parametri:}
+    \begin{itemize}
+        \item \texttt{\{id\}} (string) - ID del viaggio da rimuovere.
+    \end{itemize}
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.75\textwidth]{Iterazione1/Diagrammi/API/DeleteTrip.png}
+    \caption{Test su Postman: Eliminazione corretta di un viaggio con risposta 204 No Content.}
+    \label{fig:api_delete_trip}
+\end{figure}

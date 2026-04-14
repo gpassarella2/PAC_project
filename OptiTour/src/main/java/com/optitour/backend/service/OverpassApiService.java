@@ -35,7 +35,7 @@ public class OverpassApiService implements OverpassApiMgmtIF{
     public List<Monument> fetchMonumentsByCity(String city) {
         String query = buildQuery(city);
 
-        int attempts = 3;
+        int attempts = 10;
 
         for (int i = 0; i < attempts; i++) {
             try {
@@ -63,20 +63,24 @@ public class OverpassApiService implements OverpassApiMgmtIF{
     }
 
     
-     //cerca monumenti in una città.
-     
-    private String buildQuery(String city) {
+    private String buildQuery(String location) {
         return String.format("""
-                [out:json][timeout:25];
-                area["name"="%s"]["boundary"="administrative"]->.searchArea;
+                [out:json][timeout:60];
+                // 1. Cerca relazioni amministrative che abbiano QUALSIASI tag di nome
+                // (name, name:it, name:en, name:fr, ecc.) corrispondente alla ricerca
+                relation["boundary"="administrative"][~"^name(:.*)?$"~"^%1$s$", i];
+                
+                // 2. Converte la relazione trovata in un'area di ricerca
+                map_to_area->.searchArea;
+                
+                // 3. Cerca i monumenti all'interno di quell'area
                 (
                   node["tourism"~"museum|attraction|monument|artwork|viewpoint"]["name"](area.searchArea);
                   node["historic"~"monument|castle|ruins|memorial"]["name"](area.searchArea);
                 );
                 out body;
-                """, city);
+                """, location);
     }
-
 
     //lista di Monument
 
