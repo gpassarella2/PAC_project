@@ -311,16 +311,16 @@ export default function MyTripsPage() {
         .trip-card-date { font-size: 0.75rem; color: var(--text-dim); }
 		/* Pulsante Modifica stile*/
 		.btn-edit {
-		  background-color: #d4f4d4;  /* verde chiaro */
-		  color: #1b7a1b;             /* testo verde scuro */
-		  border: 1px solid #1b7a1b;  /* bordo verde scuro */
+		  background-color: #f7f7f7;  /* verde chiaro */
+		  color: #0011ff;             /* testo verde scuro */
+		  border: 1px solid #0011ff;  /* bordo verde scuro */
 		  transition: all 0.2s;
 		}
 
 		.btn-edit:hover {
-		  background-color: #22c55e;  /* verde pieno (tipo success) */
+		  background-color: #0011ff;  /* verde pieno (tipo success) */
 		  color: #ffffff;             /* testo bianco */
-		  border-color: #22c55e;
+		  border-color: #0011ff;
 		}
       `}</style>
     </div>
