@@ -2,14 +2,21 @@ package com.optitour.backend.controller;
 
 import com.optitour.backend.dto.CreateTripRequest;
 import com.optitour.backend.dto.TripResponse;
+import com.optitour.backend.repository.UserRepository;
+import java.util.Map;
+import java.util.stream.Collectors;
+import com.optitour.backend.model.User;
 import com.optitour.backend.dto.UpdateTripRequest;
 import com.optitour.backend.dto.OptimizedTripResponse;
 import com.optitour.backend.service.RouteOptimizationServiceMgmt;
 import com.optitour.backend.model.Trip;
 import com.optitour.backend.model.Trip.TripStatus;
+import com.optitour.backend.model.User;
 import com.optitour.backend.service.TripMgmtIF;
 import com.optitour.backend.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -114,6 +121,74 @@ public class TripController {
         return ResponseEntity.ok(result);
     }
     
+    @GetMapping("/public")
+    public ResponseEntity<List<TripResponse>> getPublicTrips() {
+        List<Trip> trips = tripService.getPublicTrips();
+
+        // Batch-resolve username per evitare N+1 query
+        // raccoglie tutti gli userId univoci, carica gli utenti in un'unica query
+        List<String> userIds = trips.stream()
+                .map(Trip::getUserId)
+                .distinct()
+                .collect(Collectors.toList());
+        Map<String, String> usernameById = userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, User::getUsername));
+
+        List<TripResponse> response = trips.stream()
+                .map(t -> toResponse(t, usernameById.get(t.getUserId())))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{id}/publish")
+    public ResponseEntity<TripResponse> publishTrip(@PathVariable String id,
+                                         @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
+        Trip trip = tripService.publishTrip(id, user.getId());
+        return ResponseEntity.ok(toResponse(trip));
+    }
+    
+    @PostMapping("/{id}/unpublish")
+    public ResponseEntity<TripResponse> unpublishTrip(@PathVariable String id,
+                                           @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
+        Trip trip = tripService.unpublishTrip(id, user.getId());
+        return ResponseEntity.ok(toResponse(trip));
+    }
+
+
+    /**
+     * GET /api/trips/random/catalog
+     * Restituisce un viaggio pubblico scelto casualmente dal catalogo.
+     * La selezione casuale è delegata a TripService.
+     */
+    @GetMapping("/random/catalog")
+    public ResponseEntity<TripResponse> getRandomFromCatalog(
+            @RequestParam(required = false) String city) {
+        try {
+            Trip random = tripService.getRandomPublicTrip(city);
+            return ResponseEntity.ok(toResponse(random));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
+     * POST /api/trips/random/generate?city=...&availableMinutes=...
+     * Crea un viaggio con monumenti scelti casualmente per la città e il tempo indicati.
+     */
+    @PostMapping("/random/generate")
+    public ResponseEntity<TripResponse> generateRandomTrip(
+            @RequestParam String city,
+            @RequestParam int availableMinutes,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
+        Trip trip = tripService.generateRandomTrip(city, availableMinutes, user.getId());
+        return ResponseEntity.ok(toResponse(trip));
+    }
     /** PUT /api/trips/{id} — aggiorna nome, città, partenza e tappe */
     @PutMapping("/{id}")
     public ResponseEntity<TripResponse> updateTrip(@PathVariable String id,
@@ -197,6 +272,11 @@ public class TripController {
     //Converte un Trip in TripResponse.
 
     private TripResponse toResponse(Trip trip) {
+        return toResponse(trip, null);
+    }
+
+    // Converte un Trip in TripResponse con username autore (per il catalogo pubblico).
+    private TripResponse toResponse(Trip trip, String authorUsername) {
         List<TripResponse.TripStageResponse> stageResponses = trip.getStages().stream()
                 .map(s -> new TripResponse.TripStageResponse(
                         s.getMonumentId(),
@@ -207,7 +287,9 @@ public class TripController {
                 trip.getId(), trip.getUserId(), trip.getName(), trip.getCity(),
                 trip.getStartPoint(), trip.getStartLat(), trip.getStartLon(),
                 stageResponses, trip.getStatus().name(),
-                trip.getCreatedAt(), trip.getUpdatedAt());
+                trip.getCreatedAt(), trip.getUpdatedAt(),
+                trip.isPublic(), trip.getPublishedAt(), authorUsername,
+                trip.getTotalDistanceMeters(), trip.getTotalDurationSeconds());
     }
     
     /**

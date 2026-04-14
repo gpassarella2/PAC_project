@@ -94,6 +94,10 @@ public class RouteOptimizationService implements RouteOptimizationServiceMgmt {
         trip.setStages(result.orderedStages());
         trip.setStatus(Trip.TripStatus.SAVED);
         trip.setUpdatedAt(Instant.now());
+        // Persistiamo le metriche nel documento Trip così sono disponibili
+        // quando il viaggio viene riaperto da MyTrips o dal catalogo
+        trip.setTotalDistanceMeters(result.totalDistanceMeters());
+        trip.setTotalDurationSeconds(result.totalDurationSeconds());
         Trip saved = tripRepository.save(trip);
 
         System.out.println("Trip id=" + saved.getId() + " ottimizzato e salvato. Distanza="

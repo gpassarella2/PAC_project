@@ -5,6 +5,8 @@ import Header from '../components/Header';
 import {
   getTripsByUser,
   deleteTrip,
+  publishTrip,
+  unpublishTrip,
   saveTripToFavorites,
   removeTripFromFavorites,
   completeTrip,
@@ -57,6 +59,7 @@ function StatusBadge({ status }) {
     SAVED:     { cls: 'badge-accent',  label: 'In programma' },
     STARRED:   { cls: 'badge-star',    label: '★ Preferito' },
     COMPLETED: { cls: 'badge-green',   label: 'Completato' },
+    DRAFT:     { cls: 'badge-muted',   label: 'Bozza' },
   };
   // Se lo stato non è nella mappa, usa badge grigio con il valore grezzo
   const s = map[status] || { cls: 'badge-muted', label: status };
@@ -65,10 +68,9 @@ function StatusBadge({ status }) {
 
 /**
  * Card di un singolo viaggio.
- * Mostra il bottone "★ Preferito" / "☆ Preferito" e "Completa viaggio"
- * solo se il viaggio non è già COMPLETED.
+ * Mostra i bottoni per gestire i preferiti, completare e pubblicare.
  */
-function TripCard({ trip, onDelete, onToggleFavorite, onComplete, onRestore, onClick, activeTab }) {
+function TripCard({ trip, onDelete, onToggleFavorite, onComplete, onRestore, onPublish, onClick, activeTab }) {
   const navigate = useNavigate();
   
   // Calcola il tempo totale di visita sommando i minuti di ogni tappa
@@ -105,6 +107,13 @@ function TripCard({ trip, onDelete, onToggleFavorite, onComplete, onRestore, onC
         )}
       </div>
 
+      {/* Indicatore pubblicazione */}
+      {trip.isPublic && (
+        <div style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 500 }}>
+          🌐 Pubblicato nel catalogo
+        </div>
+      )}
+
       {/* Azioni inline: Preferiti e Completa (solo se non completato) */}
       {!isCompleted && (
         <div className="trip-card-actions" onClick={e => e.stopPropagation()}>
@@ -140,10 +149,22 @@ function TripCard({ trip, onDelete, onToggleFavorite, onComplete, onRestore, onC
         </div>
       )}
 
-      {/* Footer card: data creazione + pulsanti elimina/modifica */}
+      {/* Footer card: data creazione + pulsanti elimina/modifica/pubblica */}
       <div className="trip-card-footer">
         <span className="trip-card-date">{formatDate(trip.createdAt)}</span>
         <div style={{ display: 'flex', gap: '6px' }} onClick={e => e.stopPropagation()}>
+          {/* Pubblica: disponibile solo per trip ottimizzati o completati */}
+          {trip.status !== 'DRAFT' && (
+            <button
+              id={`btn-publish-${trip.id}`}
+              className={`btn btn-sm ${trip.isPublic ? 'btn-secondary' : 'btn-ghost'}`}
+              title={trip.isPublic ? 'Rimuovi dal catalogo pubblico' : 'Pubblica nel catalogo pubblico'}
+              onClick={() => onPublish(trip)}
+            >
+              {trip.isPublic ? 'Annulla' : 'Pubblica'}
+            </button>
+          )}
+
           {/* Pulsante Modifica: visibile solo se non completato */}
           {!isCompleted && (
             <button
@@ -182,6 +203,7 @@ export default function MyTripsPage() {
   // --- UI state ---
   const [loading, setLoading] = useState(true); // true mentre i dati stanno arrivando
   const [error, setError] = useState(''); // Messaggio di errore
+  const [publishError, setPublishError] = useState(''); // Messaggio di errore per publish/unpublish
   const [search, setSearch] = useState(''); // Testo digitato nella barra di ricerca
   const [statusFilter, setStatusFilter] = useState(''); // Filtro per stato ("" per tutti)
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'favorites' | 'history'
@@ -281,10 +303,34 @@ export default function MyTripsPage() {
       } catch { }
   };
 
+  // Pubblica o annulla pubblicazione di un viaggio
+  const handlePublish = async (trip) => {
+    setPublishError('');
+    try {
+      const res = trip.isPublic
+        ? await unpublishTrip(trip.id)
+        : await publishTrip(trip.id);
+      // aggiorna la card localmente senza ricaricare tutto
+      setTrips(prev => prev.map(t => t.id === trip.id
+        ? { ...t, isPublic: res.data.isPublic, publishedAt: res.data.publishedAt }
+        : t
+      ));
+      setHistory(prev => prev.map(t => t.id === trip.id
+        ? { ...t, isPublic: res.data.isPublic, publishedAt: res.data.publishedAt }
+        : t
+      ));
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Errore durante la pubblicazione';
+      setPublishError(msg);
+      setTimeout(() => setPublishError(''), 4000);
+    }
+  };
+
   const statuses = [
     { value: 'SAVED',     label: 'In programma' },
     { value: 'STARRED',   label: 'Preferiti' },
     { value: 'COMPLETED', label: 'Completati' },
+    { value: 'DRAFT',     label: 'Bozze' },
   ];
 
   return (
@@ -356,6 +402,7 @@ export default function MyTripsPage() {
         )}
 
         {error && <div className="error-msg">{error}</div>}
+        {publishError && <div className="error-msg">{publishError}</div>}
 
         {/* Stato vuoto */}
         {!loading && !error && currentList.length === 0 && (
@@ -386,6 +433,7 @@ export default function MyTripsPage() {
               onToggleFavorite={handleToggleFavorite}
               onComplete={handleComplete}
               onRestore={handleRestore}
+              onPublish={handlePublish}
               onClick={() => navigate(`/itinerary/${trip.id}`)}
               activeTab={activeTab}
             />

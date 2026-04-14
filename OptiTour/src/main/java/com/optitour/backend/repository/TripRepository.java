@@ -36,4 +36,9 @@ public interface TripRepository extends MongoRepository<Trip, String> {
      * Elimina tutti i viaggi di un utente..
      */
     void deleteByUserId(String userId);
+    
+    
+    List<Trip> findByIsPublicTrueOrderByPublishedAtDesc();
+    
+    List<Trip> findByIsPublicTrueAndCityIgnoreCaseOrderByPublishedAtDesc(String city);
 }
