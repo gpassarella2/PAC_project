@@ -330,7 +330,6 @@ export default function MyTripsPage() {
     { value: 'SAVED',     label: 'In programma' },
     { value: 'STARRED',   label: 'Preferiti' },
     { value: 'COMPLETED', label: 'Completati' },
-    { value: 'DRAFT',     label: 'Bozze' },
   ];
 
   return (

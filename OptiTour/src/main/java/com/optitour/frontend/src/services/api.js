@@ -154,7 +154,6 @@ export const getRandomCatalogTrip = (city) =>
 export const generateRandomTrip = (city, availableMinutes) =>
   api.post('/api/trips/random/generate', null, { params: { city, availableMinutes } });
 
-export default api;
 // PUT /api/trips/{id}  { name, city, startPoint, stages[] }
 export const updateTrip = (id, data) =>
   api.put(`/api/trips/${id}`, data);

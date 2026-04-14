@@ -4,6 +4,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
@@ -26,6 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.optitour.backend.dto.CreateTripRequest;
+import com.optitour.backend.dto.TripResponse;
 import com.optitour.backend.model.Monument;
 import com.optitour.backend.model.Trip;
 import com.optitour.backend.model.User;
@@ -34,7 +38,7 @@ import com.optitour.backend.repository.TripRepository;
 import com.optitour.backend.repository.UserRepository;
 import com.optitour.backend.service.TripService;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 class TripControllerTest {
 
@@ -44,6 +48,8 @@ class TripControllerTest {
     @Autowired private MonumentRepository monumentRepository;
     @Autowired private TripRepository tripRepository;
     @Autowired private ObjectMapper objectMapper;
+    @Autowired private TestRestTemplate restTemplate;
+
 
     private String validMonumentId;
     private String userId;
@@ -518,7 +524,7 @@ class TripControllerTest {
         privateTrip.setCity("Milano");
         privateTrip.setStartPoint("Milano, Italy");
         privateTrip.setStages(List.of());
-        privateTrip.setStatus(Trip.TripStatus.DRAFT);
+        privateTrip.setStatus(Trip.TripStatus.SAVED);
         privateTrip.setPublic(false);
         privateTrip.setCreatedAt(java.time.Instant.now());
         privateTrip.setUpdatedAt(java.time.Instant.now());
@@ -532,8 +538,6 @@ class TripControllerTest {
     }
      
     
-    
-}
 
 
     // --- RESTORE -------------------------
@@ -562,9 +566,6 @@ class TripControllerTest {
         mockMvc.perform(put("/api/trips/id-inesistente/restore"))
                 .andExpect(status().isNotFound());
     }
-
-}
-    
     
     @Test
     @WithMockUser(username = "testuser")

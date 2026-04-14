@@ -86,7 +86,7 @@ public class TripService implements TripMgmtIF {
                 .startLat(coords[0])
                 .startLon(coords[1])
                 .stages(stages)
-                .status(TripStatus.DRAFT)   // ← scegli SAVED se preferisci
+                .status(TripStatus.SAVED)
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
                 .build();
@@ -372,7 +372,7 @@ public class TripService implements TripMgmtIF {
                 .startLat(startLat)
                 .startLon(startLon)
                 .stages(stages)
-                .status(TripStatus.DRAFT)
+                .status(TripStatus.SAVED)
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
                 .build();
@@ -387,7 +387,7 @@ public class TripService implements TripMgmtIF {
     /**
      * Converte un indirizzo in coordinate lat/lon tramite Nominatim.
      */
-    private double[] geocode(String address) {
+    double[] geocode(String address) {
         String url = NOMINATIM_URL + "?q="
                 + URLEncoder.encode(address, StandardCharsets.UTF_8)
                 + "&format=json&limit=1";
