@@ -1,5 +1,6 @@
 \section{Casi d'uso implementati}
-In questa seconda fase di sviluppo, l'attenzione si è concentrata sull'estensione delle funzionalità di gestione dei viaggi, sull'introduzione del catalogo pubblico e sull'implementazione dello storico e dei preferiti. Di seguito sono riportati i casi d'uso sviluppati per questa iterazione, conformemente ai requisiti iniziali.
+In questa seconda fase di sviluppo, l'attenzione si è concentrata sull'estensione delle funzionalità di gestione dei viaggi, con particolare riguardo alla condivisione e alla modifica granulare degli itinerari. Sono stati implementati il catalogo pubblico (con la relativa funzione di pubblicazione), lo storico, la gestione dei percorsi salvati/preferiti e la possibilità di eliminare singole tappe. Di seguito sono riportati i casi d'uso sviluppati per questa iterazione, in conformità con i requisiti iniziali.
+
 \begin{table}[htbp]
 \centering
 \renewcommand{\arraystretch}{1.2}
@@ -13,15 +14,19 @@ UC3.3 & Visualizza storico \\
 \hline
 UC4 & Filtri ricerca \\
 \hline
-UC5 & Salva percorso come preferito\\
+UC5 & Salva percorso nei preferiti \\
 \hline
-UC7 & Rimuovi percorso come preferito \\
+UC7 & Rimuovi percorso salvato \\
+\hline
+UC8 & Pubblica percorso nel catalogo \\
 \hline
 UC10 & Imposta percorso completato \\
 \hline
 UC12.2 & Creazione itinerario casuale \\
 \hline
 UC15 & Modifica tappe \\
+\hline
+UC16 & Elimina tappa \\
 \hline
 \end{tabular}
 \caption{Iterazione 2 - Casi d'uso implementati}
@@ -30,13 +35,13 @@ UC15 & Modifica tappe \\
 
 \subsection*{UC3.1: Visualizza catalogo}
 \textbf{Attori:} Utente, Sistema.\\
-\textbf{Descrizione:} L'utente può visualizzare percorsi creati da altri utenti e resi pubblici, inseriti all'interno di un catalogo condiviso.\\
+\textbf{Descrizione:} L'utente può visualizzare percorsi creati da altri utenti e resi pubblici, raccolti all'interno di un catalogo condiviso.\\
 \textbf{Flusso degli eventi:}
 \begin{enumerate}
-    \item L'utente non registrato accede alla sezione "Catalogo" tramite l'interfaccia principale.
+    \item L'utente accede alla sezione "Catalogo" tramite l'interfaccia principale.
     \item Il sistema recupera dal database la lista dei viaggi con visibilità pubblica.
     \item Il sistema mostra all'utente l'elenco dei viaggi disponibili.
-    \item L'utente può selezionare un singolo viaggio per visualizzarne i dettagli (tappe, durata, distanza).
+    \item L'utente può selezionare un singolo viaggio per visualizzarne i dettagli.
 \end{enumerate}
 
 \subsection*{UC3.3: Visualizza storico}
@@ -51,67 +56,88 @@ UC15 & Modifica tappe \\
 
 \subsection*{UC4: Filtri ricerca}
 \textbf{Attori:} Utente, Sistema.\\
-\textbf{Descrizione:} L'utente può filtrare i percorsi presenti nel catalogo in base a diversi criteri (es. città, durata massima, numero di tappe).\\
+\textbf{Descrizione:} L'utente può filtrare i percorsi nel catalogo in base a criteri quali città, durata massima o numero di tappe.\\
 \textbf{Flusso degli eventi:}
 \begin{enumerate}
-    \item L'utente non registrato si trova nella sezione Catalogo e seleziona il filtro voluto.
-    \item L'utente non registrato avvia la ricerca.
-    \item Il sistema applica i filtri richiesti tramite una query strutturata su MongoDB.
-    \item Il sistema aggiorna la vista mostrando solo i viaggi che soddisfano i criteri selezionati.
+    \item L'utente imposta i parametri del filtro nella sezione Catalogo.
+    \item L'utente avvia la ricerca.
+    \item Il sistema applica i filtri tramite una query su MongoDB.
+    \item La vista viene aggiornata mostrando solo i risultati pertinenti.
 \end{enumerate}
 
 \subsection*{UC5: Salva percorso nei preferiti}
 \textbf{Attori:} Utente, Sistema.\\
-\textbf{Descrizione:} L'utente può salvare un percorso di interesse nella propria sezione dei percorsi preferiti.\\
+\textbf{Descrizione:} L'utente può aggiungere un percorso di interesse alla propria sezione dei preferiti.\\
 \textbf{Flusso degli eventi:}
 \begin{enumerate}
-    \item L'utente visualizza un viaggio dal Catalogo o ne crea uno nuovo.
-    \item L'utente clicca sul pulsante per salvare il viaggio.
-    \item Il sistema associa l'ID del viaggio all'elenco dei preferiti dell'utente nel database.
+    \item L'utente visualizza un viaggio dal Catalogo o dai propri viaggi.
+    \item Seleziona l'opzione di salvataggio nei preferiti.
+    \item Il sistema crea l'associazione nel database.
     \item Il sistema conferma l'avvenuto salvataggio.
 \end{enumerate}
 
-\subsection*{UC7: Rimuovi percorso preferito}
+\subsection*{UC7: Rimuovi percorso salvato}
 \textbf{Attori:} Utente, Sistema.\\
-\textbf{Descrizione:} L'utente può rimuovere un percorso precedentemente inserito nell'elenco dei propri percorsi preferiti.\\
+\textbf{Descrizione:} L'utente può rimuovere un itinerario precedentemente salvato nella propria area personale.\\
 \textbf{Flusso degli eventi:}
 \begin{enumerate}
-    \item L'utente accede alla sezione dei propri percorsi preferiti.
-    \item Seleziona l'opzione per rimuovere un viaggio specifico da tale elenco.
-    \item Il sistema elimina l'associazione tra l'utente e il viaggio nel database.
-    \item La lista dei percorsi preferiti viene aggiornata nell'interfaccia.
+    \item L'utente accede alla sezione dei percorsi salvati.
+    \item Seleziona il viaggio da rimuovere.
+    \item Il sistema elimina l'associazione nel database.
+    \item La lista viene aggiornata rimuovendo l'elemento dall'interfaccia.
+\end{enumerate}
+
+\subsection*{UC8: Pubblica percorso nel catalogo}
+\textbf{Attori:} Utente, Sistema.\\
+\textbf{Descrizione:} L'utente rende pubblico un proprio viaggio, permettendo ad altri utenti di visualizzarlo nel catalogo.\\
+\textbf{Flusso degli eventi:}
+\begin{enumerate}
+    \item L'utente apre i dettagli di un proprio viaggio salvato.
+    \item Seleziona l'opzione "Pubblica nel catalogo".
+    \item Il sistema aggiorna lo stato di visibilità dell'itinerario nel database.
+    \item Il percorso diventa visibile a tutti gli utenti nella sezione Catalogo.
 \end{enumerate}
 
 \subsection*{UC10: Imposta percorso completato}
 \textbf{Attori:} Utente, Sistema.\\
-\textbf{Descrizione:} L'utente può contrassegnare un percorso completato come completato al termine della sua visita reale.\\
+\textbf{Descrizione:} L'utente contrassegna un viaggio come completato al termine della visita.\\
 \textbf{Flusso degli eventi:}
 \begin{enumerate}
-    \item L'utente seleziona un viaggio nell'elenco dei propri percorsi.
-    \item Clicca sull'opzione "Segna come completato".
-    \item Il sistema aggiorna lo stato del viaggio nel database modificandolo in \texttt{COMPLETED}.
-    \item Il viaggio viene automaticamente spostato nella sezione Storico dell'utente.
+    \item L'utente seleziona un viaggio attivo.
+    \item Clicca su "Segna come completato".
+    \item Il sistema aggiorna lo stato in \texttt{COMPLETED}.
+    \item Il viaggio viene spostato automaticamente nella sezione Storico.
 \end{enumerate}
 
 \subsection*{UC12.2: Creazione itinerario casuale}
 \textbf{Attori:} Utente, Sistema.\\
-\textbf{Descrizione:} L'utente fa generare al sistema un itinerario in modo casuale, definendo parametri base come la città o il numero di luoghi da visitare.\\
+\textbf{Descrizione:} Generazione automatica di un itinerario basato su parametri casuali (città e numero tappe).\\
 \textbf{Flusso degli eventi:}
 \begin{enumerate}
-    \item L'utente seleziona l'opzione "Genera viaggio casuale" indicando una città e un vincolo di tappe.
-    \item Il sistema interroga il database (o Overpass API se necessario) per recuperare i POI disponibili in quell'area.
-    \item Il sistema seleziona un sottoinsieme casuale di monumenti rispettando i vincoli inseriti.
-    \item Il sistema genera il viaggio ottimizzato e lo mostra sulla mappa.
+    \item L'utente richiede un viaggio casuale specificando la città.
+    \item Il sistema recupera i POI (da database o Overpass API).
+    \item Il sistema seleziona un set casuale di monumenti rispettando i vincoli.
+    \item Viene generato e mostrato il percorso ottimizzato sulla mappa.
 \end{enumerate}
 
 \subsection*{UC15: Modifica tappe}
 \textbf{Attori:} Utente, Sistema.\\
-\textbf{Descrizione:} L'utente può modificare un viaggio esistente aggiungendo o rimuovendo tappe (POI) e richiedendo un ricalcolo dell'itinerario.\\
+\textbf{Descrizione:} L'utente modifica un viaggio esistente aggiungendo nuovi monumenti e richiedendo il ricalcolo dell'itinerario.\\
 \textbf{Flusso degli eventi:}
 \begin{enumerate}
-    \item L'utente apre i dettagli di un proprio viaggio.
-    \item Seleziona l'opzione di modifica ed elimina un POI esistente o ne aggiunge uno nuovo dalla mappa.
-    \item Il sistema aggiorna temporaneamente la lista delle tappe in attesa di conferma.
-    \item Il sistema invoca nuovamente l'Optimization Engine per ricalcolare il percorso ottimale (TSP).
-    \item Il viaggio viene salvato nel database con il nuovo itinerario ottimizzato e i nuovi parametri di distanza/tempo aggiornati.
+    \item L'utente apre un viaggio in modalità modifica.
+    \item Aggiunge una o più tappe selezionandole dalla mappa o dalla lista.
+    \item Il sistema invoca l'Optimization Engine per ricalcolare il percorso TSP.
+    \item Il viaggio aggiornato viene salvato con i nuovi dati di tempo e distanza.
+\end{enumerate}
+
+\subsection*{UC16: Elimina tappa}
+\textbf{Attori:} Utente, Sistema.\\
+\textbf{Descrizione:} L'utente può rimuovere una singola tappa da un itinerario esistente.\\
+\textbf{Flusso degli eventi:}
+\begin{enumerate}
+    \item L'utente apre i dettagli di un viaggio salvato.
+    \item Identifica la tappa da rimuovere e seleziona l'opzione di eliminazione.
+    \item Il sistema rimuove la tappa dalla lista e ricalcola immediatamente l'ottimizzazione del percorso rimanente.
+    \item L'interfaccia aggiorna la mappa e i dettagli del viaggio.
 \end{enumerate}
