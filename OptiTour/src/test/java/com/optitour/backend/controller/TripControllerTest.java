@@ -649,25 +649,22 @@ class TripControllerTest {
                         .content(objectMapper.writeValueAsString(update)))
                 .andExpect(status().isBadRequest());
     }
-/*test per aggiornamento e valutare se è ancora nei preferiti
     @Test
     @WithMockUser(username = "testuser")
-    void updateTrip_ShouldPreserveStatus_InResponse() throws Exception {
+    void exportTrip_ShouldReturnPdf() throws Exception {
         Trip trip = createTrip();
-        tripService.saveToFavorites(trip.getId(), userId);
 
-        CreateTripRequest.TripStageRequest stageReq = new CreateTripRequest.TripStageRequest();
-        stageReq.setMonumentId(validMonumentId);
-        stageReq.setVisitDurationMinutes(90);
-
-        com.optitour.backend.dto.UpdateTripRequest update =
-            new com.optitour.backend.dto.UpdateTripRequest();
-        update.setStages(List.of(stageReq));
-
-        mockMvc.perform(put("/api/trips/" + trip.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(update)))
+        mockMvc.perform(get("/api/trips/" + trip.getId() + "/export"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("STARRED"));
-    }*/
+                .andExpect(header().string(
+                        "Content-Disposition",
+                        "attachment; filename=\"itinerario.pdf\""
+                ))
+                .andExpect(content().contentType(MediaType.APPLICATION_PDF))
+                .andExpect(result -> {
+                    byte[] content = result.getResponse().getContentAsByteArray();
+                    assertNotNull(content);
+                    assertTrue(content.length > 0);
+                });
+    }
 }

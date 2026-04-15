@@ -8,13 +8,16 @@ import java.util.stream.Collectors;
 import com.optitour.backend.model.User;
 import com.optitour.backend.dto.UpdateTripRequest;
 import com.optitour.backend.dto.OptimizedTripResponse;
+import com.optitour.backend.service.ExportService;
+import com.optitour.backend.service.ExportServiceIF;
 import com.optitour.backend.service.RouteOptimizationServiceMgmt;
 import com.optitour.backend.model.Trip;
 import com.optitour.backend.model.Trip.TripStatus;
 import com.optitour.backend.model.User;
 import com.optitour.backend.service.TripMgmtIF;
 import com.optitour.backend.repository.UserRepository;
-import org.springframework.http.ResponseEntity;
+
+import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.Authentication;
@@ -36,11 +39,13 @@ public class TripController {
     private final TripMgmtIF tripService;
     private final RouteOptimizationServiceMgmt routeOptimizationService;
     private final UserRepository userRepository;
-
-    public TripController(TripMgmtIF tripService, RouteOptimizationServiceMgmt routeOptimizationService, UserRepository userRepository) {
+    private final ExportServiceIF exportService;
+    
+    public TripController(TripMgmtIF tripService, RouteOptimizationServiceMgmt routeOptimizationService, UserRepository userRepository, ExportServiceIF exportService) {
         this.tripService = tripService;
         this.routeOptimizationService = routeOptimizationService;
         this.userRepository = userRepository;
+        this.exportService =  exportService;
     }
 
     //Crea un nuovo viaggio.
@@ -302,4 +307,20 @@ public class TripController {
                 .getId();
     }
     
+    /**
+     * metodo per esportare il viaggio in un formato pdf
+     * 
+     */
+    @GetMapping("/{id}/export")
+    public ResponseEntity<byte[]> exportTrip(@PathVariable String id) {
+        Trip trip = tripService.getTripById(id)
+                .orElseThrow(() -> new NoSuchElementException("Viaggio non trovato"));
+
+        byte[] pdf = exportService.generateTripPdf(trip);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"itinerario.pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
+    }
 }
