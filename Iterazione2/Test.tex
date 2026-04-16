@@ -131,7 +131,6 @@ In questa sezione vengono descritte le principali API esposte dal backend tramit
 
 \end{itemize}
 
-\end{enumerate}
 
 \begin{figure}[H]
     \centering
@@ -147,3 +146,299 @@ In questa sezione vengono descritte le principali API esposte dal backend tramit
     \label{fig:updateTripResponse}
 \end{figure}
 
+% ── 2. Pubblicazione di un Viaggio ──────────
+\item \textbf{Pubblicazione di un Viaggio}
+ 
+\begin{itemize}
+\item \textbf{Endpoint:} POST /api/trips/\{id\}/publish
+ 
+\item \textbf{Descrizione:} Permette all'utente autenticato di rendere pubblico un proprio viaggio, rendendolo visibile nel catalogo condiviso.
+I dettagli della richiesta e della risposta sono illustrati in \autoref{fig:publishTripRequest} e \autoref{fig:publishTripResponse}.
+ 
+\item \textbf{Autenticazione:} Richiesta (Bearer Token JWT).
+ 
+\item \textbf{Parametri:}
+\begin{itemize}
+\item \{id\} (string) --- ID del viaggio da pubblicare.
+\end{itemize}
+ 
+\end{itemize}
+ 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione2/Diagrammi/API/PublishReq.png}
+\caption{Test su Postman: Richiesta di pubblicazione di un viaggio.}
+\label{fig:publishTripRequest}
+\end{figure}
+ 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione2/Diagrammi/API/PublishResp.png}
+\caption{Test su Postman: Risposta del server dopo la pubblicazione del viaggio.}
+\label{fig:publishTripResponse}
+\end{figure}
+ 
+ 
+% ── 3. Rimozione dalla Pubblicazione ────────
+\item \textbf{Rimozione dalla Pubblicazione di un Viaggio}
+ 
+\begin{itemize}
+\item \textbf{Endpoint:} POST /api/trips/\{id\}/unpublish
+ 
+\item \textbf{Descrizione:} Permette all'utente autenticato di rimuovere un proprio viaggio dal catalogo pubblico, rendendolo nuovamente privato.
+I dettagli della richiesta e della risposta sono illustrati in \autoref{fig:unpublishTripRequest} e \autoref{fig:unpublishTripResponse}.
+ 
+\item \textbf{Autenticazione:} Richiesta (Bearer Token JWT).
+ 
+\item \textbf{Parametri:}
+\begin{itemize}
+\item \{id\} (string) --- ID del viaggio da rimuovere dalla pubblicazione.
+\end{itemize}
+ 
+ 
+\end{itemize}
+ 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione2/Diagrammi/API/UnpublishReq.png}
+\caption{Test su Postman: Richiesta di rimozione dalla pubblicazione di un viaggio.}
+\label{fig:unpublishTripRequest}
+\end{figure}
+ 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione2/Diagrammi/API/UnpublishResp.png}
+\caption{Test su Postman: Risposta del server dopo la rimozione dalla pubblicazione.}
+\label{fig:unpublishTripResponse}
+\end{figure}
+ 
+ 
+% ── 4. Viaggio Casuale dal Catalogo ─────────
+\item \textbf{Recupero di un Viaggio Casuale dal Catalogo}
+ 
+\begin{itemize}
+\item \textbf{Endpoint:} GET /api/trips/random/catalog
+ 
+\item \textbf{Descrizione:} Restituisce un viaggio casuale tra quelli pubblici presenti nel catalogo. È possibile filtrare per città tramite il parametro opzionale \texttt{city}. In assenza di risultati viene restituito uno stato 404.
+I dettagli della richiesta e della risposta sono illustrati in \autoref{fig:randomCatalogRequest} e \autoref{fig:randomCatalogResponse}.
+ 
+\item \textbf{Autenticazione:} Non richiesta.
+ 
+\item \textbf{Parametri Query (opzionali):}
+\begin{itemize}
+\item city (string) --- Filtra i viaggi pubblici per città.
+\end{itemize}
+ 
+\end{itemize}
+ 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione2/Diagrammi/API/RandCatReq.png}
+\caption{Test su Postman: Richiesta di un viaggio casuale dal catalogo.}
+\label{fig:randomCatalogRequest}
+\end{figure}
+ 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione2/Diagrammi/API/RandCatResp.png}
+\caption{Test su Postman: Risposta del server con il viaggio casuale restituito.}
+\label{fig:randomCatalogResponse}
+\end{figure}
+ 
+ 
+% ── 5. Generazione Viaggio Casuale ──────────
+\item \textbf{Generazione di un Viaggio Casuale}
+ 
+\begin{itemize}
+\item \textbf{Endpoint:} POST /api/trips/random/generate
+ 
+\item \textbf{Descrizione:} Genera automaticamente un viaggio casuale per una città specificata, tenendo conto del tempo disponibile in minuti indicato dall'utente. Il viaggio generato viene associato all'utente autenticato.
+I dettagli della richiesta e della risposta sono illustrati in \autoref{fig:generateRandomTripRequest} e \autoref{fig:generateRandomTripResponse}.
+ 
+\item \textbf{Autenticazione:} Richiesta (Bearer Token JWT).
+ 
+\item \textbf{Parametri Query:}
+\begin{itemize}
+\item city (string) --- Città per la quale generare il viaggio.
+\item availableMinutes (int) --- Tempo disponibile espresso in minuti.
+\end{itemize}
+ 
+ 
+\end{itemize}
+ 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione2/Diagrammi/API/RandGenReq.png}
+\caption{Test su Postman: Richiesta di generazione di un viaggio casuale.}
+\label{fig:generateRandomTripRequest}
+\end{figure}
+ 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione2/Diagrammi/API/RandGenResp.png}
+\caption{Test su Postman: Risposta del server con il viaggio generato.}
+\label{fig:generateRandomTripResponse}
+\end{figure}
+ 
+ 
+% ── 6. Salvataggio nei Preferiti ────────────
+\item \textbf{Salvataggio di un Viaggio nei Preferiti}
+ 
+\begin{itemize}
+\item \textbf{Endpoint:} POST /api/trips/\{id\}/save
+ 
+\item \textbf{Descrizione:} Permette all'utente autenticato di salvare un viaggio pubblico nella propria lista dei preferiti.
+I dettagli della richiesta e della risposta sono illustrati in \autoref{fig:saveTripRequest} e \autoref{fig:saveTripResponse}.
+ 
+\item \textbf{Autenticazione:} Richiesta (Bearer Token JWT).
+ 
+\item \textbf{Parametri:}
+\begin{itemize}
+\item \{id\} (string) --- ID del viaggio da salvare nei preferiti.
+\end{itemize}
+ 
+\end{itemize}
+ 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione2/Diagrammi/API/SaveReq.png}
+\caption{Test su Postman: Richiesta di salvataggio di un viaggio nei preferiti.}
+\label{fig:saveTripRequest}
+\end{figure}
+ 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione2/Diagrammi/API/SaveResp.png}
+\caption{Test su Postman: Risposta del server dopo il salvataggio del viaggio.}
+\label{fig:saveTripResponse}
+\end{figure}
+ 
+ 
+% ── 7. Rimozione dai Preferiti ──────────────
+\item \textbf{Rimozione di un Viaggio dai Preferiti}
+ 
+\begin{itemize}
+\item \textbf{Endpoint:} DELETE /api/trips/\{id\}/save
+ 
+\item \textbf{Descrizione:} Permette all'utente autenticato di rimuovere un viaggio precedentemente salvato dalla propria lista dei preferiti.
+I dettagli della richiesta e della risposta sono illustrati in \autoref{fig:unsaveTripRequest} e \autoref{fig:unsaveTripResponse}.
+ 
+\item \textbf{Autenticazione:} Richiesta (Bearer Token JWT).
+ 
+\item \textbf{Parametri:}
+\begin{itemize}
+\item \{id\} (string) --- ID del viaggio da rimuovere dai preferiti.
+\end{itemize}
+ 
+\end{itemize}
+ 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione2/Diagrammi/API/UnsaveReq.png}
+\caption{Test su Postman: Richiesta di rimozione di un viaggio dai preferiti.}
+\label{fig:unsaveTripRequest}
+\end{figure}
+ 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione2/Diagrammi/API/UnsaveResp.png}
+\caption{Test su Postman: Risposta del server dopo la rimozione del viaggio dai preferiti.}
+\label{fig:unsaveTripResponse}
+\end{figure}
+ 
+ 
+% ── 8. Storico Viaggi ───────────────────────
+\item \textbf{Recupero dello Storico dei Viaggi}
+ 
+\begin{itemize}
+\item \textbf{Endpoint:} GET /api/trips/history
+ 
+\item \textbf{Descrizione:} Restituisce la lista dei viaggi completati dall'utente autenticato, costituendo lo storico personale dei viaggi effettuati.
+I dettagli della richiesta e della risposta sono illustrati in \autoref{fig:tripHistoryRequest} e \autoref{fig:tripHistoryResponse}.
+ 
+\item \textbf{Autenticazione:} Richiesta (Bearer Token JWT).
+ 
+ 
+\end{itemize}
+ 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione2/Diagrammi/API/HistoryReq.png}
+\caption{Test su Postman: Richiesta dello storico dei viaggi dell'utente.}
+\label{fig:tripHistoryRequest}
+\end{figure}
+ 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione2/Diagrammi/API/HistoryResp.png}
+\caption{Test su Postman: Risposta del server con la lista dei viaggi completati.}
+\label{fig:tripHistoryResponse}
+\end{figure}
+ 
+ 
+% ── 9. Completamento di un Viaggio ──────────
+\item \textbf{Completamento di un Viaggio}
+ 
+\begin{itemize}
+\item \textbf{Endpoint:} PUT /api/trips/\{id\}/complete
+ 
+\item \textbf{Descrizione:} Permette all'utente autenticato di marcare un viaggio come completato, aggiornandone lo stato e aggiungendolo allo storico personale.
+I dettagli della richiesta e della risposta sono illustrati in \autoref{fig:completeTripRequest} e \autoref{fig:completeTripResponse}.
+ 
+\item \textbf{Autenticazione:} Richiesta (Bearer Token JWT).
+ 
+\item \textbf{Parametri:}
+\begin{itemize}
+\item \{id\} (string) --- ID del viaggio da completare.
+\end{itemize}
+ 
+\end{itemize}
+ 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione2/Diagrammi/API/CompleteReq.png}
+\caption{Test su Postman: Richiesta di completamento di un viaggio.}
+\label{fig:completeTripRequest}
+\end{figure}
+ 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione2/Diagrammi/API/CompleteResp.png}
+\caption{Test su Postman: Risposta del server dopo il completamento del viaggio.}
+\label{fig:completeTripResponse}
+\end{figure}
+ 
+ 
+% ── 10. Ripristino di un Viaggio ─────────────
+\item \textbf{Ripristino di un Viaggio}
+ 
+\begin{itemize}
+\item \textbf{Endpoint:} PUT /api/trips/\{id\}/restore
+ 
+\item \textbf{Descrizione:} Permette all'utente autenticato di ripristinare un viaggio precedentemente completato, riportandolo allo stato attivo.
+I dettagli della richiesta e della risposta sono illustrati in \autoref{fig:restoreTripRequest} e \autoref{fig:restoreTripResponse}.
+ 
+\item \textbf{Autenticazione:} Richiesta (Bearer Token JWT).
+ 
+\item \textbf{Parametri:}
+\begin{itemize}
+\item \{id\} (string) --- ID del viaggio da ripristinare.
+\end{itemize}
+ 
+\end{itemize}
+ 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione2/Diagrammi/API/RestoreReq.png}
+\caption{Test su Postman: Richiesta di ripristino di un viaggio.}
+\label{fig:restoreTripRequest}
+\end{figure}
+ 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione2/Diagrammi/API/RestoreResp.png}
+\caption{Test su Postman: Risposta del server dopo il ripristino del viaggio.}
+\label{fig:restoreTripResponse}
+\end{figure}
+ 
+\end{enumerate}
