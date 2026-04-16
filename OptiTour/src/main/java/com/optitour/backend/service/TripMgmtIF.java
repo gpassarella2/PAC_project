@@ -1,6 +1,7 @@
 package com.optitour.backend.service;
 
 import com.optitour.backend.dto.CreateTripRequest;
+import com.optitour.backend.dto.TripResponse;
 import com.optitour.backend.dto.UpdateTripRequest;
 import com.optitour.backend.model.Trip;
 import com.optitour.backend.model.Trip.TripStatus;
@@ -26,13 +27,15 @@ public interface TripMgmtIF {
 
 	List<Trip> getPublicTrips();
 
-	Trip generateRandomTrip(String city, int availableMinutes, String userId);
+	Trip generateRandomTrip(String city, int availableMinutes, String username);
 
 	Trip getRandomPublicTrip(String city);
 
 	Trip publishTrip(String id, String id2);
 
 	Trip unpublishTrip(String id, String id2);
+	
+	TripResponse toPublicTripResponse(Trip trip, String authorUsername);
     
     // metodi per preferiti e storico ----------------------------------------
 
@@ -75,4 +78,8 @@ public interface TripMgmtIF {
      */
     List<Trip> getTripHistory(String userId);
     Trip updateTrip(String tripId, UpdateTripRequest request);
+    
+    
+    List<TripResponse> getPublicTripsWithUsername();
+
 }

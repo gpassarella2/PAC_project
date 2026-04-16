@@ -123,38 +123,26 @@ public class TripController {
     
     @GetMapping("/public")
     public ResponseEntity<List<TripResponse>> getPublicTrips() {
-        List<Trip> trips = tripService.getPublicTrips();
-
-        // Batch-resolve username per evitare N+1 query
-        // raccoglie tutti gli userId univoci, carica gli utenti in un'unica query
-        List<String> userIds = trips.stream()
-                .map(Trip::getUserId)
-                .distinct()
-                .collect(Collectors.toList());
-        Map<String, String> usernameById = userRepository.findAllById(userIds).stream()
-                .collect(Collectors.toMap(User::getId, User::getUsername));
-
-        List<TripResponse> response = trips.stream()
-                .map(t -> toResponse(t, usernameById.get(t.getUserId())))
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(tripService.getPublicTripsWithUsername());
     }
-
+    
     @PostMapping("/{id}/publish")
-    public ResponseEntity<TripResponse> publishTrip(@PathVariable String id,
-                                         @AuthenticationPrincipal UserDetails userDetails) {
-        User user = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
-        Trip trip = tripService.publishTrip(id, user.getId());
+    public ResponseEntity<TripResponse> publishTrip(
+            @PathVariable String id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+    	Trip trip = tripService.publishTrip(id, userDetails.getUsername());
+    	
         return ResponseEntity.ok(toResponse(trip));
     }
     
     @PostMapping("/{id}/unpublish")
-    public ResponseEntity<TripResponse> unpublishTrip(@PathVariable String id,
-                                           @AuthenticationPrincipal UserDetails userDetails) {
-        User user = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
-        Trip trip = tripService.unpublishTrip(id, user.getId());
+    public ResponseEntity<TripResponse> unpublishTrip(
+            @PathVariable String id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+    	Trip trip = tripService.unpublishTrip(id, userDetails.getUsername());
+    	
         return ResponseEntity.ok(toResponse(trip));
     }
 
@@ -184,11 +172,11 @@ public class TripController {
             @RequestParam String city,
             @RequestParam int availableMinutes,
             @AuthenticationPrincipal UserDetails userDetails) {
-        User user = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
-        Trip trip = tripService.generateRandomTrip(city, availableMinutes, user.getId());
+        
+        Trip trip = tripService.generateRandomTrip(city, availableMinutes, userDetails.getUsername());
         return ResponseEntity.ok(toResponse(trip));
     }
+    
     /** PUT /api/trips/{id} — aggiorna nome, città, partenza e tappe */
     @PutMapping("/{id}")
     public ResponseEntity<TripResponse> updateTrip(@PathVariable String id,
@@ -301,5 +289,7 @@ public class TripController {
                 .orElseThrow(() -> new RuntimeException("Utente non trovato: " + username))
                 .getId();
     }
+    
+    
     
 }
