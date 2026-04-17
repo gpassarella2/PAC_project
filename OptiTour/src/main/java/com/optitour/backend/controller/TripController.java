@@ -173,6 +173,8 @@ public class TripController {
             @AuthenticationPrincipal UserDetails userDetails) {
         
         Trip trip = tripService.generateRandomTrip(city, availableMinutes, userDetails.getUsername());
+        routeOptimizationService.optimizeAndSave(trip);
+             
         return ResponseEntity.ok(toResponse(trip));
     }
     
@@ -252,6 +254,14 @@ public class TripController {
 	    String userId = tripService.resolveUserId(authentication);
 	    Trip trip = tripService.restoreTrip(id, userId);
 	    return ResponseEntity.ok(toResponse(trip));
+	}
+	
+	@PostMapping("/{id}/clone")
+	public ResponseEntity<TripResponse> clonePublicTrip(@PathVariable String id,
+	                                                    Authentication authentication) {
+	    String userId = tripService.resolveUserId(authentication);
+	    Trip cloned = tripService.clonePublicTrip(id, userId);
+	    return ResponseEntity.ok(toResponse(cloned));
 	}
 
     // Helpers -------------------------------------------------------------------------------------

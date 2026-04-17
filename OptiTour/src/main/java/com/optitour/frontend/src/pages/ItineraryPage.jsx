@@ -27,8 +27,8 @@ import Header from '../components/Header';
 //  - getTripById:     GET /api/trips/{id}            → dati del viaggio
 //  - getMonumentById: GET /api/monuments/{id}         → dettagli monumento
 //  - optimizeTrip:    POST /api/trips/{id}/optimize   → ottimizzazione percorso
-import { getTripById, getMonumentById, optimizeTrip } from '../services/api';
-
+import { getTripById, getMonumentById, optimizeTrip, clonePublicTrip } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 // Icone Leaflet personalizzate
 
@@ -72,6 +72,7 @@ const startIcon = L.divIcon({
   iconSize: [34, 34],
   iconAnchor: [17, 17],
 });
+
 
 
 // ─── Formatting helpers ───────────────────────────────────────────────────────
@@ -119,7 +120,10 @@ export default function ItineraryPage() {
   const navigate = useNavigate();
 
   // ── Stato locale ────────────────────────────────────────────────────────────
+  const { user } = useAuth();
   const [trip, setTrip] = useState(null);               // Dati grezzi del viaggio dal backend
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const [enrichedStages, setEnrichedStages] = useState([]); // Tappe arricchite con nome, lat/lon, tipo, indirizzo
   const [loading, setLoading] = useState(true);         // True mentre il viaggio è in caricamento
   const [error, setError] = useState('');               // Messaggio di errore (se il fetch fallisce)
@@ -231,6 +235,20 @@ export default function ItineraryPage() {
   );
 
 
+  const handleSaveTrip = async () => {
+    setSaving(true);
+    setSaveError('');
+  try {
+    const res = await clonePublicTrip(tripId); // usa qui il nome reale della tua funzione
+    navigate('/my-trips');
+    // oppure: navigate(`/itinerary/${res.data.id}`);
+  } catch {
+    setSaveError('Errore durante il salvataggio del viaggio.');
+  } finally {
+    setSaving(false);
+  }
+};
+
   // ── Dati derivati per il render ──────────────────────────────────────────────
 
   // Alias locale: usiamo le tappe arricchite ([] durante il caricamento dei dettagli)
@@ -248,6 +266,7 @@ export default function ItineraryPage() {
   // Mappa dallo stato interno all'etichetta mostrata all'utente
   const statusLabel = { DRAFT: 'Bozza', SAVED: 'Ottimizzato', COMPLETED: 'Completato' };
 
+  
 
   // ── Render principale ────────────────────────────────────────────────────────
   return (
@@ -366,6 +385,22 @@ export default function ItineraryPage() {
             </span>
           </div>
 
+          {trip.isPublic && user?.id && trip.userId !== user.id && (
+              <button
+                className="btn btn-secondary"
+                style={{ marginTop: 12, width: '100%' }}
+                onClick={handleSaveTrip}
+                disabled={saving}
+              >
+                {saving ? 'Salvataggio...' : 'Salva nei miei viaggi'}
+              </button>
+            )}
+
+            {saveError && (
+              <div style={{ color: 'red', fontSize: '0.78rem', marginTop: 6 }}>
+                {saveError}
+              </div>
+            )}
           {/* ── Bottone "Ottimizza percorso" – visibile solo se il viaggio è in bozza ── */}
           {trip.status === 'DRAFT' && (
             <>
