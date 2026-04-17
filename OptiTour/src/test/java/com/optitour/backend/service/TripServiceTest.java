@@ -80,8 +80,7 @@ class TripServiceTest {
 		userRepository.deleteAll();
 	}
 
-	// --- Helper
-	// ---------------------------------------------------------------------------------------------
+	// --- Helper --------------------------------------------------------------
 
 	/**
 	 * Crea e salva un viaggio di test con stato SAVED. Usato dai test che non
@@ -112,8 +111,7 @@ class TripServiceTest {
 	    return userRepository.save(u).getId();
 	}
 
-	// --- TEST
-	// ------------------------------------------------------------------------------------------
+	// --- TEST ---------------------------------------------------------------------
 
 	// --- Test: creazione viaggio -----------------------------------
 
@@ -713,7 +711,8 @@ class TripServiceTest {
 
 		assertEquals(404, ex.getStatusCode().value(), "Deve restituire 404 se il viaggio non esiste");
 	}
-	// test update
+	
+	// --- Test: UPDATE TRIP ---------------------------------------
 
 	@Test
 	void updateTrip_ShouldThrow404IfTripNotFound() {
@@ -887,6 +886,108 @@ class TripServiceTest {
 		Trip updated = tripService.updateTrip(trip.getId(), request);
 
 		assertTrue(updated.getUpdatedAt().isAfter(before), "updatedAt deve essere aggiornato dopo la modifica");
+	}
+	
+	/**
+	 * Verifica che updateTripStatus aggiorni correttamente lo stato del viaggio
+	 * e che la modifica venga salvata nel database.
+	 */
+	@Test
+	void updateTripStatus_ShouldUpdateStatusAndPersist() {
+	    String userId = "user-upd-1";
+	    Trip trip = createTestTrip(userId);
+	    Trip updated = tripService.updateTripStatus(trip.getId(), TripStatus.COMPLETED);
+
+	    // Verifica che il metodo restituisca un trip valido
+	    assertNotNull(updated, "Il metodo deve restituire il trip aggiornato");
+
+	    // Verifica che lo stato sia stato aggiornato correttamente
+	    assertEquals(TripStatus.COMPLETED, updated.getStatus(), "Lo stato deve essere COMPLETED");
+
+	    // Verifica che la modifica sia stata salvata nel DB
+	    Trip fromDb = tripRepository.findById(trip.getId()).orElseThrow();
+	    assertEquals(TripStatus.COMPLETED, fromDb.getStatus(), "Lo stato deve essere salvato nel DB");
+	}
+
+	/**
+	 * Verifica che updateTripStatus restituisca null quando il trip non esiste.
+	 */
+	@Test
+	void updateTripStatus_ShouldReturnNullWhenTripNotFound() {
+	    // ID inesistente -> il service deve restituire null
+	    Trip result = tripService.updateTripStatus("id-inesistente-xyz", TripStatus.SAVED);
+
+	    assertNull(result, "Se il trip non esiste, il metodo deve restituire null");
+	}
+
+	/**
+	 * Verifica che updateTripStatus aggiorni il campo updatedAt.
+	 */
+	@Test
+	void updateTripStatus_ShouldUpdateTimestamp() throws InterruptedException {
+	    String userId = "user-upd-2";
+	    Trip trip = createTestTrip(userId);
+	    Instant before = trip.getUpdatedAt();
+	    
+	    // Attende un minimo per garantire un timestamp diverso
+	    Thread.sleep(5);
+	    
+	    // Aggiorna lo stato
+	    Trip updated = tripService.updateTripStatus(trip.getId(), TripStatus.STARRED);
+
+	    // Verifica che updatedAt sia stato aggiornato
+	    assertTrue(updated.getUpdatedAt().isAfter(before),
+	            "updatedAt deve essere aggiornato a un valore più recente");
+	}
+
+	/**
+	 * Verifica che updateTripStatus NON modifichi altri campi del trip.
+	 */
+	@Test
+	void updateTripStatus_ShouldNotModifyOtherFields() {
+	    String userId = "user-upd-3";
+	    Trip trip = createTestTrip(userId);
+
+	    // Salva i valori originali dei campi che NON devono cambiare
+	    String originalName = trip.getName();
+	    String originalCity = trip.getCity();
+	    String originalStartPoint = trip.getStartPoint();
+	    double originalLat = trip.getStartLat();
+	    double originalLon = trip.getStartLon();
+	    int originalStages = trip.getStages().size();
+
+	    // Aggiorna lo stato
+	    Trip updated = tripService.updateTripStatus(trip.getId(), TripStatus.STARRED);
+
+	    // Verifica che nessun altro campo sia stato modificato
+	    assertEquals(originalName, updated.getName(), "Il nome non deve cambiare");
+	    assertEquals(originalCity, updated.getCity(), "La città non deve cambiare");
+	    assertEquals(originalStartPoint, updated.getStartPoint(), "Lo startPoint non deve cambiare");
+	    assertEquals(originalLat, updated.getStartLat(), "La latitudine non deve cambiare");
+	    assertEquals(originalLon, updated.getStartLon(), "La longitudine non deve cambiare");
+	    assertEquals(originalStages, updated.getStages().size(), "Le tappe non devono cambiare");
+	}
+
+	/**
+	 * Verifica che updateTripStatus gestisca correttamente aggiornamenti multipli consecutivi.
+	 */
+	@Test
+	void updateTripStatus_ShouldHandleMultipleSequentialUpdates() {
+	    String userId = "user-upd-4";
+
+	    Trip trip = createTestTrip(userId);
+
+	    // 1° aggiornamento -> STARRED
+	    Trip s1 = tripService.updateTripStatus(trip.getId(), TripStatus.STARRED);
+	    assertEquals(TripStatus.STARRED, s1.getStatus());
+
+	    // 2° aggiornamento -> COMPLETED
+	    Trip s2 = tripService.updateTripStatus(trip.getId(), TripStatus.COMPLETED);
+	    assertEquals(TripStatus.COMPLETED, s2.getStatus());
+
+	    // 3° aggiornamento -> SAVED
+	    Trip s3 = tripService.updateTripStatus(trip.getId(), TripStatus.SAVED);
+	    assertEquals(TripStatus.SAVED, s3.getStatus());
 	}
 
 }
