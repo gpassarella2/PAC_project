@@ -1,0 +1,92 @@
+\section{Generazione casuale del viaggio}
+\vspace{-5pt}
+Dato il nome di una città, un tempo disponibile e un utente, l'algoritmo genera un viaggio casuale composto da un insieme di monumenti visitabili entro il budget temporale assegnato. 
+La costruzione del viaggio tiene conto sia dei tempi di visita dei monumenti sia dei tempi di spostamento stimati tra la posizione corrente e la destinazione, oltre al tempo necessario per rientrare al punto di partenza.
+
+L'algoritmo implementato combina diverse fasi principali:
+\vspace{-5pt}
+\begin{enumerate}
+    \setlength{\itemsep}{0pt}
+    \setlength{\parskip}{0pt}
+    \item \textbf{Recupero dei dati iniziali}: viene identificato l'utente e vengono caricati tutti i monumenti della città selezionata.
+    \item \textbf{Geocodifica del punto di partenza}: la città viene trasformata in coordinate geografiche.
+    \item \textbf{Filtraggio dei monumenti}: vengono considerati solo i monumenti con coordinate valide e distanti al massimo 10 km dal punto di partenza.
+    \item \textbf{Selezione casuale vincolata}: i monumenti vengono mescolati casualmente e aggiunti al viaggio solo se il tempo residuo consente sia la visita sia il ritorno al punto iniziale.
+\end{enumerate}
+
+\vspace{-10pt}
+\subsection*{Pseudocodice}
+\vspace{-5pt}
+
+\captionof{algorithm}{Generazione di un viaggio casuale vincolato dal tempo}
+\begin{algorithmic}[1]
+\Function{generateRandomTrip}{city, availableMinutes, username}
+    \State user $\gets$ \Call{findUserByUsername}{username}
+    \State monuments $\gets$ \Call{getMonumentsByCity}{city}
+    \If{monuments is empty}
+        \State \textbf{error} ``Nessun monumento trovato per la città''
+    \EndIf
+
+    \State startPoint $\gets$ city
+    \State (startLat, startLon) $\gets$ \Call{geocode}{startPoint}
+    \If{startLat = 0 \textbf{and} startLon = 0}
+        \State \textbf{error} ``Impossibile trovare le coordinate della città''
+    \EndIf
+
+    \State monuments $\gets$ \Call{filterValidAndNearMonuments}{monuments, startLat, startLon, 10km}
+    \If{monuments is empty}
+        \State \textbf{error} ``Nessun monumento trovato entro il raggio consentito''
+    \EndIf
+
+    \State \Call{shuffle}{monuments}
+    \State remaining $\gets$ monuments
+    \State stages $\gets$ lista vuota
+    \State usedSeconds $\gets$ 0
+    \State budgetSeconds $\gets$ availableMinutes $\cdot$ 60
+    \State currentLat $\gets$ startLat, currentLon $\gets$ startLon
+
+    \While{remaining is not empty \textbf{and} size(stages) $<$ 10}
+        \State chosen $\gets$ null
+        \For{each candidate in remaining}
+            \State visitMin $\gets$ \Call{estimateVisitMinutes}{candidate}
+            \State travelToSec $\gets$ \Call{estimateTravelSeconds}{currentLat, currentLon, candidate.lat, candidate.lon}
+            \State returnSec $\gets$ \Call{estimateTravelSeconds}{candidate.lat, candidate.lon, startLat, startLon}
+            \State needed $\gets$ travelToSec + visitMin $\cdot 60 + returnSec$
+            \If{usedSeconds + needed $\leq$ budgetSeconds}
+                \State chosen $\gets$ candidate
+                \State usedSeconds $\gets$ usedSeconds + travelToSec + visitMin $\cdot 60$
+                \State \textbf{break}
+            \EndIf
+        \EndFor
+
+        \If{chosen = null}
+            \State \textbf{break}
+        \EndIf
+
+        \State aggiungi a stages il monumento scelto con durata di visita visitMin
+        \State currentLat $\gets$ chosen.lat, currentLon $\gets$ chosen.lon
+        \State rimuovi chosen da remaining
+    \EndWhile
+
+    \If{stages is empty}
+        \State \textbf{error} ``Tempo disponibile insufficiente per visitare almeno un monumento''
+    \EndIf
+
+    \State trip $\gets$ crea viaggio con utente, città, punto di partenza e stages
+    \State \Return \Call{saveTrip}{trip}
+\EndFunction
+\end{algorithmic}
+
+
+
+\subsection*{Analisi della complessità}
+\vspace{-5pt}
+L'algoritmo parte recuperando i monumenti associati alla città e verificando la validità del punto di partenza tramite geocodifica. 
+La fase di filtraggio dei monumenti, che elimina quelli privi di coordinate o troppo lontani dal punto iniziale, richiede una scansione dell'insieme dei monumenti e ha quindi complessità temporale $O(n)$, dove $n$ è il numero totale di monumenti disponibili.
+
+Successivamente, la lista dei monumenti viene mescolata casualmente, operazione che ha complessità $O(n)$.
+La fase principale è il ciclo di selezione dei monumenti: per ogni tappa del viaggio, l'algoritmo esamina i monumenti rimanenti fino a trovarne uno compatibile con il tempo residuo. 
+Nel caso teorico senza vincolo sul numero massimo di tappe, questa procedura può portare a una complessità fino a $O(n^2)$, poiché per ogni monumento selezionato viene eseguita una scansione della lista dei candidati rimanenti.
+
+Tuttavia, nel codice implementato il numero di tappe è limitato a 10, quindi il costo della fase principale è in pratica proporzionale a $10n$, che si può considerare $O(n)$ rispetto al numero di monumenti. 
+Di conseguenza, la complessità complessiva dell'algoritmo è dominata dalle scansioni dei monumenti e risulta lineare in pratica, cioè $O(n)$, mentre una stima più generale senza il limite fisso sulle tappe porta a $O(n^2)$.
