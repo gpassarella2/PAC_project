@@ -13,7 +13,7 @@ import com.optitour.backend.model.Trip;
 import com.optitour.backend.model.Trip.TripStatus;
 import com.optitour.backend.model.User;
 import com.optitour.backend.service.TripMgmtIF;
-import com.optitour.backend.repository.UserRepository;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,15 +32,14 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/trips")
 public class TripController {
-
+	
     private final TripMgmtIF tripService;
     private final RouteOptimizationServiceMgmt routeOptimizationService;
-    private final UserRepository userRepository;
 
-    public TripController(TripMgmtIF tripService, RouteOptimizationServiceMgmt routeOptimizationService, UserRepository userRepository) {
+
+    public TripController(TripMgmtIF tripService, RouteOptimizationServiceMgmt routeOptimizationService) {
         this.tripService = tripService;
         this.routeOptimizationService = routeOptimizationService;
-        this.userRepository = userRepository;
     }
 
     //Crea un nuovo viaggio.
@@ -207,7 +206,7 @@ public class TripController {
 	 */
 	@PostMapping("/{id}/save")
 	public ResponseEntity<TripResponse> saveTrip(@PathVariable String id, Authentication authentication) {
-		String userId = resolveUserId(authentication);
+		String userId = tripService.resolveUserId(authentication);
 		Trip trip = tripService.saveToFavorites(id, userId);
 		return ResponseEntity.ok(toResponse(trip));
 	}
@@ -218,7 +217,7 @@ public class TripController {
 	 */
 	@DeleteMapping("/{id}/save")
 	public ResponseEntity<TripResponse> unsaveTrip(@PathVariable String id, Authentication authentication) {
-		String userId = resolveUserId(authentication);
+		String userId = tripService.resolveUserId(authentication);
 		Trip trip = tripService.removeFromFavorites(id, userId);
 		return ResponseEntity.ok(toResponse(trip));
 	}
@@ -229,7 +228,7 @@ public class TripController {
 	 */
 	@GetMapping("/history")
 	public ResponseEntity<List<TripResponse>> getTripHistory(Authentication authentication) {
-		String userId = resolveUserId(authentication);
+		String userId = tripService.resolveUserId(authentication);
 		List<TripResponse> response = tripService.getTripHistory(userId).stream().map(this::toResponse)
 				.collect(Collectors.toList());
 		return ResponseEntity.ok(response);
@@ -240,7 +239,7 @@ public class TripController {
 	 */
 	@PutMapping("/{id}/complete")
 	public ResponseEntity<TripResponse> completeTrip(@PathVariable String id, Authentication authentication) {
-		String userId = resolveUserId(authentication);
+		String userId = tripService.resolveUserId(authentication);
 		Trip trip = tripService.completeTrip(id, userId);
 		return ResponseEntity.ok(toResponse(trip));
 	}
@@ -250,7 +249,7 @@ public class TripController {
 	@PutMapping("/{id}/restore")
 	public ResponseEntity<TripResponse> restoreTrip(@PathVariable String id,
 	                                                 Authentication authentication) {
-	    String userId = resolveUserId(authentication);
+	    String userId = tripService.resolveUserId(authentication);
 	    Trip trip = tripService.restoreTrip(id, userId);
 	    return ResponseEntity.ok(toResponse(trip));
 	}
@@ -279,17 +278,5 @@ public class TripController {
                 trip.isPublic(), trip.getPublishedAt(), authorUsername,
                 trip.getTotalDistanceMeters(), trip.getTotalDurationSeconds());
     }
-    
-    /**
-     * Ricava l'ID dell'utente dal JWT: il subject è lo username -> cerca l'utente nel DB.
-     */
-    private String resolveUserId(Authentication authentication) {
-        String username = authentication.getName();
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Utente non trovato: " + username))
-                .getId();
-    }
-    
-    
-    
+        
 }

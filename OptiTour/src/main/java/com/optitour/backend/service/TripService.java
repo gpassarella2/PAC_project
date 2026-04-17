@@ -15,6 +15,7 @@ import com.optitour.backend.repository.UserRepository;
 
 import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.server.ResponseStatusException;
@@ -396,10 +397,18 @@ public class TripService implements TripMgmtIF {
 
         return tripRepository.save(trip);
     }
-
-    // -------------------------------------------------------------------------
-    // Helpers privati
-    // -------------------------------------------------------------------------
+    
+    /**
+     * Ricava l'ID dell'utente dal JWT: il subject è lo username -> cerca l'utente nel DB.
+     */
+    public String resolveUserId(Authentication authentication) {
+        String username = authentication.getName();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Utente non trovato: " + username))
+                .getId();
+    }
+    
+    // --- Helpers privati -----------------------------------------------------
 
     /**
      * Converte un indirizzo in coordinate lat/lon tramite Nominatim.

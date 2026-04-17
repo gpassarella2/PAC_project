@@ -9,6 +9,8 @@ import com.optitour.backend.model.Trip.TripStatus;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.security.core.Authentication;
+
 public interface TripMgmtIF {
 
     Trip createTrip(CreateTripRequest request, String userId);
@@ -36,6 +38,8 @@ public interface TripMgmtIF {
 	Trip unpublishTrip(String id, String id2);
 	
 	TripResponse toPublicTripResponse(Trip trip, String authorUsername);
+	
+	String resolveUserId(Authentication authentication);
     
     // metodi per preferiti e storico ----------------------------------------
 
