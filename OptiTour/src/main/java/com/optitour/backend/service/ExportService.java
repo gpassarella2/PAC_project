@@ -98,7 +98,11 @@ public class ExportService implements ExportServiceIF {
             // Città del viaggio
             addInfoCell(infoTable, "Città:",
                     trip.getCity(), labelFont, valueFont);
-
+            
+            addInfoCell(infoTable, "Punto di partenza:",
+                    trip.getStartPoint() != null ? trip.getStartPoint() : "N/D",
+                    labelFont, valueFont);
+            
             document.add(infoTable);
             document.add(new Paragraph(" "));
 
