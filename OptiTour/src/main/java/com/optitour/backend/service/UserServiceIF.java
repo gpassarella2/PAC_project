@@ -37,23 +37,27 @@ public interface UserServiceIF {
      */
     UserProfileResponse getProfileByUsername(String username);
 
-    /**
-     * Restituisce il profilo pubblico dell'utente con la data email.
-     *
-     * @param email email univoca dell'utente
-     * @return DTO del profilo pubblico
-     * @throws java.util.NoSuchElementException se l'utente non esiste
-     */
     UserProfileResponse getProfileByEmail(String email);
 
+    UserProfileResponse updateProfile(String username, String firstName, String lastName);
+
     /**
-     * Aggiorna i campi modificabili del profilo utente.
+     * Aggiorna le credenziali modificabili dell'utente (username, email).
+     * Se newUsername o newEmail sono null/blank vengono ignorati.
      *
-     * @param username username dell'utente da aggiornare
-     * @param firstName nuovo nome (opzionale)
-     * @param lastName nuovo cognome (opzionale)
-     * @return DTO del profilo aggiornato
+     * @param currentUsername username corrente (usato per identificare l'utente)
+     * @param newUsername     nuovo username (opzionale)
+     * @param newEmail        nuova email (opzionale)
+     * @return profilo aggiornato
+     * @throws IllegalArgumentException se il nuovo username o email sono già  in uso
+     */
+    UserProfileResponse updateCredentials(String currentUsername, String newUsername, String newEmail);
+
+    /**
+     * Elimina definitivamente l'account dell'utente e tutti i suoi viaggi dal DB.
+     *
+     * @param username username dell'utente da eliminare
      * @throws java.util.NoSuchElementException se l'utente non esiste
      */
-    UserProfileResponse updateProfile(String username, String firstName, String lastName);
+    void deleteUser(String username);
 }

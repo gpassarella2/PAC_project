@@ -36,18 +36,44 @@ public class UserController {
     /**
      * PATCH /api/user/profile
      * Updates mutable profile fields.
-     * Accepts a JSON body with optional fields: firstName, lastName.
+     * Accepted fields: firstName, lastName, username, email.
      */
     @PatchMapping("/profile")
     public ResponseEntity<UserProfileResponse> updateProfile(
             @AuthenticationPrincipal UserDetails currentUser,
             @RequestBody Map<String, String> updates) {
 
-        UserProfileResponse updated = userService.updateProfile(
-                currentUser.getUsername(),
-                updates.get("firstName"),
-                updates.get("lastName"));
-                
-        return ResponseEntity.ok(updated);
+        String username = currentUser.getUsername();
+
+        // Update firstName / lastName if present
+        String firstName = updates.get("firstName");
+        String lastName  = updates.get("lastName");
+        if (firstName != null || lastName != null) {
+            userService.updateProfile(username, firstName, lastName);
+            // re-read username in case it changes below
+        }
+
+        // Update username / email if present
+        String newUsername = updates.get("username");
+        String newEmail    = updates.get("email");
+        if ((newUsername != null && !newUsername.isBlank()) ||
+            (newEmail    != null && !newEmail.isBlank())) {
+            UserProfileResponse updated = userService.updateCredentials(username, newUsername, newEmail);
+            return ResponseEntity.ok(updated);
+        }
+
+        return ResponseEntity.ok(userService.getProfileByUsername(
+                (newUsername != null && !newUsername.isBlank()) ? newUsername : username));
+    }
+
+    /**
+     * DELETE /api/user/profile
+     * Permanently deletes the authenticated user's account and all their data.
+     */
+    @DeleteMapping("/profile")
+    public ResponseEntity<Void> deleteAccount(
+            @AuthenticationPrincipal UserDetails currentUser) {
+        userService.deleteUser(currentUser.getUsername());
+        return ResponseEntity.noContent().build();
     }
 }

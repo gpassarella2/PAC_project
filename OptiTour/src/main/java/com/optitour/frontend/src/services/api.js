@@ -26,16 +26,9 @@ export const loginUser = (data) =>
 // POST /api/auth/logout  (JWT nella Authorization header)
 export const logoutUser = () => {
   const token = localStorage.getItem("token");
-
-  return api.post(
-    '/api/auth/logout',
-    {},
-    {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }
-  );
+  return api.post('/api/auth/logout', {}, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
 };
 
 // POST /api/auth/change-password  { currentPassword, newPassword }
@@ -48,9 +41,13 @@ export const changePassword = (data) =>
 export const getUserProfile = () =>
   api.get('/api/user/profile');
 
-// PATCH /api/user/profile  { firstName, lastName }
+// PATCH /api/user/profile campi accettati: firstName, lastName, username, email
 export const updateUserProfile = (data) =>
   api.patch('/api/user/profile', data);
+
+// DELETE /api/user/profile elimina definitivamente l'account
+export const deleteCurrentUser = () =>
+  api.delete('/api/user/profile');
 
 // ----- Trips -------------------------------------------------------------
 
@@ -108,10 +105,7 @@ export const getTripHistory = () =>
  */
 export const completeTrip = (id) =>
   api.put(`/api/trips/${id}/complete`);
-/**
- * PUT /api/trips/{id}/restore
- * Riporta il viaggio dallo stato COMPLETED a SAVED
- */
+
 export const restoreTrip = (id) =>
   api.put(`/api/trips/${id}/restore`);
 
@@ -132,7 +126,6 @@ export const optimizeTrip = (id) =>
 export const getMonumentsByCity = (city) =>
   api.get('/api/monuments', { params: { city } });
 
-
 // POST /api/trips/{id}/publish
 export const publishTrip = (id) =>
   api.post(`/api/trips/${id}/publish`);
@@ -141,16 +134,14 @@ export const publishTrip = (id) =>
 export const unpublishTrip = (id) =>
   api.post(`/api/trips/${id}/unpublish`);
 
-// GET /api/trips/public
+// GET /api/trips/random/catalog — viaggio casuale dal catalogo pubblico
 export const getPublicTrips = () =>
   api.get('/api/trips/public');
 
-
-// GET /api/trips/random/catalog — viaggio casuale dal catalogo pubblico
+// POST /api/trips/random/generate?city=...&availableMinutes=...
 export const getRandomCatalogTrip = (city) =>
   api.get('/api/trips/random/catalog', { params: city ? { city } : {} });
 
-// POST /api/trips/random/generate?city=...&availableMinutes=...
 export const generateRandomTrip = (city, availableMinutes) =>
   api.post('/api/trips/random/generate', null, { params: { city, availableMinutes } });
 
