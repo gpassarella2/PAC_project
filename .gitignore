@@ -18,3 +18,10 @@ build/
 out/
 
 .vscode/
+
+node_modules/
+dist/
+
+OptiTour/.metadata/
+
+/.metadata/
