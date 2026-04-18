@@ -428,6 +428,7 @@ public class TripService implements TripMgmtIF {
 
         copy.setTotalDistanceMeters(source.getTotalDistanceMeters());
         copy.setTotalDurationSeconds(source.getTotalDurationSeconds());
+        copy.setRouteLegs(source.getRouteLegs());
         return tripRepository.save(copy);
     }
     

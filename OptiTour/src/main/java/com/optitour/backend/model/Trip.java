@@ -61,6 +61,8 @@ public class Trip {
     // Metriche del percorso ottimizzato (popolate dopo l'ottimizzazione)
     private Double totalDistanceMeters;
     private Long totalDurationSeconds; 
+    private List<List<double[]>> routeLegs;
+    
     /**
      * Stati possibili di un viaggio.
      */
@@ -233,6 +235,14 @@ public class Trip {
 
 	public void setPublishedAt(Instant publishedAt) {
 	    this.publishedAt = publishedAt;
+	}
+	
+	public List<List<double[]>> getRouteLegs() {
+	    return routeLegs;
+	}
+
+	public void setRouteLegs(List<List<double[]>> routeLegs) {
+	    this.routeLegs = routeLegs;
 	}
 
 	@Override

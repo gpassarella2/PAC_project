@@ -149,7 +149,26 @@ public class OptimizationEngine implements OptimizationEngineMgmt {
 
         System.out.println("TSP risolto: distanza totale= " + totalDistanceMeters + ", durata totale: " + totalDurationSeconds);
 
-        return new TspResult(orderedStages, totalDistanceMeters, totalDurationSeconds);
+        // 7. Geometria del percorso reale (solo se GraphHopper disponibile)
+        List<List<double[]>> routeLegs = new ArrayList<>();
+        if (graphHopperAvailable) {
+            // Costruisce la sequenza dei waypoint nell'ordine ottimizzato
+            List<double[]> waypoints = new ArrayList<>();
+            waypoints.add(new double[]{startLat, startLon});
+            for (int i = 1; i <= n; i++) {
+                Monument m = monuments.get(tour[i] - 1);
+                waypoints.add(new double[]{m.getLat(), m.getLon()});
+            }
+            waypoints.add(new double[]{startLat, startLon}); // ritorno al punto di partenza
+
+            for (int i = 0; i < waypoints.size() - 1; i++) {
+                double[] from = waypoints.get(i);
+                double[] to   = waypoints.get(i + 1);
+                routeLegs.add(getRouteLeg(from[0], from[1], to[0], to[1]));
+            }
+        }
+
+        return new TspResult(orderedStages, totalDistanceMeters, totalDurationSeconds, routeLegs);
         
         
        
@@ -208,6 +227,39 @@ public class OptimizationEngine implements OptimizationEngineMgmt {
         }
         return haversine(lat1, lon1, lat2, lon2);
     }
+    // ── Geometria del percorso ────────────────────────────────────
+
+    /**
+     * Restituisce la lista di punti [lat, lon] che compongono il percorso
+     * pedonale reale tra due coordinate.
+     * Usa GraphHopper se disponibile, altrimenti restituisce solo i due estremi.
+     */
+    private List<double[]> getRouteLeg(double lat1, double lon1, double lat2, double lon2) {
+        List<double[]> points = new ArrayList<>();
+        if (graphHopperAvailable) {
+            try {
+                GHRequest req = new GHRequest(
+                        new GHPoint(lat1, lon1),
+                        new GHPoint(lat2, lon2))
+                        .setProfile("foot");
+                GHResponse rsp = hopper.route(req);
+                if (!rsp.hasErrors()) {
+                    com.graphhopper.util.PointList ptList = rsp.getBest().getPoints();
+                    for (int i = 0; i < ptList.size(); i++) {
+                        points.add(new double[]{ptList.getLat(i), ptList.getLon(i)});
+                    }
+                    return points;
+                }
+            } catch (Exception e) {
+                System.out.println("getRouteLeg fallback su estremi: " + e.getMessage());
+            }
+        }
+        // fallback: solo i due punti estremi
+        points.add(new double[]{lat1, lon1});
+        points.add(new double[]{lat2, lon2});
+        return points;
+    }
+
     // ── Haversine  ────────────────────────────────────────────────
 
     private static final double EARTH_RADIUS_M = 6371000.0;

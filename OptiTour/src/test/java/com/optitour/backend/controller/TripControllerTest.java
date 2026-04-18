@@ -854,7 +854,8 @@ class TripControllerTest {
                 trip.getStartLon(),    // startLon
                 List.of(),             // stages ottimizzate (vuote per il test)
                 1500.0,                // distanza totale
-                3600L                  // durata totale
+                3600L,                  // durata totale
+                List.of()
         );
 
         // Mock del servizio di ottimizzazione

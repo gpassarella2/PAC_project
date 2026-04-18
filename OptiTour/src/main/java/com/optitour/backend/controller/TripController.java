@@ -280,13 +280,16 @@ public class TripController {
                         s.getVisitDurationMinutes()))
                 .collect(Collectors.toList());
 
-        return new TripResponse(
+       TripResponse res = new TripResponse(
                 trip.getId(), trip.getUserId(), trip.getName(), trip.getCity(),
                 trip.getStartPoint(), trip.getStartLat(), trip.getStartLon(),
                 stageResponses, trip.getStatus().name(),
                 trip.getCreatedAt(), trip.getUpdatedAt(),
                 trip.isPublic(), trip.getPublishedAt(), authorUsername,
                 trip.getTotalDistanceMeters(), trip.getTotalDurationSeconds());
+       res.setRouteLegs(trip.getRouteLegs());
+       return res;
+        		
     }
         
 }
