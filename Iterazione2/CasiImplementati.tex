@@ -26,8 +26,6 @@ UC12.2 & Creazione itinerario casuale \\
 \hline
 UC15 & Modifica tappe \\
 \hline
-UC16 & Elimina tappa \\
-\hline
 \end{tabular}
 \caption{Iterazione 2 - Casi d'uso implementati}
 \label{tab:casi_uso_iterazione2}
@@ -122,22 +120,11 @@ UC16 & Elimina tappa \\
 
 \subsection*{UC15: Modifica tappe}
 \textbf{Attori:} Utente, Sistema.\\
-\textbf{Descrizione:} L'utente modifica un viaggio esistente aggiungendo nuovi monumenti e richiedendo il ricalcolo dell'itinerario.\\
+\textbf{Descrizione:} L'utente modifica un viaggio esistente aggiungendo o rimuovendo nuovi monumenti e richiedendo il ricalcolo dell'itinerario.\\
 \textbf{Flusso degli eventi:}
 \begin{enumerate}
     \item L'utente apre un viaggio in modalità modifica.
-    \item Aggiunge una o più tappe selezionandole dalla mappa o dalla lista.
+    \item Aggiunge o rimuove una o più tappe selezionandole dalla mappa o dalla lista.
     \item Il sistema invoca l'Optimization Engine per ricalcolare il percorso TSP.
     \item Il viaggio aggiornato viene salvato con i nuovi dati di tempo e distanza.
-\end{enumerate}
-
-\subsection*{UC16: Elimina tappa}
-\textbf{Attori:} Utente, Sistema.\\
-\textbf{Descrizione:} L'utente può rimuovere una singola tappa da un itinerario esistente.\\
-\textbf{Flusso degli eventi:}
-\begin{enumerate}
-    \item L'utente apre i dettagli di un viaggio salvato.
-    \item Identifica la tappa da rimuovere e seleziona l'opzione di eliminazione.
-    \item Il sistema rimuove la tappa dalla lista e ricalcola immediatamente l'ottimizzazione del percorso rimanente.
-    \item L'interfaccia aggiorna la mappa e i dettagli del viaggio.
 \end{enumerate}
