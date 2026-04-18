@@ -5,8 +5,6 @@ import com.optitour.backend.dto.UserLoginRequest;
 import com.optitour.backend.dto.ChangePasswordRequest;
 import com.optitour.backend.dto.UserRegisterRequest;
 import com.optitour.backend.dto.UserProfileResponse;
-import com.optitour.backend.model.User;
-import com.optitour.backend.repository.UserRepository ;
 import com.optitour.backend.Security.JwtTokenProvider;
 import com.optitour.backend.service.AuthServiceIF;
 import com.optitour.backend.service.UserServiceIF;
@@ -24,24 +22,22 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final UserServiceIF           userService;
     private final AuthServiceIF           authService;
-    private final UserRepository        userRepository;
-    private final AuthenticationManager authManager;
-    private final JwtTokenProvider      tokenProvider;
+    private final AuthenticationManager   authManager;
+    private final JwtTokenProvider        tokenProvider;
 
     public AuthController(UserServiceIF userService,
                           AuthServiceIF authService,
-                          UserRepository userRepository,
                           AuthenticationManager authManager,
                           JwtTokenProvider tokenProvider) {
         this.userService = userService;
         this.authService = authService;
-        this.userRepository = userRepository;
         this.authManager = authManager;
         this.tokenProvider = tokenProvider;
     }
@@ -68,11 +64,13 @@ public class AuthController {
 
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
         String token = tokenProvider.generateToken(userDetails);
-        User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
+
+        // Ora otteniamo un DTO (UserProfileResponse) tramite il service, non l'entità User
+        UserProfileResponse profile = userService.getProfileByUsername(userDetails.getUsername());
 
         return ResponseEntity.ok(UserAuthResponse.builder()
                 .token(token).tokenType("Bearer")
-                .userId(user.getId()).username(user.getUsername()).email(user.getEmail())
+                .userId(profile.getId()).username(profile.getUsername()).email(profile.getEmail())
                 .build());
     }
 

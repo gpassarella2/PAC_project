@@ -2,16 +2,20 @@ package com.optitour.backend.service;
 
 import com.optitour.backend.dto.CreateTripRequest;
 import com.optitour.backend.dto.NominatimResponse;
+import com.optitour.backend.dto.TripResponse;
 import com.optitour.backend.dto.UpdateTripRequest;
 import com.optitour.backend.model.Monument;
 import com.optitour.backend.model.Trip;
 import com.optitour.backend.model.Trip.TripStatus;
 import com.optitour.backend.model.TripStage;
+import com.optitour.backend.model.User;
 import com.optitour.backend.repository.MonumentRepository;
 import com.optitour.backend.repository.TripRepository;
+import com.optitour.backend.repository.UserRepository;
 
 import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.server.ResponseStatusException;
@@ -22,6 +26,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -41,15 +46,18 @@ public class TripService implements TripMgmtIF {
 
     private final TripRepository tripRepository;
     private final MonumentRepository monumentRepository;
+    private final UserRepository userRepository;
     private final MonumentService monumentService;
     private final RestClient restClient;
 
     public TripService(TripRepository tripRepository,
                        MonumentRepository monumentRepository,
-                       MonumentService monumentService) {
+                       MonumentService monumentService,
+                       UserRepository userRepository) {
         this.tripRepository = tripRepository;
         this.monumentRepository = monumentRepository;
         this.monumentService = monumentService;
+        this.userRepository = userRepository;
         this.restClient = RestClient.create();
     }
 
@@ -249,11 +257,15 @@ public class TripService implements TripMgmtIF {
 
     /** Pubblica un viaggio (solo il proprietario). */
     @Override
-    public Trip publishTrip(String tripId, String userId) {
+    public Trip publishTrip(String tripId, String username) {
+    	
+    	User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
+    	
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new RuntimeException("Trip non trovato"));
 
-        if (!trip.getUserId().equals(userId)) {
+        if (!trip.getUserId().equals(user.getId())) {
             throw new RuntimeException("Non autorizzato");
         }
         if (trip.getStages() == null || trip.getStages().isEmpty()) {
@@ -267,11 +279,13 @@ public class TripService implements TripMgmtIF {
 
     /** Rimuove un viaggio dal catalogo pubblico. */
     @Override
-    public Trip unpublishTrip(String tripId, String userId) {
+    public Trip unpublishTrip(String tripId, String username) {
+    	User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new RuntimeException("Trip non trovato"));
 
-        if (!trip.getUserId().equals(userId)) {
+        if (!trip.getUserId().equals(user.getId())) {
             throw new RuntimeException("Non autorizzato");
         }
 
@@ -285,7 +299,11 @@ public class TripService implements TripMgmtIF {
      * sia dei tempi di visita che degli spostamenti stimati tra i monumenti.
      */
     @Override
-    public Trip generateRandomTrip(String city, int availableMinutes, String userId) {
+    public Trip generateRandomTrip(String city, int availableMinutes, String username) {
+    	
+    	User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
+    	
         List<Monument> allMonuments = new ArrayList<>(monumentService.getMonumentsByCity(city));
         if (allMonuments.isEmpty()) {
             throw new RuntimeException("Nessun monumento trovato per la città: " + city);
@@ -365,7 +383,7 @@ public class TripService implements TripMgmtIF {
         }
 
         Trip trip = Trip.builder()
-                .userId(userId)
+                .userId(user.getId())
                 .name("Sorpresa a " + city)
                 .city(city)
                 .startPoint(startPoint)
@@ -379,10 +397,18 @@ public class TripService implements TripMgmtIF {
 
         return tripRepository.save(trip);
     }
-
-    // -------------------------------------------------------------------------
-    // Helpers privati
-    // -------------------------------------------------------------------------
+    
+    /**
+     * Ricava l'ID dell'utente dal JWT: il subject è lo username -> cerca l'utente nel DB.
+     */
+    public String resolveUserId(Authentication authentication) {
+        String username = authentication.getName();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Utente non trovato: " + username))
+                .getId();
+    }
+    
+    // --- Helpers privati -----------------------------------------------------
 
     /**
      * Converte un indirizzo in coordinate lat/lon tramite Nominatim.
@@ -464,4 +490,39 @@ public class TripService implements TripMgmtIF {
             default                     -> 30;
         };
     }
+    
+    public List<TripResponse> getPublicTripsWithUsername() {
+    	List<Trip> trips = getPublicTrips();
+
+        List<String> userIds = trips.stream()
+                .map(Trip::getUserId)
+                .distinct()
+                .collect(Collectors.toList());
+
+        Map<String, String> usernameById = userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, User::getUsername));
+
+        return trips.stream()
+                .map((Trip trip) -> toPublicTripResponse(trip, usernameById.get(trip.getUserId())))
+                .collect(Collectors.toList());
+    }
+    
+    public TripResponse toPublicTripResponse(Trip trip, String authorUsername) {
+        List<TripResponse.TripStageResponse> stageResponses = trip.getStages().stream()
+                .map(s -> new TripResponse.TripStageResponse(
+                        s.getMonumentId(),
+                        s.getVisitDurationMinutes()))
+                .collect(Collectors.toList());
+
+        return new TripResponse(
+                trip.getId(), trip.getUserId(), trip.getName(), trip.getCity(),
+                trip.getStartPoint(), trip.getStartLat(), trip.getStartLon(),
+                stageResponses, trip.getStatus().name(),
+                trip.getCreatedAt(), trip.getUpdatedAt(),
+                trip.isPublic(), trip.getPublishedAt(), authorUsername,
+                trip.getTotalDistanceMeters(), trip.getTotalDurationSeconds());
+    }
+
+    
+
 }
