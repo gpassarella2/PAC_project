@@ -21,10 +21,9 @@ import com.optitour.backend.dto.UpdateTripRequest;
 import com.optitour.backend.model.Monument;
 import com.optitour.backend.model.Trip;
 import com.optitour.backend.model.Trip.TripStatus;
-import com.optitour.backend.model.User;
+
 import com.optitour.backend.repository.MonumentRepository;
 import com.optitour.backend.repository.TripRepository;
-import com.optitour.backend.repository.UserRepository;
 
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import static org.mockito.Mockito.*;
@@ -39,9 +38,6 @@ class TripServiceTest {
 	@Autowired
 	private TripRepository tripRepository;
 
-	@Autowired
-	private UserRepository userRepository;
-	
 	@Autowired
 	private MonumentRepository monumentRepository;
 
@@ -77,10 +73,10 @@ class TripServiceTest {
 	void tearDown() {
 		tripRepository.deleteAll();
 		monumentRepository.delete(testMonument);
-		userRepository.deleteAll();
 	}
 
-	// --- Helper --------------------------------------------------------------
+	// --- Helper
+	// ---------------------------------------------------------------------------------------------
 
 	/**
 	 * Crea e salva un viaggio di test con stato SAVED. Usato dai test che non
@@ -103,15 +99,9 @@ class TripServiceTest {
 		// Invoca il servizio reale per creare e persistere il viaggio
 		return tripService.createTrip(request, userId);
 	}
-	
-	private String createUser(String username) {
-	    User u = new User();
-	    u.setUsername(username);
-	    u.setPassword("pwd");
-	    return userRepository.save(u).getId();
-	}
 
-	// --- TEST ---------------------------------------------------------------------
+	// --- TEST
+	// ------------------------------------------------------------------------------------------
 
 	// --- Test: creazione viaggio -----------------------------------
 
@@ -185,74 +175,75 @@ class TripServiceTest {
 	// ════════════════════════════════════════════════════════════════
 	// publishTrip
 	// ════════════════════════════════════════════════════════════════
-	
-		@Test
-		void publishTrip_ShouldSetIsPublicTrueAndPersistToDb() {
-		    String uid = createUser("user-pub-1");
-		    Trip saved = createAndSaveTestTrip(uid, "Tour Milano");
 
-		    Trip published = tripService.publishTrip(saved.getId(), "user-pub-1");
+	@Test
+	void publishTrip_ShouldSetIsPublicTrueAndPersistToDb() {
+		Trip saved = createAndSaveTestTrip("user-pub-1", "Tour Milano");
 
-		    assertTrue(published.isPublic());
-		    assertNotNull(published.getPublishedAt());
+		Trip published = tripService.publishTrip(saved.getId(), "user-pub-1");
 
-		    Trip fromDb = tripRepository.findById(saved.getId()).orElseThrow();
-		    assertTrue(fromDb.isPublic());
-		    assertNotNull(fromDb.getPublishedAt());
-		}
+		// verifica il valore restituito
+		assertTrue(published.isPublic(), "isPublic deve essere true dopo la pubblicazione");
+		assertNotNull(published.getPublishedAt(), "publishedAt deve essere impostato");
 
-		@Test
-		void publishTrip_ShouldThrowWhenTripNotFound() {
-		    createUser("user-qualsiasi"); // serve perché il service cerca l'utente prima del trip
-		    assertThrows(RuntimeException.class,
-		            () -> tripService.publishTrip("id-inesistente-xyz", "user-qualsiasi"));
-		}
+		// verifica la persistenza reale su MongoDB
+		Trip fromDb = tripRepository.findById(saved.getId()).orElseThrow();
+		assertTrue(fromDb.isPublic(), "isPublic deve essere true anche rileggendo da MongoDB");
+		assertNotNull(fromDb.getPublishedAt(), "publishedAt deve essere persistito su MongoDB");
+	}
 
-		@Test
-		void publishTrip_ShouldThrowWhenUserIsNotOwner() {
-		    String ownerId = createUser("user-owner-1");
-		    createUser("user-intruso-99");
-		    Trip saved = createAndSaveTestTrip(ownerId, "Gita Navigli");
+	@Test
+	void publishTrip_ShouldThrowWhenTripNotFound() {
+		assertThrows(RuntimeException.class, () -> tripService.publishTrip("id-inesistente-xyz", "user-qualsiasi"),
+				"Deve lanciare RuntimeException se il trip non esiste");
+	}
 
-		    assertThrows(RuntimeException.class,
-		            () -> tripService.publishTrip(saved.getId(), "user-intruso-99"));
+	@Test
+	void publishTrip_ShouldThrowWhenUserIsNotOwner() {
+		Trip saved = createAndSaveTestTrip("user-owner-1", "Gita Navigli");
 
-		    Trip fromDb = tripRepository.findById(saved.getId()).orElseThrow();
-		    assertFalse(fromDb.isPublic());
-		}
+		assertThrows(RuntimeException.class, () -> tripService.publishTrip(saved.getId(), "user-intruso-99"),
+				"Deve lanciare RuntimeException se l'utente non è il proprietario");
+
+		// il trip non deve essere stato modificato
+		Trip fromDb = tripRepository.findById(saved.getId()).orElseThrow();
+		assertFalse(fromDb.isPublic(), "Il trip non deve risultare pubblico dopo un tentativo non autorizzato");
+	}
+
 	// ════════════════════════════════════════════════════════════════
 	// unpublishTrip
 	// ════════════════════════════════════════════════════════════════
 
-		@Test
-		void unpublishTrip_ShouldSetIsPublicFalseAndClearPublishedAt() {
-		    String uid = createUser("user-pub-2");
-		    Trip saved = createAndSaveTestTrip(uid, "Tour Duomo");
-		    tripService.publishTrip(saved.getId(), "user-pub-2");
+	@Test
+	void unpublishTrip_ShouldSetIsPublicFalseAndClearPublishedAt() {
+		// prima pubblica il trip
+		Trip saved = createAndSaveTestTrip("user-pub-2", "Tour Duomo");
+		tripService.publishTrip(saved.getId(), "user-pub-2");
 
-		    Trip unpublished = tripService.unpublishTrip(saved.getId(), "user-pub-2");
+		// poi annulla la pubblicazione
+		Trip unpublished = tripService.unpublishTrip(saved.getId(), "user-pub-2");
 
-		    assertFalse(unpublished.isPublic());
-		    assertNull(unpublished.getPublishedAt());
+		assertFalse(unpublished.isPublic(), "isPublic deve essere false dopo unpublish");
+		assertNull(unpublished.getPublishedAt(), "publishedAt deve essere null dopo unpublish");
 
-		    Trip fromDb = tripRepository.findById(saved.getId()).orElseThrow();
-		    assertFalse(fromDb.isPublic());
-		    assertNull(fromDb.getPublishedAt());
-		}
+		// verifica la persistenza su MongoDB
+		Trip fromDb = tripRepository.findById(saved.getId()).orElseThrow();
+		assertFalse(fromDb.isPublic(), "isPublic deve essere false anche rileggendo da MongoDB");
+		assertNull(fromDb.getPublishedAt(), "publishedAt deve essere null anche su MongoDB");
+	}
 
-		@Test
-		void unpublishTrip_ShouldThrowWhenUserIsNotOwner() {
-		    String ownerId = createUser("user-owner-2");
-		    createUser("user-intruso-99");
-		    Trip saved = createAndSaveTestTrip(ownerId, "Passeggiata Brera");
-		    tripService.publishTrip(saved.getId(), "user-owner-2");
+	@Test
+	void unpublishTrip_ShouldThrowWhenUserIsNotOwner() {
+		Trip saved = createAndSaveTestTrip("user-owner-2", "Passeggiata Brera");
+		tripService.publishTrip(saved.getId(), "user-owner-2");
 
-		    assertThrows(RuntimeException.class,
-		            () -> tripService.unpublishTrip(saved.getId(), "user-intruso-99"));
+		assertThrows(RuntimeException.class, () -> tripService.unpublishTrip(saved.getId(), "user-intruso-99"),
+				"Deve lanciare RuntimeException se l'utente non è il proprietario");
 
-		    Trip fromDb = tripRepository.findById(saved.getId()).orElseThrow();
-		    assertTrue(fromDb.isPublic());
-		}
+		// il trip deve rimanere pubblico
+		Trip fromDb = tripRepository.findById(saved.getId()).orElseThrow();
+		assertTrue(fromDb.isPublic(), "Il trip deve rimanere pubblico dopo un tentativo non autorizzato");
+	}
 
 	// ════════════════════════════════════════════════════════════════
 	// getPublicTrips
@@ -260,23 +251,13 @@ class TripServiceTest {
 
 	@Test
 	void getPublicTrips_ShouldReturnOnlyPublishedTrips() {
-		String username1 = "user-a";
-		String username2 = "user-b";
-		String username3 = "user-c";
-		createUser("user-a");
-		createUser("user-b");
-		createUser("user-c");
-		String userId1 = userRepository.findByUsername(username1).get().getId();
-		String userId2 = userRepository.findByUsername(username2).get().getId();
-		String userId3 = userRepository.findByUsername(username3).get().getId();
-
-		Trip tripA = createAndSaveTestTrip(userId1, "Giro A");
-		Trip tripB = createAndSaveTestTrip(userId2, "Giro B");
-		Trip tripC = createAndSaveTestTrip(userId3, "Giro C");
+		Trip tripA = createAndSaveTestTrip("user-a", "Giro A");
+		Trip tripB = createAndSaveTestTrip("user-b", "Giro B");
+		Trip tripC = createAndSaveTestTrip("user-c", "Giro C");
 
 		// pubblica solo A e C
-		tripService.publishTrip(tripA.getId(), username1);
-		tripService.publishTrip(tripC.getId(), username3);
+		tripService.publishTrip(tripA.getId(), "user-a");
+		tripService.publishTrip(tripC.getId(), "user-c");
 		// B rimane privato
 
 		List<Trip> publicTrips = tripService.getPublicTrips();
@@ -290,22 +271,14 @@ class TripServiceTest {
 
 	@Test
 	void getPublicTrips_ShouldReturnTripsOrderedByPublishedAtDesc() throws InterruptedException {
-		String username1 = "user-x";
-		String username2 = "user-y";
-		createUser(username1);
-		createUser(username2);
-
-		String userId1 = userRepository.findByUsername(username1).get().getId();
-		String userId2 = userRepository.findByUsername(username2).get().getId();
-
-		Trip tripOld = createAndSaveTestTrip(userId1, "Primo pubblicato");
-		tripService.publishTrip(tripOld.getId(), username1);
+		Trip tripOld = createAndSaveTestTrip("user-x", "Primo pubblicato");
+		tripService.publishTrip(tripOld.getId(), "user-x");
 
 		// piccola pausa per garantire che i timestamp siano distinti
 		Thread.sleep(50);
 
-		Trip tripNew = createAndSaveTestTrip(userId2, "Secondo pubblicato");
-		tripService.publishTrip(tripNew.getId(), username2);
+		Trip tripNew = createAndSaveTestTrip("user-y", "Secondo pubblicato");
+		tripService.publishTrip(tripNew.getId(), "user-y");
 
 		List<Trip> result = tripService.getPublicTrips();
 
@@ -315,8 +288,6 @@ class TripServiceTest {
 		assertEquals(tripOld.getId(), result.get(1).getId(),
 				"Il trip pubblicato prima deve essere il secondo della lista");
 	}
-	
-
 
 	@Test
 	void getPublicTrips_ShouldReturnEmptyListWhenNoPublicTrips() {
@@ -332,15 +303,13 @@ class TripServiceTest {
 	void generateRandomTrip_ShouldReturnDraftTripSavedInDb() {
 		// Con monumenti già in DB per Milano, il service non chiama Overpass.
 		// Nominatim viene chiamato per geocodificare il centro città.
-		createUser("user-rnd-1");
 		try {
 			Trip trip = tripService.generateRandomTrip("Milano", 240, "user-rnd-1");
 
 			assertNotNull(trip.getId(), "Il trip deve essere salvato in MongoDB con un ID");
 			assertEquals(Trip.TripStatus.SAVED, trip.getStatus(), "Il trip generato deve essere DRAFT");
 			assertEquals("Milano", trip.getCity());
-			assertEquals(userRepository.findByUsername("user-rnd-1").get().getId(),
-			        trip.getUserId());
+			assertEquals("user-rnd-1", trip.getUserId());
 			assertFalse(trip.getStages().isEmpty(), "Il trip deve avere almeno una tappa");
 
 			// verifica persistenza reale
@@ -355,7 +324,6 @@ class TripServiceTest {
 	@Test
 	void generateRandomTrip_ShouldNeverExceedTenStages() {
 		// Semina 15 monumenti con coordinate valide vicino a Milano
-		createUser("user-rnd-2");
 		for (int i = 0; i < 15; i++) {
 			Monument m = Monument.builder().name("Extra Monumento " + i).city("Milano").lat(45.464 + i * 0.001) // coordinate
 																												// leggermente
@@ -381,7 +349,6 @@ class TripServiceTest {
 	@Test
 	void generateRandomTrip_ShouldThrowWhenCityNotFound() {
 		// "CittàInesistente999" non esiste né in MongoDB né su Overpass/Nominatim
-		createUser("user-rnd-3");
 		assertThrows(RuntimeException.class,
 				() -> tripService.generateRandomTrip("CittàInesistente999", 120, "user-rnd-3"),
 				"Deve lanciare RuntimeException se la città non esiste");
@@ -390,7 +357,6 @@ class TripServiceTest {
 	@Test
 	void generateRandomTrip_ShouldThrowWhenAllMonumentsHaveInvalidCoords() {
 		// Pulisce i monumenti validi e ne inserisce uno con coordinate (0,0)
-		createUser("user-rnd-4");
 		monumentRepository.deleteAll();
 		Monument invalid = Monument.builder().name("Monumento Senza Coordinate").city("TestCity").lat(0.0).lon(0.0)
 				.build();
@@ -409,7 +375,6 @@ class TripServiceTest {
 
 	@Test
 	void generateRandomTrip_ShouldThrowWhenBudgetTooLow() {
-		createUser("user-rnd-5");
 		// 1 minuto è insufficiente per raggiungere qualsiasi monumento
 		try {
 			assertThrows(RuntimeException.class, () -> tripService.generateRandomTrip("Milano", 1, "user-rnd-5"),
@@ -423,12 +388,8 @@ class TripServiceTest {
 
 	@Test
 	void getRandomPublicTrip_ShouldReturnPublicTripWhenNoCityFilter() {
-		String username1 = "user-rnd-1";
-		createUser(username1);
-		String userId1 = userRepository.findByUsername(username1).get().getId();
-
-		Trip saved = createAndSaveTestTrip(userId1, "Tour Navigli");
-		tripService.publishTrip(saved.getId(), username1);
+		Trip saved = createAndSaveTestTrip("user-cat-1", "Tour Navigli");
+		tripService.publishTrip(saved.getId(), "user-cat-1");
 
 		Trip result = tripService.getRandomPublicTrip(null);
 
@@ -445,37 +406,24 @@ class TripServiceTest {
 
 	@Test
 	void getRandomPublicTrip_ShouldThrowWhenNoCityMatchFound() {
-		String username1 = "user-cat-2";
-		createUser(username1);
-		String userId1 = userRepository.findByUsername(username1).get().getId();
 		// pubblica un trip per Milano
-		Trip saved = createAndSaveTestTrip(userId1, "Giro Milano");
-		tripService.publishTrip(saved.getId(), username1);
+		Trip saved = createAndSaveTestTrip("user-cat-2", "Giro Milano");
+		tripService.publishTrip(saved.getId(), "user-cat-2");
 
 		// cerca per Firenze: nessun risultato
 		assertThrows(RuntimeException.class, () -> tripService.getRandomPublicTrip("Firenze"),
 				"Deve lanciare RuntimeException se non ci sono trip pubblici per la città richiesta");
 	}
-	
-	
 
 	@Test
 	void getRandomPublicTrip_ShouldReturnTripMatchingCityFilter() {
-		
-		String username1 = "user-cat-3";
-		String username2 = "user-cat-4";
-		createUser(username1);
-		createUser(username2);
-		String userId1 = userRepository.findByUsername(username1).get().getId();
-		String userId2 = userRepository.findByUsername(username2).get().getId();
-
 		// pubblica trip per Milano e Roma
-		Trip milano = createAndSaveTestTrip(userId1, "Tour Milano");
-		tripService.publishTrip(milano.getId(), username1);
+		Trip milano = createAndSaveTestTrip("user-cat-3", "Tour Milano");
+		tripService.publishTrip(milano.getId(), "user-cat-3");
 
 		// per Roma creo il trip direttamente nel repository (diversa città)
 		Trip roma = new Trip();
-		roma.setUserId(userId2);
+		roma.setUserId("user-cat-4");
 		roma.setName("Tour Roma");
 		roma.setCity("Roma");
 		roma.setStartPoint("Roma");
@@ -492,17 +440,12 @@ class TripServiceTest {
 		assertEquals("Milano", result.getCity(), "Il trip restituito deve essere della città richiesta");
 		assertTrue(result.isPublic(), "Il trip deve essere pubblico");
 	}
-	
 
 	@Test
 	void getRandomPublicTrip_ShouldBeCaseInsensitive() {
-		String username1 = "user-cat-5";
-		createUser("user-cat-5");
-		String userId1 = userRepository.findByUsername(username1).get().getId();
-
 		// city salvata con prima lettera maiuscola
-		Trip saved = createAndSaveTestTrip(userId1, "Passeggiata Duomo");
-		tripService.publishTrip(saved.getId(), username1);
+		Trip saved = createAndSaveTestTrip("user-cat-5", "Passeggiata Duomo");
+		tripService.publishTrip(saved.getId(), "user-cat-5");
 
 		// ricerca con tutto minuscolo
 		Trip result = tripService.getRandomPublicTrip("milano");
@@ -514,15 +457,10 @@ class TripServiceTest {
 	@Test
 	void getRandomPublicTrip_ShouldReturnOnlyPublicTripsWithCityFilter() {
 		// crea due trip per Milano: uno pubblico, uno privato
-		String username1 = "user-cat-6";
-		createUser(username1);
-		String userId1 = userRepository.findByUsername(username1).get().getId();
+		Trip pub = createAndSaveTestTrip("user-cat-6", "Pubblico Milano");
+		tripService.publishTrip(pub.getId(), "user-cat-6");
 
-		Trip pub = createAndSaveTestTrip(userId1, "Pubblico Milano");
-
-		tripService.publishTrip(pub.getId(), username1);
-
-		createAndSaveTestTrip("user-cat-7", "Privato Milano");
+		createAndSaveTestTrip("user-cat-7", "Privato Milano"); // rimane DRAFT
 
 		Trip result = tripService.getRandomPublicTrip("Milano");
 
@@ -711,8 +649,7 @@ class TripServiceTest {
 
 		assertEquals(404, ex.getStatusCode().value(), "Deve restituire 404 se il viaggio non esiste");
 	}
-	
-	// --- Test: UPDATE TRIP ---------------------------------------
+	// test update
 
 	@Test
 	void updateTrip_ShouldThrow404IfTripNotFound() {
@@ -886,108 +823,6 @@ class TripServiceTest {
 		Trip updated = tripService.updateTrip(trip.getId(), request);
 
 		assertTrue(updated.getUpdatedAt().isAfter(before), "updatedAt deve essere aggiornato dopo la modifica");
-	}
-	
-	/**
-	 * Verifica che updateTripStatus aggiorni correttamente lo stato del viaggio
-	 * e che la modifica venga salvata nel database.
-	 */
-	@Test
-	void updateTripStatus_ShouldUpdateStatusAndPersist() {
-	    String userId = "user-upd-1";
-	    Trip trip = createTestTrip(userId);
-	    Trip updated = tripService.updateTripStatus(trip.getId(), TripStatus.COMPLETED);
-
-	    // Verifica che il metodo restituisca un trip valido
-	    assertNotNull(updated, "Il metodo deve restituire il trip aggiornato");
-
-	    // Verifica che lo stato sia stato aggiornato correttamente
-	    assertEquals(TripStatus.COMPLETED, updated.getStatus(), "Lo stato deve essere COMPLETED");
-
-	    // Verifica che la modifica sia stata salvata nel DB
-	    Trip fromDb = tripRepository.findById(trip.getId()).orElseThrow();
-	    assertEquals(TripStatus.COMPLETED, fromDb.getStatus(), "Lo stato deve essere salvato nel DB");
-	}
-
-	/**
-	 * Verifica che updateTripStatus restituisca null quando il trip non esiste.
-	 */
-	@Test
-	void updateTripStatus_ShouldReturnNullWhenTripNotFound() {
-	    // ID inesistente -> il service deve restituire null
-	    Trip result = tripService.updateTripStatus("id-inesistente-xyz", TripStatus.SAVED);
-
-	    assertNull(result, "Se il trip non esiste, il metodo deve restituire null");
-	}
-
-	/**
-	 * Verifica che updateTripStatus aggiorni il campo updatedAt.
-	 */
-	@Test
-	void updateTripStatus_ShouldUpdateTimestamp() throws InterruptedException {
-	    String userId = "user-upd-2";
-	    Trip trip = createTestTrip(userId);
-	    Instant before = trip.getUpdatedAt();
-	    
-	    // Attende un minimo per garantire un timestamp diverso
-	    Thread.sleep(5);
-	    
-	    // Aggiorna lo stato
-	    Trip updated = tripService.updateTripStatus(trip.getId(), TripStatus.STARRED);
-
-	    // Verifica che updatedAt sia stato aggiornato
-	    assertTrue(updated.getUpdatedAt().isAfter(before),
-	            "updatedAt deve essere aggiornato a un valore più recente");
-	}
-
-	/**
-	 * Verifica che updateTripStatus NON modifichi altri campi del trip.
-	 */
-	@Test
-	void updateTripStatus_ShouldNotModifyOtherFields() {
-	    String userId = "user-upd-3";
-	    Trip trip = createTestTrip(userId);
-
-	    // Salva i valori originali dei campi che NON devono cambiare
-	    String originalName = trip.getName();
-	    String originalCity = trip.getCity();
-	    String originalStartPoint = trip.getStartPoint();
-	    double originalLat = trip.getStartLat();
-	    double originalLon = trip.getStartLon();
-	    int originalStages = trip.getStages().size();
-
-	    // Aggiorna lo stato
-	    Trip updated = tripService.updateTripStatus(trip.getId(), TripStatus.STARRED);
-
-	    // Verifica che nessun altro campo sia stato modificato
-	    assertEquals(originalName, updated.getName(), "Il nome non deve cambiare");
-	    assertEquals(originalCity, updated.getCity(), "La città non deve cambiare");
-	    assertEquals(originalStartPoint, updated.getStartPoint(), "Lo startPoint non deve cambiare");
-	    assertEquals(originalLat, updated.getStartLat(), "La latitudine non deve cambiare");
-	    assertEquals(originalLon, updated.getStartLon(), "La longitudine non deve cambiare");
-	    assertEquals(originalStages, updated.getStages().size(), "Le tappe non devono cambiare");
-	}
-
-	/**
-	 * Verifica che updateTripStatus gestisca correttamente aggiornamenti multipli consecutivi.
-	 */
-	@Test
-	void updateTripStatus_ShouldHandleMultipleSequentialUpdates() {
-	    String userId = "user-upd-4";
-
-	    Trip trip = createTestTrip(userId);
-
-	    // 1° aggiornamento -> STARRED
-	    Trip s1 = tripService.updateTripStatus(trip.getId(), TripStatus.STARRED);
-	    assertEquals(TripStatus.STARRED, s1.getStatus());
-
-	    // 2° aggiornamento -> COMPLETED
-	    Trip s2 = tripService.updateTripStatus(trip.getId(), TripStatus.COMPLETED);
-	    assertEquals(TripStatus.COMPLETED, s2.getStatus());
-
-	    // 3° aggiornamento -> SAVED
-	    Trip s3 = tripService.updateTripStatus(trip.getId(), TripStatus.SAVED);
-	    assertEquals(TripStatus.SAVED, s3.getStatus());
 	}
 
 }

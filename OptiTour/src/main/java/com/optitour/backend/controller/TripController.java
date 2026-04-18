@@ -16,6 +16,7 @@ import com.optitour.backend.model.Trip.TripStatus;
 import com.optitour.backend.model.User;
 import com.optitour.backend.service.TripMgmtIF;
 import com.optitour.backend.repository.UserRepository;
+
 import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -34,15 +35,19 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/trips")
 public class TripController {
-	
+
     private final TripMgmtIF tripService;
     private final RouteOptimizationServiceMgmt routeOptimizationService;
+    private final UserRepository userRepository;
     private final ExportServiceIF exportService;
-    public TripController(TripMgmtIF tripService, RouteOptimizationServiceMgmt routeOptimizationService, ExportServiceIF exportService) {
+    
+    public TripController(TripMgmtIF tripService, RouteOptimizationServiceMgmt routeOptimizationService, UserRepository userRepository, ExportServiceIF exportService) {
         this.tripService = tripService;
         this.routeOptimizationService = routeOptimizationService;
+        this.userRepository = userRepository;
         this.exportService =  exportService;
-      
+    }
+
     //Crea un nuovo viaggio.
 
     @PostMapping
@@ -123,26 +128,38 @@ public class TripController {
     
     @GetMapping("/public")
     public ResponseEntity<List<TripResponse>> getPublicTrips() {
-        return ResponseEntity.ok(tripService.getPublicTripsWithUsername());
-    }
-    
-    @PostMapping("/{id}/publish")
-    public ResponseEntity<TripResponse> publishTrip(
-            @PathVariable String id,
-            @AuthenticationPrincipal UserDetails userDetails) {
+        List<Trip> trips = tripService.getPublicTrips();
 
-    	Trip trip = tripService.publishTrip(id, userDetails.getUsername());
-    	
+        // Batch-resolve username per evitare N+1 query
+        // raccoglie tutti gli userId univoci, carica gli utenti in un'unica query
+        List<String> userIds = trips.stream()
+                .map(Trip::getUserId)
+                .distinct()
+                .collect(Collectors.toList());
+        Map<String, String> usernameById = userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, User::getUsername));
+
+        List<TripResponse> response = trips.stream()
+                .map(t -> toResponse(t, usernameById.get(t.getUserId())))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{id}/publish")
+    public ResponseEntity<TripResponse> publishTrip(@PathVariable String id,
+                                         @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
+        Trip trip = tripService.publishTrip(id, user.getId());
         return ResponseEntity.ok(toResponse(trip));
     }
     
     @PostMapping("/{id}/unpublish")
-    public ResponseEntity<TripResponse> unpublishTrip(
-            @PathVariable String id,
-            @AuthenticationPrincipal UserDetails userDetails) {
-
-    	Trip trip = tripService.unpublishTrip(id, userDetails.getUsername());
-    	
+    public ResponseEntity<TripResponse> unpublishTrip(@PathVariable String id,
+                                           @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
+        Trip trip = tripService.unpublishTrip(id, user.getId());
         return ResponseEntity.ok(toResponse(trip));
     }
 
@@ -172,11 +189,11 @@ public class TripController {
             @RequestParam String city,
             @RequestParam int availableMinutes,
             @AuthenticationPrincipal UserDetails userDetails) {
-        
-        Trip trip = tripService.generateRandomTrip(city, availableMinutes, userDetails.getUsername());
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
+        Trip trip = tripService.generateRandomTrip(city, availableMinutes, user.getId());
         return ResponseEntity.ok(toResponse(trip));
     }
-    
     /** PUT /api/trips/{id} — aggiorna nome, città, partenza e tappe */
     @PutMapping("/{id}")
     public ResponseEntity<TripResponse> updateTrip(@PathVariable String id,
@@ -207,7 +224,7 @@ public class TripController {
 	 */
 	@PostMapping("/{id}/save")
 	public ResponseEntity<TripResponse> saveTrip(@PathVariable String id, Authentication authentication) {
-		String userId = tripService.resolveUserId(authentication);
+		String userId = resolveUserId(authentication);
 		Trip trip = tripService.saveToFavorites(id, userId);
 		return ResponseEntity.ok(toResponse(trip));
 	}
@@ -218,7 +235,7 @@ public class TripController {
 	 */
 	@DeleteMapping("/{id}/save")
 	public ResponseEntity<TripResponse> unsaveTrip(@PathVariable String id, Authentication authentication) {
-		String userId = tripService.resolveUserId(authentication);
+		String userId = resolveUserId(authentication);
 		Trip trip = tripService.removeFromFavorites(id, userId);
 		return ResponseEntity.ok(toResponse(trip));
 	}
@@ -229,7 +246,7 @@ public class TripController {
 	 */
 	@GetMapping("/history")
 	public ResponseEntity<List<TripResponse>> getTripHistory(Authentication authentication) {
-		String userId = tripService.resolveUserId(authentication);
+		String userId = resolveUserId(authentication);
 		List<TripResponse> response = tripService.getTripHistory(userId).stream().map(this::toResponse)
 				.collect(Collectors.toList());
 		return ResponseEntity.ok(response);
@@ -240,7 +257,7 @@ public class TripController {
 	 */
 	@PutMapping("/{id}/complete")
 	public ResponseEntity<TripResponse> completeTrip(@PathVariable String id, Authentication authentication) {
-		String userId = tripService.resolveUserId(authentication);
+		String userId = resolveUserId(authentication);
 		Trip trip = tripService.completeTrip(id, userId);
 		return ResponseEntity.ok(toResponse(trip));
 	}
@@ -250,7 +267,7 @@ public class TripController {
 	@PutMapping("/{id}/restore")
 	public ResponseEntity<TripResponse> restoreTrip(@PathVariable String id,
 	                                                 Authentication authentication) {
-	    String userId = tripService.resolveUserId(authentication);
+	    String userId = resolveUserId(authentication);
 	    Trip trip = tripService.restoreTrip(id, userId);
 	    return ResponseEntity.ok(toResponse(trip));
 	}
@@ -306,5 +323,4 @@ public class TripController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
     }
-        
 }

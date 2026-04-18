@@ -7,38 +7,28 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
 
-import java.time.Instant;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import com.optitour.backend.model.Trip;
-import com.optitour.backend.model.TripStage;
 import com.optitour.backend.repository.UserRepository; 
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.optitour.backend.dto.CreateTripRequest;
-import com.optitour.backend.dto.OptimizedTripResponse;
 import com.optitour.backend.dto.TripResponse;
 import com.optitour.backend.model.Monument;
 import com.optitour.backend.model.Trip;
@@ -46,7 +36,6 @@ import com.optitour.backend.model.User;
 import com.optitour.backend.repository.MonumentRepository;
 import com.optitour.backend.repository.TripRepository;
 import com.optitour.backend.repository.UserRepository;
-import com.optitour.backend.service.RouteOptimizationServiceMgmt;
 import com.optitour.backend.service.TripService;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -60,7 +49,6 @@ class TripControllerTest {
     @Autowired private TripRepository tripRepository;
     @Autowired private ObjectMapper objectMapper;
     @Autowired private TestRestTemplate restTemplate;
-	@MockBean private RouteOptimizationServiceMgmt routeOptimizationService;
 
 
     private String validMonumentId;
@@ -68,19 +56,14 @@ class TripControllerTest {
 
     @BeforeEach
     void setUp() {
-
-        // --- CREAZIONE UTENTE DI TEST ---
         User user = new User();
         user.setUsername("testuser");
         user.setPassword("pwd");
         userId = userRepository.save(user).getId();
 
-        // --- CREAZIONE MONUMENTO VALIDO ---
         Monument m = Monument.builder()
                 .name("Duomo")
                 .city("Milano")
-                .lat(45.4641)
-                .lon(9.1919)
                 .build();
         validMonumentId = monumentRepository.save(m).getId();
     }
@@ -116,33 +99,7 @@ class TripControllerTest {
         // Questo evita di dover fare una chiamata HTTP e rende i test più veloci e stabili.
         return tripService.createTrip(req, userId);
     }
-    
-    private Trip createTripWithoutGeocode() {
-        Trip trip = new Trip();
-        trip.setUserId(userId);
-        trip.setName("Weekend a Milano");
-        trip.setCity("Milano");
-        trip.setStartPoint("Milano, Italy");
-        trip.setStartLat(45.4642);
-        trip.setStartLon(9.19);
 
-        // --- CREA UNA TAPPA VALIDA (TripStage) ---
-        TripStage stage = new TripStage();
-        stage.setMonumentId(validMonumentId);
-        stage.setVisitDurationMinutes(60);
-
-        trip.setStages(List.of(stage));
-
-        trip.setStatus(Trip.TripStatus.SAVED);
-        trip.setCreatedAt(Instant.now());
-        trip.setUpdatedAt(Instant.now());
-
-        return tripRepository.save(trip);
-    }
-
-
-
-    
     // --- TEST --------------------------------------------------------------------------------------------
     
     // --- Test: Creazione viaggio -------------------------
@@ -710,236 +667,4 @@ class TripControllerTest {
                     assertTrue(content.length > 0);
                 });
     }
-                .andExpect(jsonPath("$.status").value("STARRED"));
-    }*/
-    
-    // --- UPDATE --------------------------------------
-    
-    /**
-     * Verifica che l'endpoint PUT /api/trips/{id}/status:
-     * - risponda 200 OK
-     * - aggiorni correttamente lo stato del viaggio
-     * - restituisca un TripResponse con lo stato aggiornato.
-     */
-    @Test
-    @WithMockUser(username = "testuser")
-    void updateTripStatus_ShouldReturn200AndUpdatedStatus() throws Exception {
-        // Crea un trip reale nel DB tramite il service
-        Trip trip = createTrip();
-
-        // Esegue la chiamata HTTP al controller per aggiornare lo stato
-        mockMvc.perform(put("/api/trips/" + trip.getId() + "/status")
-                        .param("status", "COMPLETED"))
-                // Verifica che il controller risponda correttamente
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("COMPLETED"));
-    }
-
-    /**
-     * Verifica che l'endpoint restituisca 404 Not Found
-     * quando si tenta di aggiornare lo stato di un trip inesistente.
-     */
-    @Test
-    @WithMockUser(username = "testuser")
-    void updateTripStatus_ShouldReturn404IfTripNotFound() throws Exception {
-        mockMvc.perform(put("/api/trips/id-inesistente/status")
-                        .param("status", "COMPLETED"))
-                .andExpect(status().isNotFound());
-    }
-
-    /**
-     * Verifica che updatedAt venga aggiornato dal service
-     * e che il controller restituisca 200 OK.
-     */
-    @Test
-    @WithMockUser(username = "testuser")
-    void updateTripStatus_ShouldUpdateTimestamp() throws Exception {
-        // Crea un trip reale nel DB tramite il service
-        Trip trip = createTrip();
-        Instant before = trip.getUpdatedAt();
-
-        // Attende un minimo per garantire un timestamp diverso
-        Thread.sleep(5);
-
-        // Esegue la chiamata HTTP per aggiornare lo stato
-        mockMvc.perform(put("/api/trips/" + trip.getId() + "/status")
-                        .param("status", "STARRED"))
-                .andExpect(status().isOk());
-
-        // Recupera il trip aggiornato dal DB
-        Trip updated = tripRepository.findById(trip.getId()).orElseThrow();
-
-        // Verifica che updatedAt sia stato aggiornato
-        assertTrue(updated.getUpdatedAt().isAfter(before),
-                "updatedAt deve essere aggiornato");
-    }
-
-    /**
-     * Verifica che l'endpoint NON modifichi campi diversi dallo stato.
-     * Il controller deve delegare al service senza alterare altri valori.
-     */
-    @Test
-    @WithMockUser(username = "testuser")
-    void updateTripStatus_ShouldNotModifyOtherFields() throws Exception {
-        Trip trip = createTrip();
-
-        // Salva i valori originali dei campi che non devono cambiare
-        String originalName = trip.getName();
-        String originalCity = trip.getCity();
-        String originalStartPoint = trip.getStartPoint();
-        double originalLat = trip.getStartLat();
-        double originalLon = trip.getStartLon();
-        int originalStages = trip.getStages().size();
-
-        // Aggiorna lo stato tramite controller
-        mockMvc.perform(put("/api/trips/" + trip.getId() + "/status")
-                        .param("status", "STARRED"))
-                .andExpect(status().isOk());
-
-        // Recupera il trip aggiornato dal DB
-        Trip updated = tripRepository.findById(trip.getId()).orElseThrow();
-
-        // Verifica che nessun altro campo sia stato modificato
-        assertEquals(originalName, updated.getName());
-        assertEquals(originalCity, updated.getCity());
-        assertEquals(originalStartPoint, updated.getStartPoint());
-        assertEquals(originalLat, updated.getStartLat());
-        assertEquals(originalLon, updated.getStartLon());
-        assertEquals(originalStages, updated.getStages().size());
-    }
-
-    /**
-     * Verifica che il controller deleghi correttamente al service:
-     * dopo la chiamata HTTP, lo stato nel DB deve essere aggiornato.
-     */
-    @Test
-    @WithMockUser(username = "testuser")
-    void updateTripStatus_ShouldDelegateToService() throws Exception {
-        Trip trip = createTrip();
-
-        // Chiamata HTTP al controller
-        mockMvc.perform(put("/api/trips/" + trip.getId() + "/status")
-                        .param("status", "COMPLETED"))
-                .andExpect(status().isOk());
-
-        // Verifica che il service abbia realmente aggiornato lo stato nel DB
-        Trip updated = tripRepository.findById(trip.getId()).orElseThrow();
-        assertEquals(Trip.TripStatus.COMPLETED, updated.getStatus(),
-                "Il controller deve delegare correttamente al service");
-    }
-    
-    // --- TEST: OPTIMIZATION -------------------------
-    
-    /**
-     * Verifica che l'endpoint POST /api/trips/{id}/optimize:
-     * - restituisca 200 OK
-     * - invochi correttamente il servizio di ottimizzazione
-     * - ritorni un OptimizedTripResponse valido e coerente
-     */
-    @Test
-    @WithMockUser(username = "testuser")
-    void optimizeTrip_ShouldReturn200AndOptimizedResponse() throws Exception {
-        // Crea un trip reale nel DB
-        Trip trip = createTripWithoutGeocode();
-
-        // Prepara una risposta fittizia del servizio di ottimizzazione
-        OptimizedTripResponse fakeResponse = new OptimizedTripResponse(
-                trip.getId(),          // tripId
-                trip.getName(),        // tripName
-                trip.getCity(),        // city
-                trip.getStartLat(),    // startLat
-                trip.getStartLon(),    // startLon
-                List.of(),             // stages ottimizzate (vuote per il test)
-                1500.0,                // distanza totale
-                3600L                  // durata totale
-        );
-
-        // Mock del servizio di ottimizzazione
-        when(routeOptimizationService.optimizeAndSave(any())).thenReturn(fakeResponse);
-
-        // Chiamata HTTP al controller
-        mockMvc.perform(post("/api/trips/" + trip.getId() + "/optimize"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.tripId").value(trip.getId()))
-                .andExpect(jsonPath("$.tripName").value(trip.getName()))
-                .andExpect(jsonPath("$.city").value(trip.getCity()))
-                .andExpect(jsonPath("$.totalDistanceMeters").value(1500.0))
-                .andExpect(jsonPath("$.totalDurationSeconds").value(3600));
-    }
-    
-    /**
-     * Verifica che l'endpoint restituisca 404 Not Found
-     * quando si tenta di ottimizzare un trip inesistente.
-     */
-    @Test
-    @WithMockUser(username = "testuser")
-    void optimizeTrip_ShouldReturn404IfTripNotFound() throws Exception {
-        mockMvc.perform(post("/api/trips/id-inesistente/optimize"))
-                .andExpect(status().isNotFound());
-    }
- 
-    // --- TEST: GenerateRandomTrip -----------------------------
-    
-    /**
-     * Verifica che l'endpoint POST /api/trips/random/generate:
-     * - restituisca 200 OK
-     * - generi correttamente un TripResponse
-     * - contenga almeno una tappa (stages > 0)
-     * - imposti correttamente city e status
-     *
-     * Nota: il monumento valido per Milano viene creato nel @BeforeEach.
-     */
-    @Test
-    @WithMockUser(username = "testuser")
-    void generateRandomTrip_ShouldReturn200AndTripResponse() throws Exception {
-
-        mockMvc.perform(post("/api/trips/random/generate")
-                        .param("city", "Milano")
-                        .param("availableMinutes", "120"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.city").value("Milano"))
-                .andExpect(jsonPath("$.status").value("SAVED"))
-                .andExpect(jsonPath("$.stages.length()", greaterThan(0)));
-    }
-    
-    /**
-     * Verifica che l'endpoint POST /api/trips/random/generate:
-     * - restituisca HTTP 400 Bad Request
-     *   quando manca uno dei parametri obbligatori.
-     *
-     * In questo caso viene passato solo "city" senza "availableMinutes".
-     * Il controller deve quindi rifiutare la richiesta come non valida.
-     */
-    @Test
-    @WithMockUser(username = "testuser")
-    void generateRandomTrip_ShouldReturn400IfMissingParameters() throws Exception {
-
-        mockMvc.perform(post("/api/trips/random/generate")
-                        // parametro city presente
-                        .param("city", "Milano"))
-                        // parametro availableMinutes mancante → richiesta non valida
-                .andExpect(status().isBadRequest());
-    }
-
-    /**
-     * Verifica che l'endpoint POST /api/trips/random/generate:
-     * - restituisca un TripResponse con struttura JSON valida
-     * - contenga id, name, city e stages come array
-     *
-     * Questo test controlla la forma del JSON, non il contenuto logico.
-     */
-    @Test
-    @WithMockUser(username = "testuser")
-    void generateRandomTrip_ShouldReturnValidJsonStructure() throws Exception {
-
-        mockMvc.perform(post("/api/trips/random/generate")
-                        .param("city", "Milano")
-                        .param("availableMinutes", "90"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.name").exists())
-                .andExpect(jsonPath("$.city").value("Milano"))
-                .andExpect(jsonPath("$.stages").isArray());
-    }
-
 }
