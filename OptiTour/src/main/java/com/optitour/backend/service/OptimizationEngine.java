@@ -248,7 +248,9 @@ public class OptimizationEngine implements OptimizationEngineMgmt {
                     for (int i = 0; i < ptList.size(); i++) {
                         points.add(new double[]{ptList.getLat(i), ptList.getLon(i)});
                     }
-                    return points;
+                    // Se la PointList è vuota (caso anomalo) non fare early return:
+                    // lascia cadere nel fallback che garantisce almeno i 2 estremi.
+                    if (!points.isEmpty()) return points;
                 }
             } catch (Exception e) {
                 System.out.println("getRouteLeg fallback su estremi: " + e.getMessage());
