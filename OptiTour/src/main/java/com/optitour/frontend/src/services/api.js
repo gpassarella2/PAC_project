@@ -109,6 +109,14 @@ export const completeTrip = (id) =>
 export const restoreTrip = (id) =>
   api.put(`/api/trips/${id}/restore`);
 
+/** 
+ * POST /api/trips/{id}/clone
+ * Clona un viaggio pubblico (id) e lo associa all'utente autenticato come SAVED.
+ */ 
+export const clonePublicTrip = (id) => {
+  return api.post(`/api/trips/${id}/clone`);
+};
+
 // ----- Monuments ---------------------------------------------------------
 
 // GET /api/monuments/{id}

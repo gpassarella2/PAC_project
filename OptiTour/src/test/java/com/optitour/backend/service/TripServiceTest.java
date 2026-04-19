@@ -989,5 +989,78 @@ class TripServiceTest {
 	    Trip s3 = tripService.updateTripStatus(trip.getId(), TripStatus.SAVED);
 	    assertEquals(TripStatus.SAVED, s3.getStatus());
 	}
+	
+	@Test
+	void clonePublicTrip_ShouldClonePublicTripAndPersistIt() {
+	    String ownerId = createUser("owner-clone-1");
+	    String newUserId = createUser("user-clone-target");
+
+	    Trip source = createAndSaveTestTrip(ownerId, "Trip pubblico da clonare");
+	    source.setPublic(true);
+	    source.setPublishedAt(Instant.now());
+	    tripRepository.save(source);
+
+	    Trip cloned = tripService.clonePublicTrip(source.getId(), newUserId);
+
+	    assertNotNull(cloned.getId(), "Il clone deve essere salvato e avere un ID");
+	    assertNotEquals(source.getId(), cloned.getId(), "Il clone deve avere un ID diverso dalla sorgente");
+	    assertEquals(newUserId, cloned.getUserId(), "Il clone deve appartenere al nuovo utente");
+	    assertEquals(source.getName(), cloned.getName());
+	    assertEquals(source.getCity(), cloned.getCity());
+	    assertEquals(source.getStartPoint(), cloned.getStartPoint());
+	    assertEquals(source.getStartLat(), cloned.getStartLat(), 0.0001);
+	    assertEquals(source.getStartLon(), cloned.getStartLon(), 0.0001);
+	    assertEquals(TripStatus.SAVED, cloned.getStatus(), "Il clone deve partire come SAVED");
+
+	    assertEquals(source.getTotalDistanceMeters(), cloned.getTotalDistanceMeters());
+	    assertEquals(source.getTotalDurationSeconds(), cloned.getTotalDurationSeconds());
+
+	    assertNotNull(cloned.getCreatedAt(), "Il clone deve avere createdAt");
+	    assertNotNull(cloned.getUpdatedAt(), "Il clone deve avere updatedAt");
+
+	    assertNotNull(cloned.getStages());
+	    assertEquals(source.getStages().size(), cloned.getStages().size(), "Le tappe devono essere copiate");
+	    assertNotSame(source.getStages(), cloned.getStages(), "La lista delle tappe deve essere una copia, non la stessa istanza");
+
+	    for (int i = 0; i < source.getStages().size(); i++) {
+	        assertEquals(source.getStages().get(i).getMonumentId(), cloned.getStages().get(i).getMonumentId());
+	        assertEquals(source.getStages().get(i).getVisitDurationMinutes(),
+	                     cloned.getStages().get(i).getVisitDurationMinutes());
+	        assertNotSame(source.getStages().get(i), cloned.getStages().get(i), "Ogni TripStage deve essere clonato");
+	    }
+
+	    Trip fromDb = tripRepository.findById(cloned.getId()).orElseThrow();
+	    assertEquals(cloned.getId(), fromDb.getId(), "Il clone deve essere effettivamente persistito");
+	}
+	
+	@Test
+	void clonePublicTrip_ShouldThrow404WhenSourceTripDoesNotExist() {
+	    createUser("user-clone-404");
+
+	    ResponseStatusException ex = assertThrows(
+	            ResponseStatusException.class,
+	            () -> tripService.clonePublicTrip("id-inesistente", "user-clone-404")
+	    );
+
+	    assertEquals(404, ex.getStatusCode().value());
+	    assertEquals("Trip non trovato", ex.getReason());
+	}
+	
+	@Test
+	void clonePublicTrip_ShouldThrow403WhenSourceTripIsPrivate() {
+	    String ownerId = createUser("owner-private-clone");
+
+	    Trip source = createAndSaveTestTrip(ownerId, "Trip privato");
+	    source.setPublic(false);
+	    tripRepository.save(source);
+
+	    ResponseStatusException ex = assertThrows(
+	            ResponseStatusException.class,
+	            () -> tripService.clonePublicTrip(source.getId(), ownerId)
+	    );
+
+	    assertEquals(403, ex.getStatusCode().value());
+	    assertEquals("Puoi salvare solo viaggi pubblici", ex.getReason());
+	}
 
 }

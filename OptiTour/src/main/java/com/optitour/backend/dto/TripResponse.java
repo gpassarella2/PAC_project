@@ -27,7 +27,8 @@ public class TripResponse {
     private Double totalDistanceMeters;
     private Long totalDurationSeconds;
     private String authorUsername; // popolato solo per i trip pubblici
-
+    private List<List<double[]>> routeLegs;
+    
     // tappa
 
     public static class TripStageResponse {
@@ -210,6 +211,14 @@ public class TripResponse {
 
 	public void setUpdatedAt(Instant updatedAt) {
 		this.updatedAt = updatedAt;
+	}
+	
+	public List<List<double[]>> getRouteLegs() {
+	    return routeLegs;
+	}
+
+	public void setRouteLegs(List<List<double[]>> routeLegs) {
+	    this.routeLegs = routeLegs;
 	}
 
 	@Override

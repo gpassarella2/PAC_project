@@ -25,6 +25,13 @@ public class OptimizedTripResponse {
     private double totalDistanceMeters;
     private long totalDurationSeconds;
 
+    /**
+     * Geometria del percorso reale: ogni elemento è la lista di [lat, lon]
+     * che compone un tratto (partenza→stop1, stop1→stop2, …, stopN→partenza).
+     * Presente solo se GraphHopper è disponibile; altrimenti lista vuota.
+     */
+    private List<List<double[]>> routeLegs;
+
     // ── Costruttori ───────────────────────────────────────────────────────
 
     public OptimizedTripResponse() {}
@@ -33,7 +40,8 @@ public class OptimizedTripResponse {
                                   double startLat, double startLon,
                                   List<StageDetail> stages,
                                   double totalDistanceMeters,
-                                  long totalDurationSeconds) {
+                                  long totalDurationSeconds,
+                                  List<List<double[]>> routeLegs) {
         this.tripId = tripId;
         this.tripName = tripName;
         this.city = city;
@@ -42,6 +50,7 @@ public class OptimizedTripResponse {
         this.stages = stages;
         this.totalDistanceMeters = totalDistanceMeters;
         this.totalDurationSeconds = totalDurationSeconds;
+        this.routeLegs = routeLegs;
     }
 
     // ── StageDetail ───────────────────────────────────────────────────────
@@ -145,4 +154,7 @@ public class OptimizedTripResponse {
     public void setTotalDurationSeconds(long totalDurationSeconds) {
         this.totalDurationSeconds = totalDurationSeconds;
     }
+
+    public List<List<double[]>> getRouteLegs() { return routeLegs; }
+    public void setRouteLegs(List<List<double[]>> routeLegs) { this.routeLegs = routeLegs; }
 }

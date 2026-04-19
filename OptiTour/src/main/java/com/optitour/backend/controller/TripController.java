@@ -175,6 +175,8 @@ public class TripController {
             @AuthenticationPrincipal UserDetails userDetails) {
         
         Trip trip = tripService.generateRandomTrip(city, availableMinutes, userDetails.getUsername());
+        routeOptimizationService.optimizeAndSave(trip);
+             
         return ResponseEntity.ok(toResponse(trip));
     }
     
@@ -255,6 +257,14 @@ public class TripController {
 	    Trip trip = tripService.restoreTrip(id, userId);
 	    return ResponseEntity.ok(toResponse(trip));
 	}
+	
+	@PostMapping("/{id}/clone")
+	public ResponseEntity<TripResponse> clonePublicTrip(@PathVariable String id,
+	                                                    Authentication authentication) {
+	    String userId = tripService.resolveUserId(authentication);
+	    Trip cloned = tripService.clonePublicTrip(id, userId);
+	    return ResponseEntity.ok(toResponse(cloned));
+	}
 
     // Helpers -------------------------------------------------------------------------------------
     
@@ -272,13 +282,16 @@ public class TripController {
                         s.getVisitDurationMinutes()))
                 .collect(Collectors.toList());
 
-        return new TripResponse(
+       TripResponse res = new TripResponse(
                 trip.getId(), trip.getUserId(), trip.getName(), trip.getCity(),
                 trip.getStartPoint(), trip.getStartLat(), trip.getStartLon(),
                 stageResponses, trip.getStatus().name(),
                 trip.getCreatedAt(), trip.getUpdatedAt(),
                 trip.isPublic(), trip.getPublishedAt(), authorUsername,
                 trip.getTotalDistanceMeters(), trip.getTotalDurationSeconds());
+       res.setRouteLegs(trip.getRouteLegs());
+       return res;
+        		
     }
     /**
      * metodo per esportare il viaggio in un formato pdf
