@@ -149,4 +149,9 @@ export const generateRandomTrip = (city, availableMinutes) =>
 export const updateTrip = (id, data) =>
   api.put(`/api/trips/${id}`, data);
 
+// GET /api/trips/{id}/export
+// Richiede al backend la generazione di un file PDF dell'itinerario.
+export const exportTrip = (id) =>
+  api.get(`/api/trips/${id}/export`, { responseType: 'blob' });
+
 export default api;

@@ -8,13 +8,14 @@ import java.util.stream.Collectors;
 import com.optitour.backend.model.User;
 import com.optitour.backend.dto.UpdateTripRequest;
 import com.optitour.backend.dto.OptimizedTripResponse;
+import com.optitour.backend.service.ExportServiceIF;
 import com.optitour.backend.service.RouteOptimizationServiceMgmt;
 import com.optitour.backend.model.Trip;
 import com.optitour.backend.model.Trip.TripStatus;
 import com.optitour.backend.model.User;
 import com.optitour.backend.service.TripMgmtIF;
 
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.Authentication;
@@ -35,11 +36,12 @@ public class TripController {
 	
     private final TripMgmtIF tripService;
     private final RouteOptimizationServiceMgmt routeOptimizationService;
+    private final ExportServiceIF exportService;
 
-
-    public TripController(TripMgmtIF tripService, RouteOptimizationServiceMgmt routeOptimizationService) {
+    public TripController(TripMgmtIF tripService, RouteOptimizationServiceMgmt routeOptimizationService, ExportServiceIF exportService) {
         this.tripService = tripService;
         this.routeOptimizationService = routeOptimizationService;
+        this.exportService =  exportService;
     }
 
     //Crea un nuovo viaggio.
@@ -278,5 +280,20 @@ public class TripController {
                 trip.isPublic(), trip.getPublishedAt(), authorUsername,
                 trip.getTotalDistanceMeters(), trip.getTotalDurationSeconds());
     }
-        
+    /**
+     * metodo per esportare il viaggio in un formato pdf
+     * 
+     */
+    @GetMapping("/{id}/export")
+    public ResponseEntity<byte[]> exportTrip(@PathVariable String id) {
+        Trip trip = tripService.getTripById(id)
+                .orElseThrow(() -> new NoSuchElementException("Viaggio non trovato"));
+
+        byte[] pdf = exportService.generateTripPdf(trip);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"itinerario.pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
+    }        
 }
