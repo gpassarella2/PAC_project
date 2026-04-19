@@ -959,6 +959,24 @@ class TripControllerTest {
                 .andExpect(jsonPath("$.name").value("Trip pubblico da clonare"))
                 .andExpect(jsonPath("$.city").value("Milano"))
                 .andExpect(jsonPath("$.status").value("SAVED"));
+    @Test
+    @WithMockUser(username = "testuser")
+    void exportTrip_ShouldReturnPdf() throws Exception {
+        Trip trip = createTrip();
+
+        mockMvc.perform(get("/api/trips/" + trip.getId() + "/export"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(
+                        "Content-Disposition",
+                        "attachment; filename=\"itinerario.pdf\""
+                ))
+                .andExpect(content().contentType(MediaType.APPLICATION_PDF))
+                .andExpect(result -> {
+                    byte[] content = result.getResponse().getContentAsByteArray();
+                    assertNotNull(content);
+                    assertTrue(content.length > 0);
+                });
+    }
 
         long afterCount = tripRepository.count();
         assertEquals(beforeCount + 1, afterCount, "Il clone deve essere salvato nel database");

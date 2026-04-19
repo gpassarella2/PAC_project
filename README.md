@@ -1,33 +1,93 @@
-# 🗺️ OptiTour – Sistema di Ottimizzazione Viaggi Intelligente
-![Logo OptiTour](logoApp.PNG)
-OptiTour è un'applicazione avanzata di ottimizzazione logistica progettata per risolvere il problema decisionale che ogni turista affronta: scegliere cosa visitare è facile, ma decidere come farlo nel minor tempo possibile è una sfida complessa. A differenza delle tradizionali app di mappatura, OptiTour trasforma una lista disordinata di punti di interesse in un itinerario perfetto.
-Il sistema offre all'utente la massima flessibilità: è possibile selezionare manualmente i singoli monumenti, attingere dai propri itinerari preferiti o lasciarsi ispirare dai percorsi consigliati. Inoltre, è possibile caricare itinerari preimpostati già ottimizzati. Una volta definiti i punti di interesse, l'app calcola automaticamente il percorso più breve per visitarli tutti in modo efficiente, ottimizzando gli spostamenti.
 
-## Il Problema: Efficienza Urbana
-Spesso i turisti perdono tempo prezioso camminando avanti e indietro per la città a causa di una pianificazione non ottimale. In informatica, questo è noto come Traveling Salesman Problem (TSP), un problema che diventa difficile da risolvere mentalmente all'aumentare dei luoghi da visitare.
-OptiTour automatizza questo processo complesso utilizzando algoritmi avanzati sui Grafi ed euristiche dedicate. Il sistema non offre solo un percorso, ma il miglior percorso possibile, rendendolo lo strumento ideale per il "Turista Efficiente", il "Runner Urbano" o i professionisti dell'ospitalità.
+# 🗺️ OptiTour – Sistema di Ottimizzazione di Itinerari Turistici
+<p align="center">
+<img src="logoApp.PNG" alt="Logo OptiTour" width="300"/>
+</p>
+Pianificare un itinerario in una nuova città o in una meta turistica ricca di attrazioni può spesso trasformarsi in un vero e proprio rompicapo. C'è il rischio concreto di passare più tempo a incrociare mappe e orari che a godersi il viaggio, rendendo l'organizzazione manuale non solo stressante, ma spesso altamente inefficace. 
+
+È proprio per rispondere a questa esigenza che nasce **OptiTour**. Più che un semplice pianificatore, è un sistema intelligente progettato per rivoluzionare l'organizzazione dei tuoi viaggi. L’applicazione prende in carico la tua "lista dei desideri" cioè i punti di interesse che vuoi assolutamente visitare e la trasforma in un percorso fluido e ottimizzato. L'obiettivo è farti risparmiare tempo e chilometri, riducendo al minimo la distanza complessiva e i tempi di percorrenza, pur rispettando vincoli realistici come il tempo necessario per visitare ogni singola tappa e l'effettiva conformazione geografica del territorio.
+
 
 ## Funzionalità Principali
-* **Pianificazione Itinerari Smart**: Selezione dei punti di interesse (POI) e calcolo del ciclo ottimale per ridurre chilometri e tempi di percorrenza.
-* **Gestione Flessibile**: Possibilità di creare nuovi viaggi (manuali o casuali), modificare le tappe, visualizzare dettagli o eliminare percorsi.
-* **Ottimizzazione TSP**: Modulo integrato che si interfaccia con provider geografici esterni per il calcolo del percorso ottimo.
-* **Social e Storico**: Salvataggio dei percorsi preferiti, consultazione dello storico dei viaggi effettuati, condivisione e aggiunta di recensioni.
-* **Gestione Profilo**: Registrazione, login e gestione sicura dei dati personali e delle credenziali.
+* **Pianificazione e Ottimizzazione:** Calcola il percorso migliore tra i luoghi scelti, ottimizzando l'ordine delle tappe per risparmiare tempo e chilometri.
+* **Itinerari su Misura:** Crea automaticamente un viaggio in base al tempo che hai a disposizione. Il sistema seleziona i monumenti assicurandosi che tu possa visitarli tutti e tornare al punto di partenza entro il limite orario impostato.
+* **Gestione Itinerari:** Operazioni complete di creazione, modifica e cancellazione dei propri viaggi. È possibile aggiungere o rimuovere tappe in qualsiasi momento, ricalcolando il percorso in tempo reale.
+* **Gestione Profilo:** Area personale dedicata alla modifica dei dati dell'utente, inclusa la gestione delle informazioni anagrafiche e delle credenziali.
+* **Sicurezza:** Accesso protetto tramite autenticazione basata su standard moderni (JWT) e gestione sicura delle password per garantire la massima protezione della privacy.
+* **Catalogo e Social:** Possibilità di sfogliare i viaggi condivisi dagli altri utenti, salvare i preferiti e pubblicare i propri percorsi migliori.
+---
 
 ## Architettura del Sistema
-Il progetto segue il pattern architetturale Model-View-Controller (MVC) per separare nettamente la logica di presentazione, la logica di ottimizzazione e la gestione dei dati.
 
-### Stack Tecnologico
-* **Frontend (View)**: Sviluppato con React.js (componenti funzionali e JSX) e gestito tramite Node.js.
-* **Backend (Controller)**: Implementato in Java con il framework Spring Boot.
-* **Database (Model)**: Utilizzo di MongoDB (NoSQL) per gestire con flessibilità i POI e i dati geografici.
-* **Integrazione Geografica**:
-    * **OpenStreetMap**: Provider per coordinate e metadati dei monumenti.
-    * **GraphHopper**: Motore di routing per il calcolo delle distanze e dei tempi reali.
-* **Comunicazione**: Scambio dati tra client e server esclusivamente in formato JSON tramite Axios.
+Il progetto segue fedelmente il pattern architetturale **Model-View-Controller (MVC)**:
 
-## Casi d'Uso
-Il sistema risponde a diverse esigenze attraverso casi d'uso mirati:
-* **UC20 / UC22**: Creazione di nuovi viaggi personalizzati o percorsi completamente nuovi.
-* **UC25 / UC28**: Selezione dei monumenti e ottimizzazione automatica dell'ordine delle tappe.
-* **UC15 / UC17**: Esportazione e condivisione degli itinerari con altri utenti.
+* **Model:** MongoDB (NoSQL) per una gestione flessibile e performante di POI, utenti e viaggi.
+* **View:** React.js arricchito da React-Leaflet per una visualizzazione chiara e interattiva delle mappe.
+* **Controller:** API REST sviluppate in Spring Boot per la gestione robusta della logica applicativa e delle richieste di rete.
+
+---
+
+## Stack Tecnologico
+
+* **Backend:** Java + Spring Boot
+* **Frontend:** React.js + Node.js
+* **Database:** MongoDB
+* **Routing:** GraphHopper
+* **Geodati:** OpenStreetMap + Overpass API + Nominatim
+* **API Client:** Axios
+
+### Integrazione con Servizi Esterni
+* **OpenStreetMap:** Per la base dei dati geografici.
+* **Overpass API:** Per il recupero mirato dei POI.
+* **Nominatim:** Per le operazioni di geocoding (conversione di indirizzi in coordinate).
+* **GraphHopper:** Per il calcolo preciso di distanze e tempi di percorrenza reali.
+
+---
+
+## Casi d’Uso Principali
+
+1.  **Creazione di un itinerario**: 
+    * **UC12.1**: Creazione itinerario manuale.
+    * **UC12.2**: Creazione itinerario casuale.
+2.  **Ottimizzazione automatica delle tappe del percorso**: 
+    * **UC14**: Ottimizzazione percorso (tramite algoritmi TSP).
+3.  **Gestione e modifica successiva dei viaggi pianificati**:
+    * **UC15**: Modifica tappe (aggiunta o rimozione di monumenti).
+    * **UC16**: Elimina viaggio.
+4.  **Visualizzazione del catalogo pubblico e del proprio storico viaggi**:
+    * **UC3.1**: Visualizza catalogo (percorsi pubblici di altri utenti).
+    * **UC3.3**: Visualizza storico (viaggi completati).
+5.  **Condivisione e salvataggio dei percorsi preferiti**:
+    * **UC8**: Pubblica percorso nel catalogo (condivisione).
+    * **UC5**: Salva percorso nei preferiti.
+
+---
+
+## 💻 Installazione e Setup
+
+### 1. Clona il repository
+```bash
+git clone https://github.com/TUO_USERNAME/OptiTour.git
+cd OptiTour
+```
+
+### 2. Avvia MongoDB
+Assicurati che l'istanza di MongoDB sia in esecuzione locale sulla porta di default:
+* `localhost:27017`
+
+### 3. Avvia il Backend
+Esegui il file principale dell'applicazione Java:
+* `BackendApplication.java`
+* *Il backend sarà disponibile all'indirizzo:* `http://localhost:8080`
+
+### 4. Avvia il Frontend
+Apri un nuovo terminale, spostati nella cartella del frontend e avvia il server di sviluppo:
+```bash
+cd src/main/frontend
+npm install
+npm run dev
+```
+
+### 5. Apri l’applicazione
+Naviga sul tuo browser all'indirizzo:
+* `http://localhost:5173`

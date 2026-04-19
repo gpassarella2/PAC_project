@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom'; // per navigare tra le pagine
-import { useAuth } from '../context/AuthContext'; // per ottenere l'utente loggato
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 import {
   getTripsByUser,
@@ -12,11 +12,10 @@ import {
   completeTrip,
   getTripHistory,
   restoreTrip,
-} from '../services/api'; // chiamate al backend
+} from '../services/api';
 
-// ─── Funzioni di utilità ───────────────────────────────────────────────
+// --- Funzioni di utilità ------------------------------------------------
 
-// Converte secondi in formato leggibile (es. 3700 → "1h 1min")
 function formatDuration(seconds) {
   if (!seconds) return '-';
   const h = Math.floor(seconds / 3600);
@@ -24,19 +23,16 @@ function formatDuration(seconds) {
   return h > 0 ? `${h}h ${m}min` : `${m} min`;
 }
 
-// Converte una data ISO in formato italiano (es. "2024-03-01" → "01 mar 2024")
 function formatDate(isoString) {
   if (!isoString) return '';
   return new Date(isoString).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-// ─── Componente: finestra di conferma eliminazione ────────────────────────
-// Appare quando l'utente clicca "Elimina" su un viaggio.
+// --- Modal conferma eliminazione  ------------------------------------------------
+
 function ConfirmDeleteModal({ tripName, onConfirm, onClose }) {
   return (
-    // Cliccando sull'overlay scuro (fuori dal box) si chiude il modal
     <div className="modal-overlay" onClick={onClose}>
-      {/* stopPropagation evita che il click sul box si propaghi all'overlay e chiuda il modal */}
       <div className="modal-box" onClick={e => e.stopPropagation()}>
         <h2 className="modal-title">Elimina viaggio</h2>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
@@ -52,33 +48,79 @@ function ConfirmDeleteModal({ tripName, onConfirm, onClose }) {
   );
 }
 
-// ─── Componente: Badge colorato per lo stato del viaggio ───────────────
+// --- Badge stato  ------------------------------------------------
+
 function StatusBadge({ status }) {
-  // Mappa ogni stato al nome della classe CSS e all'etichetta da mostrare
   const map = {
     SAVED:     { cls: 'badge-accent',  label: 'In programma' },
     STARRED:   { cls: 'badge-star',    label: '★ Preferito' },
     COMPLETED: { cls: 'badge-green',   label: 'Completato' },
     DRAFT:     { cls: 'badge-muted',   label: 'Bozza' },
   };
-  // Se lo stato non è nella mappa, usa badge grigio con il valore grezzo
   const s = map[status] || { cls: 'badge-muted', label: status };
   return <span className={`badge ${s.cls}`}>{s.label}</span>;
 }
 
-/**
- * Card di un singolo viaggio.
- * Mostra i bottoni per gestire i preferiti, completare e pubblicare.
- */
+// --- Menu a 3 punti ------------------------------------------------
+
+function ThreeDotMenu({ trip, onDelete, onEdit, isCompleted }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  // Chiude il menu cliccando fuori
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }} onClick={e => e.stopPropagation()}>
+      <button
+        className="btn-three-dot"
+        onClick={() => setOpen(v => !v)}
+        title="Opzioni"
+        aria-label="Opzioni viaggio"
+		onMouseEnter={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2563eb';}}
+      >
+        ≡
+      </button>
+
+      {open && (
+        <div className="three-dot-dropdown">
+          {/* Modifica: solo per viaggi non completati */}
+          {!isCompleted && (
+            <button
+              className="three-dot-item"
+              onClick={() => { setOpen(false); onEdit(trip); }}
+            >
+              ✎ Modifica
+            </button>
+          )}
+          <button
+            className="three-dot-item three-dot-item--danger"
+            onClick={() => { setOpen(false); onDelete(trip); }}
+          >
+            ✖ Elimina
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// --- Card singolo viaggio  ------------------------------------------------
+
 function TripCard({ trip, onDelete, onToggleFavorite, onComplete, onRestore, onPublish, onClick, activeTab }) {
   const navigate = useNavigate();
-  
-  // Calcola il tempo totale di visita sommando i minuti di ogni tappa
+
   const totalVisitMin = (trip.stages || []).reduce(
     (acc, s) => acc + (s.visitDurationMinutes || 0), 0,
   );
-  const isStarred    = trip.status === 'STARRED';
-  const isCompleted  = trip.status === 'COMPLETED';
+  const isStarred   = trip.status === 'STARRED';
+  const isCompleted = trip.status === 'COMPLETED';
 
   return (
     <div
@@ -86,35 +128,41 @@ function TripCard({ trip, onDelete, onToggleFavorite, onComplete, onRestore, onP
       className="trip-card"
       onClick={onClick}
     >
+      {/* Header card: città  + badge + menu 3 punti */}
       <div className="trip-card-header">
         <span className="trip-card-city">{trip.city}</span>
-        <StatusBadge status={trip.status} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <StatusBadge status={trip.status} />
+          <ThreeDotMenu
+            trip={trip}
+            isCompleted={isCompleted}
+            onDelete={onDelete}
+            onEdit={t => navigate(`/edit-trip/${t.id}`)}
+          />
+        </div>
       </div>
 
       <h3 className="trip-card-name">{trip.name}</h3>
 
       <div className="trip-card-stats">
         <span className="trip-stat">{(trip.stages || []).length} tappe</span>
-        {/* Mostra il tempo di visita solo se è maggiore di 0 */}
         {totalVisitMin > 0 && (
           <span className="trip-stat">
             {Math.floor(totalVisitMin / 60)}h {totalVisitMin % 60}min visita
           </span>
         )}
-        {/* Mostra la durata del percorso solo se il backend l'ha calcolata (dopo ottimizzazione) */}
         {trip.totalDurationSeconds != null && (
           <span className="trip-stat">{formatDuration(trip.totalDurationSeconds)} percorso</span>
         )}
       </div>
 
-      {/* Indicatore pubblicazione */}
       {trip.isPublic && (
         <div style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 500 }}>
-          🌐 Pubblicato nel catalogo
+          🌐Pubblicato nel catalogo
         </div>
       )}
 
-      {/* Azioni inline: Preferiti e Completa (solo se non completato) */}
+      {/* Azioni inline: Preferiti e Completa */}
       {!isCompleted && (
         <div className="trip-card-actions" onClick={e => e.stopPropagation()}>
           <button
@@ -132,12 +180,12 @@ function TripCard({ trip, onDelete, onToggleFavorite, onComplete, onRestore, onP
             title="Segna come completato"
             onClick={() => onComplete(trip)}
           >
-            ✓ Completa
+             ✓ Completa
           </button>
         </div>
       )}
-      
-      {/* Bottone ripristina — visibile solo nella tab Storico per i viaggi completati */}
+
+      {/* Ripristina solo storico */}
       {isCompleted && activeTab === 'history' && (
         <div className="trip-card-actions" onClick={e => e.stopPropagation()}>
           <button
@@ -149,67 +197,48 @@ function TripCard({ trip, onDelete, onToggleFavorite, onComplete, onRestore, onP
         </div>
       )}
 
-      {/* Footer card: data creazione + pulsanti elimina/modifica/pubblica */}
+      {/* Footer: data + pubblica */}
       <div className="trip-card-footer">
         <span className="trip-card-date">{formatDate(trip.createdAt)}</span>
         <div style={{ display: 'flex', gap: '6px' }} onClick={e => e.stopPropagation()}>
-          {/* Pubblica: disponibile solo per trip ottimizzati o completati */}
           {trip.status !== 'DRAFT' && (
-            <button
-              id={`btn-publish-${trip.id}`}
-              className={`btn btn-sm ${trip.isPublic ? 'btn-secondary' : 'btn-ghost'}`}
-              title={trip.isPublic ? 'Rimuovi dal catalogo pubblico' : 'Pubblica nel catalogo pubblico'}
-              onClick={() => onPublish(trip)}
-            >
-              {trip.isPublic ? 'Annulla' : 'Pubblica'}
-            </button>
+			<button
+			  id={`btn-publish-${trip.id}`}
+			  className={`btn btn-sm ${trip.isPublic ? 'btn-secondary' : 'btn-ghost'}`}
+			  title={trip.isPublic ? 'Rimuovi dal catalogo pubblico' : 'Pubblica nel catalogo pubblico'}
+			  onClick={() => onPublish(trip)}
+			>
+			  {trip.isPublic ? (
+			    <span className="btn-unpublish-text">🚫 Annulla pubblicazione </span>
+			  ) : (
+			    <span className="btn-publish-text">🌐 Pubblica viaggio </span>
+			  )}
+			</button>
           )}
-
-          {/* Pulsante Modifica: visibile solo se non completato */}
-          {!isCompleted && (
-            <button
-              id={`btn-edit-${trip.id}`}
-              className="btn btn-edit btn-sm"
-              onClick={() => navigate(`/edit-trip/${trip.id}`)}
-            >
-              Modifica
-            </button>
-          )}
-          
-          {/* Pulsante Elimina */}
-          <button
-            id={`btn-delete-${trip.id}`}
-            className="btn btn-danger btn-sm"
-            onClick={() => onDelete(trip)}
-          >
-            Elimina
-          </button>
         </div>
       </div>
     </div>
   );
 }
 
-// ---- Componente principale: Pagina "I miei viaggi" -----------------------------
+// --- Pagina principale  ------------------------------------------------
+
 export default function MyTripsPage() {
 
-  const { user } = useAuth(); // Prende l'utente loggato dal context
-  const navigate = useNavigate(); // per navigare verso altre pagine
-  
-  //--- Dati ---
-  const [trips, setTrips] = useState([]);   // Lista completa dei viaggi attivi
-  const [history, setHistory] = useState([]); // Lista dei viaggi completati
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
-  // --- UI state ---
-  const [loading, setLoading] = useState(true); // true mentre i dati stanno arrivando
-  const [error, setError] = useState(''); // Messaggio di errore
-  const [publishError, setPublishError] = useState(''); // Messaggio di errore per publish/unpublish
-  const [search, setSearch] = useState(''); // Testo digitato nella barra di ricerca
-  const [statusFilter, setStatusFilter] = useState(''); // Filtro per stato ("" per tutti)
-  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'favorites' | 'history'
-  const [deleteModal, setDeleteModal] = useState(null); // Viaggio selezionato per eliminazione
-  
-  // --- Caricamento dati all'apertura della pagina --------------------------------------
+  const [trips,   setTrips]   = useState([]);
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState('');
+  const [publishError, setPublishError] = useState('');
+  const [search,       setSearch]       = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [activeTab,    setActiveTab]    = useState('all');
+  const [deleteModal,  setDeleteModal]  = useState(null);
+
+  // --- Caricamento dati ------------------------------------------------
   const loadData = useCallback(async () => {
     if (!user?.id) return;
     setLoading(true);
@@ -218,7 +247,6 @@ export default function MyTripsPage() {
         getTripsByUser(user.id),
         getTripHistory(),
       ]);
-      // Separiamo i viaggi attivi da quelli completati nello stato locale
       setTrips(tripsRes.data.filter(t => t.status !== 'COMPLETED'));
       setHistory(historyRes.data);
     } catch {
@@ -230,27 +258,22 @@ export default function MyTripsPage() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  // --- Filtraggio lato client --------------------------------------
+  // --- Filtraggio ------------------------------------------------
   const applyFilters = (list) =>
     list.filter(t => {
-      // La ricerca funziona sia sul nome che sulla città
       const matchSearch =
         t.name.toLowerCase().includes(search.toLowerCase()) ||
         t.city.toLowerCase().includes(search.toLowerCase());
-      // Se statusFilter è vuoto mostra tutti, altrimenti filtra per stato
       const matchStatus = !statusFilter || t.status === statusFilter;
       return matchSearch && matchStatus;
     });
-  
-  // Vista "Tutti" mostra tutti i viaggi (attivi + storico)
-  const allTrips = applyFilters([...trips, ...history]);
 
-  // Preferiti e Storico applicano solo il filtro di ricerca
+  const allTrips      = applyFilters([...trips, ...history]);
   const favoriteTrips = trips.filter(t => t.status === 'STARRED').filter(t =>
     t.name.toLowerCase().includes(search.toLowerCase()) ||
     t.city.toLowerCase().includes(search.toLowerCase())
   );
-  const historyTrips = history.filter(t =>
+  const historyTrips  = history.filter(t =>
     t.name.toLowerCase().includes(search.toLowerCase()) ||
     t.city.toLowerCase().includes(search.toLowerCase())
   );
@@ -259,20 +282,16 @@ export default function MyTripsPage() {
     activeTab === 'favorites' ? favoriteTrips :
     activeTab === 'history'   ? historyTrips  : allTrips;
 
-  // ---- AZIONI ---------------------------------------------------
-  
-  // Eliminazione viaggio
+  // --- Azioni ------------------------------------------------
   const handleDelete = async () => {
     try {
       await deleteTrip(deleteModal.id);
-      // Aggiorna lo stato locale rimuovendo il viaggio eliminato
       setTrips(prev => prev.filter(t => t.id !== deleteModal.id));
       setHistory(prev => prev.filter(t => t.id !== deleteModal.id));
-    } catch { /* errore silenziato */ }
+    } catch { }
     setDeleteModal(null);
   };
-  
-  // Gestione preferiti
+
   const handleToggleFavorite = async (trip) => {
     try {
       const res = trip.status === 'STARRED'
@@ -283,7 +302,6 @@ export default function MyTripsPage() {
     } catch { }
   };
 
-  // Marca come completato
   const handleComplete = async (trip) => {
     try {
       const res = await completeTrip(trip.id);
@@ -292,33 +310,26 @@ export default function MyTripsPage() {
       setHistory(prev => [updated, ...prev]);
     } catch { }
   };
-  
-  // Ripristina un viaggio dallo storico a "SAVED"
+
   const handleRestore = async (trip) => {
-      try {
-        const res = await restoreTrip(trip.id);
-        const updated = res.data;
-        setHistory(prev => prev.filter(t => t.id !== updated.id));
-        setTrips(prev => [updated, ...prev]);
-      } catch { }
+    try {
+      const res = await restoreTrip(trip.id);
+      const updated = res.data;
+      setHistory(prev => prev.filter(t => t.id !== updated.id));
+      setTrips(prev => [updated, ...prev]);
+    } catch { }
   };
 
-  // Pubblica o annulla pubblicazione di un viaggio
   const handlePublish = async (trip) => {
     setPublishError('');
     try {
       const res = trip.isPublic
         ? await unpublishTrip(trip.id)
         : await publishTrip(trip.id);
-      // aggiorna la card localmente senza ricaricare tutto
       setTrips(prev => prev.map(t => t.id === trip.id
-        ? { ...t, isPublic: res.data.isPublic, publishedAt: res.data.publishedAt }
-        : t
-      ));
+        ? { ...t, isPublic: res.data.isPublic, publishedAt: res.data.publishedAt } : t));
       setHistory(prev => prev.map(t => t.id === trip.id
-        ? { ...t, isPublic: res.data.isPublic, publishedAt: res.data.publishedAt }
-        : t
-      ));
+        ? { ...t, isPublic: res.data.isPublic, publishedAt: res.data.publishedAt } : t));
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Errore durante la pubblicazione';
       setPublishError(msg);
@@ -338,7 +349,6 @@ export default function MyTripsPage() {
 
       <div className="page-content">
 
-        {/* Intestazione pagina con titolo e pulsante nuovo viaggio */}
         <div className="trips-top">
           <div>
             <h1 className="page-title">I miei viaggi</h1>
@@ -348,36 +358,27 @@ export default function MyTripsPage() {
             + Nuovo viaggio
           </button>
         </div>
-    
+
         {/* Tab navigation */}
         <div className="tab-nav">
-          <button
-            className={`tab-btn ${activeTab === 'all' ? 'tab-active' : ''}`}
-            onClick={() => setActiveTab('all')}
-          >
+          <button className={`tab-btn ${activeTab === 'all'       ? 'tab-active' : ''}`} onClick={() => setActiveTab('all')}>
             Tutti ({trips.length + history.length})
           </button>
-          <button
-            className={`tab-btn ${activeTab === 'favorites' ? 'tab-active' : ''}`}
-            onClick={() => setActiveTab('favorites')}
-          >
+          <button className={`tab-btn ${activeTab === 'favorites' ? 'tab-active' : ''}`} onClick={() => setActiveTab('favorites')}>
             ★ Preferiti ({trips.filter(t => t.status === 'STARRED').length})
           </button>
-          <button
-            className={`tab-btn ${activeTab === 'history' ? 'tab-active' : ''}`}
-            onClick={() => setActiveTab('history')}
-          >
+          <button className={`tab-btn ${activeTab === 'history'   ? 'tab-active' : ''}`} onClick={() => setActiveTab('history')}>
             Storico ({history.length})
           </button>
         </div>
 
-        {/* Barra di ricerca e Filtri */}
+        {/* Filtri */}
         <div className="trips-filters">
           <input
             id="input-search-trip"
             type="text"
             className="form-input"
-            placeholder="Cerca per nome o città..."
+            placeholder="Cerca per nome o città ..."
             value={search}
             onChange={e => setSearch(e.target.value)}
             style={{ flex: 1 }}
@@ -396,21 +397,18 @@ export default function MyTripsPage() {
           )}
         </div>
 
-        {loading && (
-          <div className="loading-center"><div className="spinner" /><span>Caricamento...</span></div>
-        )}
-
-        {error && <div className="error-msg">{error}</div>}
+        {loading && <div className="loading-center"><div className="spinner" /><span>Caricamento...</span></div>}
+        {error        && <div className="error-msg">{error}</div>}
         {publishError && <div className="error-msg">{publishError}</div>}
 
         {/* Stato vuoto */}
         {!loading && !error && currentList.length === 0 && (
           <div className="empty-state" style={{ marginTop: 40 }}>
             <div className="empty-icon">
-              {activeTab === 'favorites' ? '★' : activeTab === 'history' ? '📋' : '—'}
+              {activeTab === 'favorites' ? '☆' : activeTab === 'history' ? '🕒 ' : ' ✖ '}
             </div>
             <p style={{ fontSize: '1rem', fontWeight: 600 }}>
-              {activeTab === 'favorites' ? 'Nessun preferito ancora'
+              {activeTab === 'favorites' ? 'Nessun viaggio nei preferiti'
                : activeTab === 'history' ? 'Nessun viaggio completato'
                : 'Nessun viaggio trovato'}
             </p>
@@ -422,7 +420,7 @@ export default function MyTripsPage() {
           </div>
         )}
 
-        {/* Griglia di card */}
+        {/* Griglia card */}
         <div className="trips-grid">
           {currentList.map(trip => (
             <TripCard
@@ -440,7 +438,7 @@ export default function MyTripsPage() {
         </div>
       </div>
 
-      {/* Modal di conferma eliminazione */}
+      {/* Modal eliminazione */}
       {deleteModal && (
         <ConfirmDeleteModal
           tripName={deleteModal.name}
@@ -453,17 +451,17 @@ export default function MyTripsPage() {
       <style>{`
         .trips-page { min-height: 100vh; background: var(--bg); }
         .trips-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; gap: 16px; flex-wrap: wrap; }
-        
-        /* Tab navigation */
+
+        /* Tab */
         .tab-nav { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 20px; }
         .tab-btn { padding: 8px 18px; border: none; border-bottom: 2px solid transparent; background: transparent; cursor: pointer; font-size: 0.875rem; font-weight: 500; color: var(--text-muted); margin-bottom: -2px; transition: color 0.15s, border-color 0.15s; }
         .tab-btn:hover { color: var(--text); }
         .tab-active { color: #2563eb !important; border-bottom-color: #2563eb !important; }
-        
+
         .trips-filters { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
         .trips-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
-        
-        /* Card Styles */
+
+        /* Card */
         .trip-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; cursor: pointer; transition: all 0.15s; display: flex; flex-direction: column; gap: 10px; }
         .trip-card:hover { border-color: #bfdbfe; box-shadow: 0 2px 12px rgba(37,99,235,0.1); }
         .trip-card-header { display: flex; justify-content: space-between; align-items: center; }
@@ -471,21 +469,95 @@ export default function MyTripsPage() {
         .trip-card-name { font-size: 0.975rem; font-weight: 700; line-height: 1.3; }
         .trip-card-stats { display: flex; gap: 12px; flex-wrap: wrap; }
         .trip-stat { font-size: 0.8rem; color: var(--text-muted); }
-        
         .trip-card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 2px; padding-top: 10px; border-top: 1px solid var(--border); }
         .trip-card-date { font-size: 0.75rem; color: var(--text-dim); }
-
         .trip-card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
-        /* Status & Buttons */
+        /* Badges & Buttons */
         .badge-star { background: #fef3c7; color: #d97706; border: 1px solid #fcd34d; padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 600; }
         .btn-star { background: transparent; border: 1px solid var(--border); color: var(--text-muted); border-radius: var(--radius); padding: 4px 10px; font-size: 0.78rem; cursor: pointer; }
         .btn-star-active { background: #fef3c7; border: 1px solid #fcd34d; color: #d97706; border-radius: var(--radius); padding: 4px 10px; font-size: 0.78rem; cursor: pointer; }
         .btn-success { background: #16a34a; color: white; border: none; border-radius: var(--radius); padding: 4px 10px; font-size: 0.78rem; cursor: pointer; }
-        
-        /* Stile Modifica (da branch develop) */
-        .btn-edit { background-color: #f7f7f7; color: #0011ff; border: 1px solid #0011ff; transition: all 0.2s; }
-        .btn-edit:hover { background-color: #0011ff; color: #ffffff; border-color: #0011ff; }
+
+		/* Testo azzurro per "Pubblica" */
+		.btn-publish-text {
+		  color: #2563eb !important;
+		  font-weight: 600;
+		}
+		
+		/* Testo rosso per "Annulla pubblicazione" */
+		.btn-unpublish-text {
+		  color: #dc2626 !important;
+		  font-weight: 600;
+		}
+		
+		.btn-publish-text {
+		  color: #2563eb !important;
+		  font-weight: 600;
+		  border: 1px solid var(--border);
+		  padding: 2px 8px;
+		  border-radius: 5px;
+		  display: inline-block; /* fondamentale */
+		}
+
+
+		/*  Menu 3 punti */
+		.btn-three-dot {
+		  background: transparent;
+		  border: 1px solid var(--border);   /* ✔ aggiunto solo questo */
+		  cursor: pointer;
+		  font-size: 1.2rem;
+		  line-height: 1;
+		  color: #2563eb;
+		  padding: 2px 6px;
+		  border-radius: var(--radius);
+		  transition: background 0.15s, color 0.15s, border-color 0.15s;
+		}
+
+		.btn-three-dot:hover {
+		  background: var(--border);
+		  color: var(--text);
+		  border-color: var(--text-muted);   /* ✔ bordo più visibile in hover */
+		}
+
+		.three-dot-dropdown {
+		  position: absolute;
+		  top: calc(100% + 4px);
+		  right: 0;
+		  background: #fff;
+		  border: 1px solid var(--border);
+		  border-radius: var(--radius);
+		  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+		  min-width: 140px;
+		  z-index: 100;
+		  overflow: hidden;
+		}
+
+		.three-dot-item {
+		  display: block;
+		  width: 100%;
+		  padding: 9px 14px;
+		  text-align: left;
+		  background: transparent;
+		  border: none;
+		  cursor: pointer;
+		  font-size: 0.85rem;
+		  color: var(--text);
+		  transition: background 0.12s;
+		}
+
+		.three-dot-item:hover {
+		  background: #f1f5f9;
+		}
+
+		.three-dot-item--danger {
+		  color: #dc2626;
+		}
+
+		.three-dot-item--danger:hover {
+		  background: #fef2f2;
+		}
+
       `}</style>
     </div>
   );

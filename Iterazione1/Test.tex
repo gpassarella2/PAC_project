@@ -194,7 +194,7 @@ In questa sezione vengono descritte le principali API esposte dal backend tramit
 \textbf{Creazione di un Viaggio}
 \begin{itemize}
     \item \textbf{Endpoint:} \texttt{POST /api/trips}
-    \item \textbf{Descrizione:} Crea un nuovo itinerario manuale associato all'utente, salvando punto di partenza, tappe e stime temporali di visita in stato DRAFT. I dettagli della richiesta e della risposta sono illustrati in \autoref{fig:api_create_trip_req} e \autoref{fig:api_create_trip_resp}.
+    \item \textbf{Descrizione:} Crea un nuovo itinerario manuale associato all'utente, salvando punto di partenza, tappe e stime temporali di visita. I dettagli della richiesta e della risposta sono illustrati in \autoref{fig:api_create_trip_req} e \autoref{fig:api_create_trip_resp}.
     \item \textbf{Parametri e Payload:}
     \begin{itemize}
         \item \texttt{userId} (string) - Query parameter con l'ID dell'utente.
@@ -215,7 +215,7 @@ In questa sezione vengono descritte le principali API esposte dal backend tramit
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{Iterazione1/Diagrammi/API/CreateTripResp.png}
-    \caption{Test su Postman: Risposta del server con il salvataggio del viaggio in stato DRAFT.}
+    \caption{Test su Postman: Risposta del server con il salvataggio del viaggio.}
     \label{fig:api_create_trip_resp}
 \end{figure}
 
