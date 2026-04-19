@@ -1,9 +1,58 @@
 \section{Test}
+In questa sezione vengono descritte le attività di testing svolte durante la terza iterazione, focalizzate sulla verifica della robustezza delle nuove funzionalità di gestione del profilo utente e sul consolidamento della logica di gestione dei viaggi, in particolare l'esportazione. I test hanno l'obiettivo di garantire che l'evoluzione del sistema mantenga standard elevati di affidabilità e che le operazioni critiche sui dati personali (come l'aggiornamento della password e l'eliminazione dell'account) siano gestite in totale sicurezza. Oltre ai test funzionali, è stata eseguita una nuova analisi statica del codice per monitorare l'impatto delle modifiche sulla qualità architetturale complessiva.
 
 \subsection{Test: CodeMR}
+L'analisi statica del codice per la terza iterazione è stata condotta tramite CodeMR per valutare l'andamento delle metriche di qualità a seguito dell'introduzione dei nuovi casi d'uso. Nonostante l'incremento delle linee di codice dovuto alla gestione del profilo e ai nuovi controlli di sicurezza, l'architettura si conferma solida e ben modularizzata.
+Di seguito vengono analizzate le tre metriche principali: Complessità, Accoppiamento e Mancanza di Coesione.
+
+
+\begin{itemize}
+    \item \textbf{Complessità:} La distribuzione mostra che la grande maggioranza delle classi (86,2\%) si colloca nelle fasce di complessità bassa o medio-bassa. L'aumento della logica per la validazione dei profili è stato assorbito senza generare picchi critici estesi.
+    \item \textbf{Accoppiamento:} Sebbene quasi la metà delle classi mantenga un accoppiamento basso, delle classi si collocano nella fascia alta riflettendo la naturale dipendenza dei service layer verso le entità di dominio e i repository, confermando la necessità di mantenere un'attenta separazione delle responsabilità.
+    \item \textbf{Coesione:} I valori di ``Lack of Cohesion'' indicano che, nonostante una base solida (36,5\% in fascia bassa), una quota significativa presenta criticità. Ciò suggerisce che alcune classi, in particolare quelle di orchestrazione quali TripService e TripController, gestiscono un numero elevato di responsabilità che potrebbero beneficiare di future operazioni di refactoring.
+    \end{itemize}
+    \begin{figure}[H]
+    \centering
+    \begin{minipage}{0.30\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{Iterazione3/Diagrammi/CodeMR/complexIT3.png}
+    \caption{Complessità.}
+    \label{fig:codemr_complexity_it3}
+    \end{minipage}\hfill
+    \begin{minipage}{0.30\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{Iterazione3/Diagrammi/CodeMR/couplingIT3.png}
+    \caption{Accoppiamento.}
+    \label{fig:codemr_coupling_it3}
+    \end{minipage}\hfill
+    \begin{minipage}{0.30\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{Iterazione3/Diagrammi/CodeMR/lackCohesionIT3.png}
+    \caption{Lack of Cohesion.}
+    \label{fig:codemr_cohesion_it3}
+    \end{minipage}
+    \end{figure}
+
+\subsubsection*{Analisi delle Classi Problematiche e Struttura dei Package}
+L'analisi di dettaglio ha evidenziato la presenza di una classe classificata come ``altamente problematica''. Come mostrato in \autoref{fig:classe_problematic_it3}, \texttt{TripService} concentra i valori metrici più elevati, giustificati dal suo ruolo centrale di orchestrazione della logica di viaggio, ottimizzazione e gestione dello stato. Altre classi di servizio, come \texttt{UserService}, sono monitorate per evitare un accumulo eccessivo di responsabilità.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{Iterazione3/Diagrammi/CodeMR/problematicClassIT3.png}
+\caption{Dettaglio della classe \texttt{TripService}, identificata come altamente problematica.}
+\label{fig:classe_problematic_it3}
+\end{figure}
+
+Infine, la visualizzazione strutturale (\autoref{fig:struttura_codemr_it3}) conferma la corretta organizzazione dei package. Il peso maggiore del sistema risiede correttamente nel layer \texttt{service} (logica applicativa) e \texttt{model}, mentre i package relativi alla configurazione e ai controller rimangono snelli, rispettando i vincoli architetturali prefissati.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{Iterazione3/Diagrammi/CodeMR/structureIT3.png}
+\caption{Distribuzione delle metriche all'interno dei package (Iterazione 3).}
+\label{fig:struttura_codemr_it3}
+\end{figure}
 
 \newpage
 \subsection{Test: Junit}
-
 \newpage
 \subsection{API Esposte}
