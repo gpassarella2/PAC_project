@@ -942,5 +942,23 @@ class TripControllerTest {
                 .andExpect(jsonPath("$.city").value("Milano"))
                 .andExpect(jsonPath("$.stages").isArray());
     }
+    @Test
+    @WithMockUser(username = "testuser")
+    void exportTrip_ShouldReturnPdf() throws Exception {
+        Trip trip = createTrip();
+
+        mockMvc.perform(get("/api/trips/" + trip.getId() + "/export"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(
+                        "Content-Disposition",
+                        "attachment; filename=\"itinerario.pdf\""
+                ))
+                .andExpect(content().contentType(MediaType.APPLICATION_PDF))
+                .andExpect(result -> {
+                    byte[] content = result.getResponse().getContentAsByteArray();
+                    assertNotNull(content);
+                    assertTrue(content.length > 0);
+                });
+    }
 
 }

@@ -25,9 +25,10 @@ import Header from '../components/Header';
 
 // Funzioni di chiamata alle API del backend:
 //  - getTripById:     GET /api/trips/{id}            → dati del viaggio
-//  - getMonumentById: GET /api/monuments/{id}         → dettagli monumento
-//  - optimizeTrip:    POST /api/trips/{id}/optimize   → ottimizzazione percorso
-import { getTripById, getMonumentById, optimizeTrip } from '../services/api';
+//  - getMonumentById: GET /api/monuments/{id}        → dettagli monumento
+//  - optimizeTrip:    POST /api/trips/{id}/optimize  → ottimizzazione percorso
+//  - exportTrip:      GET /api/trips/{id}/export     → esportazione PDF itinerario
+import { getTripById, getMonumentById, optimizeTrip, exportTrip } from '../services/api';
 
 
 // Icone Leaflet personalizzate
@@ -108,8 +109,8 @@ function formatDistance(meters) {
 /**
  * ItineraryPage
  * Componente principale della pagina. Mostra:
- *  - Pannello laterale con nome viaggio, statistiche, lista tappe 
- *  - Mappa Leaflet con marker di partenza e marker delle tappe 
+ * - Pannello laterale con nome viaggio, statistiche, lista tappe 
+ * - Mappa Leaflet con marker di partenza e marker delle tappe 
  */
 export default function ItineraryPage() {
   // Legge il parametro :tripId dall'URL (es. /itinerary/42 → tripId = "42")
@@ -125,7 +126,7 @@ export default function ItineraryPage() {
   const [error, setError] = useState('');               // Messaggio di errore (se il fetch fallisce)
   const [optimizing, setOptimizing] = useState(false);  // True durante la chiamata di ottimizzazione
   const [optimizeError, setOptimizeError] = useState(''); // Messaggio di errore ottimizzazione
-
+  const [exporting, setExporting] = useState(false); // True durante la generazione del PDF dell'itinerario
 
   // ── Effetto 1: Caricamento del viaggio ──────────────────────────────────────
   // Si esegue una sola volta (o quando cambia tripId).
@@ -211,6 +212,32 @@ export default function ItineraryPage() {
     }
   };
 
+  /**
+   * handleExport
+   * * Genera ed esporta l'itinerario in formato PDF.
+   * Chiama GET /api/trips/{id}/export e scarica il file restituito dal backend.
+   */
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await exportTrip(tripId);
+      // Creazione del download
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      // Usa il nome del viaggio per il file, pulito da spazi
+      link.download = `OptiTour_${trip.name.replace(/\s+/g, '_')}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Errore durante l'esportazione del PDF");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   // ── Render condizionale: loading ────────────────────────────────────────────
   // Mostra uno spinner finché i dati del viaggio non sono stati caricati
@@ -398,6 +425,16 @@ export default function ItineraryPage() {
               {optimizing ? 'Ricalcolo…' : '↺ Ri-ottimizza'}
             </button>
           )}
+
+          {/* ── Bottone "Esporta PDF" ── */}
+          <button
+            className="btn btn-primary"
+            style={{ marginTop: 10, width: '100%' }}
+            onClick={handleExport}
+            disabled={exporting}
+          >
+            {exporting ? 'Generazione PDF…' : 'Esporta PDF'}
+          </button>
 
         </div>{/* fine itin-panel */}
 
