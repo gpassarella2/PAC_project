@@ -64,5 +64,128 @@ Infine, la visualizzazione strutturale (\autoref{fig:struttura_codemr_it3}) conf
 
 \newpage
 \subsection{Test: Junit}
+
+\subsubsection*{1. Gestione del profilo utente: modifica ed eliminazione}
+
+Sono stati inseriti una serie di test dedicati alla gestione degli utenti, con l’obiettivo di verificare il corretto comportamento sia del controller che del service.\\
+I test sono stati sviluppati per coprire i principali casi d’uso e le condizioni di errore, garantendo la robustezza e l’affidabilità dell’applicazione.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{Iterazione3/Diagrammi/test/TestUserMgmt/Test_UserController.png}
+\caption{Test classe "UserController" per gestione profilo utente}
+\label{fig:testUserController_it3}
+\end{figure}
+
+I test relativi alla classe \textit{UserController}  (\autoref{fig:testUserController_it3}) si concentrano sulla verifica degli endpoint REST esposti dall’applicazione.\\
+In particolare, viene controllato che le richieste HTTP siano gestite correttamente e che le risposte restituite rispettino le specifiche dell’API.\\
+Vengono testati diversi scenari di aggiornamento del profilo utente, includendo la modifica di username, email, nome e cognome, sia singolarmente che in combinazione.
+Per ciascuno di questi casi viene verificato che il controller restituisca il corretto codice di stato HTTP, gestendo in modo appropriato le situazioni di conflitto, come la presenza di uno username o di un’email già registrati nel sistema.
+
+Un’ulteriore parte dei test del controller riguarda l’eliminazione dell’account utente.\\
+In questo contesto vengono considerati sia i casi di successo sia le condizioni di errore, come ad esmepio, la richiesta di cancellazione di un utente inesistente.\\
+Viene inoltre verificato che il controller invochi correttamente il service passando le informazioni dell’utente autenticato, assicurando così una corretta integrazione tra i diversi livelli dell’architettura.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{Iterazione3/Diagrammi/test/TestUserMgmt/Test_UserService.png}
+\caption{Test classe "UserService" per gestione profilo utente}
+\label{fig:testUserService_it3}
+\end{figure}
+
+I test relativi alla classe \textit{UserService} (\autoref{fig:testUserService_it3}) sono invece orientati alla validazione della logica di business.\\
+Questa suite di test verifica che le operazioni fondamentali sugli utenti vengano eseguite correttamente e che lo stato del sistema rimanga coerente al termine di ciascuna operazione.\\
+Nello specifico, viene testato il processo di registrazione degli utenti, controllando il corretto fallimento dell’operazione nel caso in cui l’email risulti già presente nel sistema.
+
+Vengono inoltre approfondite le funzionalità di aggiornamento delle credenziali, includendo la modifica di username ed email sia separatamente che congiuntamente.
+Una parte significativa dei test è dedicata alla gestione dei casi limite, come l’assenza di modifiche effettive, l’invio di campi vuoti o la richiesta di aggiornamento per un utente non esistente.
+In tali situazioni, il servizio deve comportarsi in modo coerente, evitando operazioni non necessarie o stati inconsistenti.
+
+Infine, i test di eliminazione dell’utente verificano che la rimozione venga eseguita correttamente anche in presenza di entità correlate, come viaggi o altri dati associati, e che il sistema gestisca correttamente anche il caso in cui tali entità non siano presenti.
+In questo modo si assicura la corretta gestione delle dipendenze e l’integrità complessiva dei dati.
+
+L' insieme dei test implementati consente di validare il corretto funzionamento dell’applicazione sia dal punto di vista dell’interfaccia esposta verso l’esterno sia dal punto di vista della logica interna.
+
+\subsubsection*{2. Esportazione dei viaggi}
+
+Sono stati sviluppati una serie di test dedicati alle operazioni di esportazione dei dati e alla generazione di documenti in formato PDF.
+Tali test hanno l’obiettivo di verificare la correttezza del processo di esportazione sia dal punto di vista della logica di servizio sia dal punto di vista degli endpoint esposti dal controller.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{Iterazione3/Diagrammi/test/TestExport/Test_exportService.png}
+\caption{Test classe "ExportService" per gestione dell'esportazione del viaggio}
+\label{fig:testExportService_it3}
+\end{figure}
+
+I test relativi alla classe \textit{ExportService} (\autoref{fig:testExportService_it3}) si concentrano sulla generazione di documenti PDF associati ai monumenti.\\
+In particolare, viene verificato che il servizio gestisca correttamente il caso in cui il monumento richiesto non esista, evitando la produzione di risultati non validi.
+Vengono inoltre testati gli scenari di successo, controllando che i dati del monumento vengano correttamente inclusi nel documento generato.
+
+Una parte dei test è dedicata alla validazione della struttura del PDF prodotto, assicurando la presenza di un’intestazione corretta e la generazione di contenuti coerenti.\\
+Viene anche verificato che le collezioni di dati utilizzate per la creazione del documento non risultino vuote, garantendo che il PDF contenga effettivamente informazioni significative.
+Nel complesso, questi test assicurano che il servizio di esportazione produca documenti corretti, completi e consistenti rispetto ai dati disponibili nel sistema.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{Iterazione3/Diagrammi/test/TestExport/Test_TripController.png}
+\caption{Test classe "TripController" per gestione dell'esportazione del viaggio}
+\label{fig:testExportTripController_it3}
+\end{figure}
+
+I test del \textit{TripController}  (\autoref{fig:testExportTripController_it3}) sono invece focalizzati sulla verifica dell’endpoint responsabile dell’esportazione dei viaggi in formato PDF.
+In particolare, viene controllato che il controller risponda correttamente alla richiesta di esportazione e che restituisca un documento PDF valido come risultato dell’operazione.
+Questo tipo di test consente di verificare l’integrazione tra il livello di controller e il servizio di esportazione, assicurando che la funzionalità sia correttamente accessibile dall’esterno attraverso l’API.
+
+Nel loro insieme, questi test contribuiscono a garantire la correttezza e l’affidabilità delle funzionalità di esportazione del sistema.
+
+\subsubsection*{3. Motore di ottimizzazione e clonazione dei viaggi}
+
+Sono stati inseriti una serie di test dedicati al motore di ottimizzazione dei percorsi e alle funzionalità di clonazione dei viaggi pubblici.
+Questi test hanno l’obiettivo di verificare la correttezza degli algoritmi utilizzati  e il corretto comportamento degli endpoint e dei servizi coinvolti.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{Iterazione3/Diagrammi/test/TestPathVisualization/Test_OptimizationEngine.png}
+\caption{Test classe "OptimizationEngine" per l'ottimizzazione del percorso}
+\label{fig:testOptimizationEngine_it3}
+\end{figure}
+
+I test relativi alla classe \textit{OptimizationEngine}  (\autoref{fig:testOptimizationEngine_it3}) sono focalizzati sulla validazione degli algoritmi di calcolo dei percorsi e sull’ottimizzazione dei tour.
+In particolare, viene verificato che gli algoritmi di ricerca, come il \textit{Nearest Neighbour} e la strategia di ottimizzazione \textit{2-opt}, producano percorsi validi e coerenti, senza peggiorare la soluzione iniziale e mantenendo risultati stabili quando applicati più volte.
+
+Una parte significativa dei test riguarda la correttezza dei calcoli geometrici.
+Viene verificato che le distanze tra punti siano sempre non negative, che la distanza tra due punti coincidenti sia pari a zero e che il calcolo basato sulla formula di Haversine produca risultati coerenti.\\
+Inoltre, viene controllato che le matrici delle distanze siano simmetriche, di dimensioni corrette e coerenti con il numero di monumenti considerati.
+
+I test verificano anche che i percorsi generati rispettino vincoli fondamentali, come l’assenza di monumenti duplicati all’interno di un tour, la presenza di tutti i monumenti richiesti e il corretto ritorno al punto di partenza nei casi previsti.\\
+Viene inoltre controllata la gestione dei casi limite, come l’assenza di dati di input o l’uso di liste vuote.
+
+Dal punto di vista temporale, i test assicurano che la durata totale del tour sia calcolata correttamente, includendo anche il tempo di visita dei monumenti, il cui valore deve risultare sempre consistente e positivo.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{Iterazione3/Diagrammi/test/TestPathVisualization/Test_tripController.png}
+\caption{Test classe "TripController" per l'ottimizzazione del percorso}
+\label{fig:testTripControllerOpt_it3}
+\end{figure}
+
+I test del \textit{TripController} (\autoref{fig:testTripControllerOpt_it3}) si concentrano invece sulla verifica dell’endpoint REST dedicato alla clonazione di un viaggio pubblico.\\
+In particolare, viene controllato che il controller restituisca una risposta di successo quando il viaggio sorgente esiste e che la clonazione venga effettuata correttamente.\\
+Vengono inoltre testati i casi di errore, come la richiesta di clonazione di un viaggio inesistente, verificando che vengano restituiti i codici di stato HTTP appropriati.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{Iterazione3/Diagrammi/test/TestPathVisualization/Test_tripService.png}
+\caption{Test classe "TripService" per l'ottimizzazione del percorso}
+\label{fig:testTripServiceOpt_it3}
+\end{figure}
+
+I test relativi al \textit{TripService}  (\autoref{fig:testTripServiceOpt_it3}) completano la validazione della funzionalità di clonazione, concentrandosi sulla logica di business.\\
+In questo contesto viene verificato che la clonazione di un viaggio pubblico comporti la corretta creazione di una nuova istanza persistita nel sistema.\\
+Vengono inoltre gestiti esplicitamente i casi di errore, come il tentativo di clonare un viaggio inesistente o un viaggio privato, assicurando che il servizio sollevi le eccezioni corrette e mantenga la coerenza dei dati.
+
+Questi test permettono quindi di validare sia la complessità algoritmica del motore di ottimizzazione sia la correttezza delle funzionalità di clonazione dei viaggi.
+
 \newpage
 \subsection{API Esposte}
