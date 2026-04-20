@@ -8,7 +8,9 @@ import org.springframework.web.client.RestClient;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Servizio per l'integrazione con Overpass API.
@@ -66,9 +68,11 @@ public class OverpassApiService implements OverpassApiMgmtIF{
     private String buildQuery(String location) {
         return String.format("""
                 [out:json][timeout:60];
-                // 1. Cerca relazioni amministrative che abbiano QUALSIASI tag di nome
-                // (name, name:it, name:en, name:fr, ecc.) corrispondente alla ricerca
-                relation["boundary"="administrative"][~"^name(:.*)?$"~"^%1$s$", i];
+                // 1. Cerca la relazione amministrativa del comune (admin_level=8).
+                //    Limitarsi all'admin_level=8 evita che vengano matchate più boundary
+                //    con lo stesso nome (es. Comune di Milano + Città Metropolitana di Milano),
+                //    che causerebbe la restituzione duplicata dei nodi da parte di Overpass.
+                relation["boundary"="administrative"]["admin_level"="8"][~"^name(:.*)?$"~"^%1$s$", i];
                 
                 // 2. Converte la relazione trovata in un'area di ricerca
                 map_to_area->.searchArea;
@@ -85,14 +89,19 @@ public class OverpassApiService implements OverpassApiMgmtIF{
     //lista di Monument
 
     private List<Monument> parseResponse(OverpassResponse response, String city) {
-        List<Monument> monuments = new ArrayList<>();
+        // LinkedHashMap per deduplicare per osmId mantenendo l'ordine di arrivo.
+        // Difesa supplementare: se Overpass restituisce lo stesso nodo più volte
+        // (es. il nodo ricade in più aree matchate), viene tenuto solo il primo.
+        Map<Long, Monument> seen = new LinkedHashMap<>();
 
-        if (response == null || response.getElements() == null) return monuments;
+        if (response == null || response.getElements() == null) return List.of();
 
         for (OverpassResponse.OverpassElement element : response.getElements()) {
             // Salta elementi con i campi di coordinate e nome vuoto
             if (element.getLat() == null || element.getLon() == null) continue;
             if (element.getName() == null) continue;
+            // Salta duplicati per osmId
+            if (seen.containsKey(element.getId())) continue;
 
             Monument monument = Monument.builder()
                     .osmId(element.getId())
@@ -106,9 +115,9 @@ public class OverpassApiService implements OverpassApiMgmtIF{
                     .description(element.getDescription())
                     .build();
 
-            monuments.add(monument);
+            seen.put(element.getId(), monument);
         }
 
-        return monuments;
+        return new ArrayList<>(seen.values());
     }
 }
