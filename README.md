@@ -75,12 +75,32 @@ cd OptiTour
 Assicurati che l'istanza di MongoDB sia in esecuzione locale sulla porta di default:
 * `localhost:27017`
 
-### 3. Avvia il Backend
+### 3. (Opzionale) Configura GraphHopper
+OptiTour usa GraphHopper per calcolare le distanze percorrendo le strade reali. **Se non viene configurato, l'applicazione funziona comunque** usando la formula di Haversine (distanza in linea d'aria) come fallback automatico — i percorsi saranno meno precisi ma tutte le funzionalità resteranno disponibili.
+ 
+Per abilitare GraphHopper:
+ 
+1. Crea la cartella `osm/` nella root del progetto
+2. Scarica il file OSM della zona che ti interessa da [Geofabrik](https://download.geofabrik.de/europe/italy.html):
+   - **Nord Italia** (Milano, Torino…) → `nord-ovest` 
+   - **Italia intera** → `italy-latest.osm.pbf`
+3. Rinomina il file scaricato in `map.osm.pbf` e mettilo nella cartella `osm/`
+```
+OptiTour/
+├── osm/
+│   └── map.osm.pbf   ← qui
+├── src/
+└── pom.xml
+```
+ 
+> Al primo avvio GraphHopper costruisce il grafo stradale e lo salva in `graphhopper-cache/` (può richiedere qualche minuto). Gli avvii successivi saranno immediati.
+
+### 4. Avvia il Backend
 Esegui il file principale dell'applicazione Java:
 * `BackendApplication.java`
 * *Il backend sarà disponibile all'indirizzo:* `http://localhost:8080`
 
-### 4. Avvia il Frontend
+### 5. Avvia il Frontend
 Apri un nuovo terminale, spostati nella cartella del frontend e avvia il server di sviluppo:
 ```bash
 cd src/main/frontend
@@ -88,6 +108,6 @@ npm install
 npm run dev
 ```
 
-### 5. Apri l’applicazione
+### 6. Apri l’applicazione
 Naviga sul tuo browser all'indirizzo:
 * `http://localhost:5173`
