@@ -189,3 +189,118 @@ Questi test permettono quindi di validare sia la complessità algoritmica del mo
 
 \newpage
 \subsection{API Esposte}
+
+% ── 1. Clonazione di un Viaggio Pubblico ────
+\textbf{Clonazione di un Viaggio Pubblico}
+
+\begin{itemize}
+\item \textbf{Endpoint:} POST /api/trips/\{id\}/clone
+
+\item \textbf{Descrizione:} Permette all'utente autenticato di clonare un viaggio pubblico nella propria lista personale. Il viaggio clonato è una copia indipendente dell'originale, associata all'utente che ha effettuato la richiesta.
+I dettagli della richiesta e della risposta sono illustrati in \autoref{fig:cloneTripRequest} e \autoref{fig:cloneTripResponse}.
+
+\item \textbf{Autenticazione:} Richiesta (Bearer Token JWT).
+
+\item \textbf{Parametri:}
+\begin{itemize}
+\item \{id\} (string) --- ID del viaggio pubblico da clonare.
+\end{itemize}
+
+
+
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione3/Diagrammi/API/cloneReq.png}
+\caption{Test su Postman: Richiesta di clonazione di un viaggio pubblico.}
+\label{fig:cloneTripRequest}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione3/Diagrammi/API/cloneResp.png}
+\caption{Test su Postman: Risposta del server con il viaggio clonato.}
+\label{fig:cloneTripResponse}
+\end{figure}
+
+
+% ── 2. Esportazione di un Viaggio in PDF ────
+\textbf{Esportazione di un Viaggio in PDF}
+
+\begin{itemize}
+\item \textbf{Endpoint:} GET /api/trips/\{id\}/export
+
+\item \textbf{Descrizione:} Genera e restituisce il PDF dell'itinerario di un viaggio. Il file viene scaricato con il nome \texttt{itinerario.pdf}. La risposta non contiene JSON ma direttamente il contenuto binario del PDF.
+I dettagli della richiesta e della risposta sono illustrati in \autoref{fig:exportTripRequest}.
+
+\item \textbf{Autenticazione:} Richiesta (Bearer Token JWT).
+
+\item \textbf{Parametri:}
+\begin{itemize}
+\item \{id\} (string) --- ID del viaggio da esportare.
+\end{itemize}
+
+
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione3/Diagrammi/API/export.png}
+\caption{Test su Postman: Richiesta di esportazione di un viaggio in PDF.}
+\label{fig:exportTripRequest}
+\end{figure}
+
+
+% ── 3. Aggiornamento del Profilo Utente ─────
+\textbf{Aggiornamento del Profilo Utente}
+
+\begin{itemize}
+\item \textbf{Endpoint:} PATCH /api/user/profile
+
+\item \textbf{Descrizione:} Permette all'utente autenticato di aggiornare le informazioni del proprio profilo, come nome, cognome, username ed email. Vengono aggiornati solo i campi presenti nel payload della richiesta.
+I dettagli della richiesta e della risposta sono illustrati in \autoref{fig:updateProfileRequest} e \autoref{fig:updateProfileResponse}.
+
+\item \textbf{Autenticazione:} Richiesta (Bearer Token JWT).
+
+\item \textbf{Parametri:} Nessuno.
+
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione3/Diagrammi/API/patchreq.png}
+\caption{Test su Postman: Payload di richiesta per l'aggiornamento del profilo utente.}
+\label{fig:updateProfileRequest}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione3/Diagrammi/API/patchResp.png}
+\caption{Test su Postman: Risposta del server con il profilo aggiornato.}
+\label{fig:updateProfileResponse}
+\end{figure}
+
+
+% ── 4. Eliminazione dell'Account Utente ─────
+\textbf{Eliminazione dell'Account Utente}
+
+\begin{itemize}
+\item \textbf{Endpoint:} DELETE /api/user/profile
+
+\item \textbf{Descrizione:} Permette all'utente autenticato di eliminare definitivamente il proprio account e tutti i dati ad esso associati, inclusi i viaggi creati. L'operazione è irreversibile e restituisce uno stato \texttt{204 No Content} senza corpo nella risposta.
+I dettagli della richiesta e della risposta sono illustrati in \autoref{fig:deleteAccountRequest}.
+
+\item \textbf{Autenticazione:} Richiesta (Bearer Token JWT).
+
+\item \textbf{Parametri:} Nessuno.
+
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione3/Diagrammi/API/delete.png}
+\caption{Test su Postman: Richiesta di eliminazione dell'account utente.}
+\label{fig:deleteAccountRequest}
+\end{figure}
+
