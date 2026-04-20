@@ -1,0 +1,10 @@
+\section{Diagramma delle interfacce}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Iterazione3/Diagrammi/interfaceDiagram3.png}
+    \caption{Diagramma delle interfacce - Iterazione 3.}
+    \label{fig:interface_diagram_it3}
+\end{figure}
+
+Il diagramma in \autoref{fig:interface_diagram_it3} illustra le interfacce aggiornate del sistema per la terza iterazione. Rispetto alla fase precedente, l'architettura è stata arricchita integrando nuovi contratti dedicati alla gestione dell'utente. In particolare, sono state ampliate le firme dei metodi nei service di gestione dell'identità (come \texttt{UserMgmtIF}) per supportare nativamente le nuove funzionalità legate alla visualizzazione e modifica dei dati del profilo, all'aggiornamento sicuro della password e all'eliminazione definitiva dell'account. Sono state inoltre espanse le interfacce di sicurezza per garantire la corretta validazione e autorizzazione di queste operazioni critiche sui dati personali.

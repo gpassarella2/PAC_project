@@ -1,0 +1,32 @@
+\section{Component Diagram}
+
+Rispetto alla precedente iterazione, l'architettura del sistema è stata estesa 
+mantenendo invariata la struttura a più livelli già adottata. La separazione tra 
+interfaccia utente, logica applicativa e gestione dei dati è stata preservata, 
+introducendo nuove funzionalità sia lato front-end che lato back-end.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{Iterazione3/Diagrammi/ComponentDiagramIterazione3.png}
+\caption{Diagramma dei componenti}
+\label{fig:ComponentDiagramIterazione3}
+\end{figure}
+
+In questa iterazione è stata aggiunta una nuova pagina nel livello \textit{View}, 
+ovvero \textit{ProfilePage}, che consente all'utente di visualizzare e modificare 
+il proprio profilo, aggiornare le credenziali e eliminare il proprio account. 
+Questa pagina interagisce con due controller già esistenti: \textit{UserController}, 
+tramite l'interfaccia \texttt{api/user}, per le operazioni sul profilo, e 
+\textit{AuthController}, tramite \texttt{api/auth}, per la modifica della password.
+
+Nel livello \textit{Service} è stato introdotto il nuovo componente 
+\textit{ExportService}, esposto attraverso l'interfaccia \textit{ExportServiceIF}. 
+Questo service è responsabile della generazione del PDF riepilogativo di un 
+itinerario ed è invocato direttamente da \textit{TripController}. 
+
+
+Il diagramma mostra quindi un'evoluzione coerente dell'architettura: la nuova 
+pagina del front-end sfrutta i controller esistenti, il nuovo service di esportazione 
+si integra nel layer applicativo senza alterare le responsabilità dei componenti 
+preesistenti, e le dipendenze aggiornate riflettono i nuovi requisiti funzionali 
+introdotti in questa iterazione.

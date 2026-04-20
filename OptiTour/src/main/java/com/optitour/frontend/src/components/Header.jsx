@@ -5,13 +5,9 @@ import { useAuth } from '../context/AuthContext';
 // Header principale dell'app: mostra logo, navigazione e controlli utente
 export default function Header() {
 
-  // Legge l'utente autenticato e permette di fare il logout
   const { user, logout } = useAuth();
-
-  // Per cambiare pagina da codice senza premere link
   const navigate = useNavigate();
 
-  // Gestisce il logout: chiama il contesto e poi reindirizza alla pagina di login
   const handleLogout = async () => {
     await logout();
     navigate('/auth');
@@ -28,10 +24,23 @@ export default function Header() {
         <nav className="header-nav">
           {user && (
             <>
-              {/* Mostra username dell'utente loggato */}
-              <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+              {/* Username cliccabile apre la pagina profilo */}
+              <Link
+                to="/profile"
+                style={{
+                  fontSize: '0.82rem',
+                  color: '#2563eb', /* Nome user in blu */
+                  textDecoration: 'none',
+                  padding: '4px 8px',
+                  borderRadius: 'var(--radius)',
+                  transition: 'background 0.15s, color 0.15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#2563eb'; e.currentTarget.style.color = '#ffff'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2563eb'; }}
+                title="Gestisci il tuo profilo"
+              >
                 {user.username}
-              </span>
+              </Link>
 
               {/* Link al catalogo pubblico */}
               <Link to="/explore" id="nav-explore" className="btn btn-ghost btn-sm">

@@ -12,8 +12,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 //  - TileLayer: layer dei "mattoncini" OpenStreetMap
 //  - Marker: segnaposto su un punto della mappa
 //  - Popup: finestra informativa che si apre al click su un Marker
+//  - Polyline: linea che segue il percorso reale sulle strade (da GraphHopper)
 //  - useMap: per accedere all'istanza della mappa dall'interno
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import "leaflet/dist/leaflet.css";
 
 // Libreria Leaflet "pura" usata per creare icone personalizzate
@@ -27,8 +28,24 @@ import Header from '../components/Header';
 //  - getTripById:     GET /api/trips/{id}            → dati del viaggio
 //  - getMonumentById: GET /api/monuments/{id}         → dettagli monumento
 //  - optimizeTrip:    POST /api/trips/{id}/optimize   → ottimizzazione percorso
-import { getTripById, getMonumentById, optimizeTrip } from '../services/api';
+//  - exportTrip:      GET /api/trips/{id}/export     → esportazione PDF itinerario
+import { getTripById, getMonumentById, optimizeTrip, clonePublicTrip, exportTrip } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
+function FitRouteBounds({ routeLegs }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!routeLegs || routeLegs.length === 0) return;
+
+    const points = routeLegs.flat();
+    if (points.length > 1) {
+      map.fitBounds(points, { padding: [30, 30] });
+    }
+  }, [routeLegs, map]);
+
+  return null;
+}
 
 // Icone Leaflet personalizzate
 
@@ -74,6 +91,7 @@ const startIcon = L.divIcon({
 });
 
 
+
 // ─── Formatting helpers ───────────────────────────────────────────────────────
 
 /**
@@ -108,8 +126,8 @@ function formatDistance(meters) {
 /**
  * ItineraryPage
  * Componente principale della pagina. Mostra:
- *  - Pannello laterale con nome viaggio, statistiche, lista tappe 
- *  - Mappa Leaflet con marker di partenza e marker delle tappe 
+ * - Pannello laterale con nome viaggio, statistiche, lista tappe 
+ * - Mappa Leaflet con marker di partenza e marker delle tappe 
  */
 export default function ItineraryPage() {
   // Legge il parametro :tripId dall'URL (es. /itinerary/42 → tripId = "42")
@@ -119,22 +137,36 @@ export default function ItineraryPage() {
   const navigate = useNavigate();
 
   // ── Stato locale ────────────────────────────────────────────────────────────
+  const { user } = useAuth();
   const [trip, setTrip] = useState(null);               // Dati grezzi del viaggio dal backend
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const [enrichedStages, setEnrichedStages] = useState([]); // Tappe arricchite con nome, lat/lon, tipo, indirizzo
   const [loading, setLoading] = useState(true);         // True mentre il viaggio è in caricamento
   const [error, setError] = useState('');               // Messaggio di errore (se il fetch fallisce)
   const [optimizing, setOptimizing] = useState(false);  // True durante la chiamata di ottimizzazione
   const [optimizeError, setOptimizeError] = useState(''); // Messaggio di errore ottimizzazione
-
+  const [routeLegs, setRouteLegs] = useState([]);       // Geometria del percorso reale (da GraphHopper)
+                                                        // Ogni elemento è la lista di [lat, lon] di un tratto.
+                                                        // Vuoto se GraphHopper non è disponibile.
+  const [exporting, setExporting] = useState(false); // True durante la generazione del PDF dell'itinerario
 
   // ── Effetto 1: Caricamento del viaggio ──────────────────────────────────────
   // Si esegue una sola volta (o quando cambia tripId).
   // Chiama GET /api/trips/{id} e salva il risultato in `trip`.
   useEffect(() => {
     getTripById(tripId)
-      .then(res => setTrip(res.data))                          // Salva i dati del viaggio
-      .catch(() => setError('Errore nel caricamento del viaggio')) // Mostra errore in caso di fallimento
-      .finally(() => setLoading(false));                       // Rimuove il loading in ogni caso
+      .then(res => {
+        setTrip(res.data);
+        // Se il viaggio è già stato ottimizzato con GraphHopper, i routeLegs
+        // sono già salvati nel DB e tornano con il TripResponse: li carichiamo
+        // subito così il percorso è visibile senza dover cliccare "Ri-ottimizza".
+        if (Array.isArray(res.data.routeLegs) && res.data.routeLegs.length > 0) {
+          setRouteLegs(res.data.routeLegs);
+        }
+      })
+      .catch(() => setError('Errore nel caricamento del viaggio'))
+      .finally(() => setLoading(false));
   }, [tripId]); // Dipendenza: riesegue se cambia l'ID del viaggio nell'URL
 
 
@@ -179,6 +211,7 @@ export default function ItineraryPage() {
       const res = await optimizeTrip(tripId);   // Chiama l'API di ottimizzazione
       const optimized = res.data;               // Risposta con tappe ottimizzate e metriche
 
+      console.log("ROUTE LEGS:", optimized.routeLegs);
       // Aggiorna il trip: cambia lo stato a SAVED e aggiunge distanza e durata totale
       setTrip(prev => ({
         ...prev,                                                  // Mantieni tutti i campi esistenti
@@ -203,6 +236,11 @@ export default function ItineraryPage() {
           visitDurationMinutes: s.visitDurationMinutes, // Minuti di visita consigliati
         }))
       );
+
+      // Salva la geometria del percorso reale (presente solo se GraphHopper è attivo).
+      // Se assente o vuota (fallback Haversine), routeLegs resta [] e non viene
+      // mostrato nulla di diverso rispetto a prima.
+     setRouteLegs(Array.isArray(optimized.routeLegs) ? optimized.routeLegs : []);
     } catch (e) {
       // In caso di errore mostra un messaggio sotto il bottone
       setOptimizeError('Errore durante l\'ottimizzazione. Riprova.');
@@ -211,6 +249,32 @@ export default function ItineraryPage() {
     }
   };
 
+  /**
+   * handleExport
+   * * Genera ed esporta l'itinerario in formato PDF.
+   * Chiama GET /api/trips/{id}/export e scarica il file restituito dal backend.
+   */
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await exportTrip(tripId);
+      // Creazione del download
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      // Usa il nome del viaggio per il file, pulito da spazi
+      link.download = `OptiTour_${trip.name.replace(/\s+/g, '_')}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Errore durante l'esportazione del PDF");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   // ── Render condizionale: loading ────────────────────────────────────────────
   // Mostra uno spinner finché i dati del viaggio non sono stati caricati
@@ -231,6 +295,20 @@ export default function ItineraryPage() {
   );
 
 
+  const handleSaveTrip = async () => {
+    setSaving(true);
+    setSaveError('');
+  try {
+    const res = await clonePublicTrip(tripId); // usa qui il nome reale della tua funzione
+    navigate('/my-trips');
+    // oppure: navigate(`/itinerary/${res.data.id}`);
+  } catch {
+    setSaveError('Errore durante il salvataggio del viaggio.');
+  } finally {
+    setSaving(false);
+  }
+};
+
   // ── Dati derivati per il render ──────────────────────────────────────────────
 
   // Alias locale: usiamo le tappe arricchite ([] durante il caricamento dei dettagli)
@@ -248,6 +326,18 @@ export default function ItineraryPage() {
   // Mappa dallo stato interno all'etichetta mostrata all'utente
   const statusLabel = { DRAFT: 'Bozza', SAVED: 'Ottimizzato', COMPLETED: 'Completato' };
 
+  // Percorso come linea retta: partenza → tappe → partenza.
+  // Usato come fallback visivo quando GraphHopper non è disponibile.
+  // Si disegna solo dopo l'ottimizzazione (status SAVED) e solo se le coordinate sono presenti.
+  const straightLinePath = (trip.status === 'SAVED' || trip.status === 'COMPLETED') && hasCoords
+    ? [
+        [trip.startLat, trip.startLon],
+        ...stages.map(s => [s.lat, s.lon]),
+        [trip.startLat, trip.startLon],
+      ]
+    : [];
+
+  
 
   // ── Render principale ────────────────────────────────────────────────────────
   return (
@@ -366,6 +456,22 @@ export default function ItineraryPage() {
             </span>
           </div>
 
+          {trip.isPublic && user?.id && trip.userId !== user.id && (
+              <button
+                className="btn btn-secondary"
+                style={{ marginTop: 12, width: '100%' }}
+                onClick={handleSaveTrip}
+                disabled={saving}
+              >
+                {saving ? 'Salvataggio...' : 'Salva nei miei viaggi'}
+              </button>
+            )}
+
+            {saveError && (
+              <div style={{ color: 'red', fontSize: '0.78rem', marginTop: 6 }}>
+                {saveError}
+              </div>
+            )}
           {/* ── Bottone "Ottimizza percorso" – visibile solo se il viaggio è in bozza ── */}
           {trip.status === 'DRAFT' && (
             <>
@@ -399,6 +505,16 @@ export default function ItineraryPage() {
             </button>
           )}
 
+          {/* ── Bottone "Esporta PDF" ── */}
+          <button
+            className="btn btn-primary"
+            style={{ marginTop: 10, width: '100%' }}
+            onClick={handleExport}
+            disabled={exporting}
+          >
+            {exporting ? 'Generazione PDF…' : 'Esporta PDF'}
+          </button>
+
         </div>{/* fine itin-panel */}
 
 
@@ -415,6 +531,9 @@ export default function ItineraryPage() {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
+
+            <FitRouteBounds routeLegs={routeLegs} />
+
 
             {/* Marker del punto di partenza (icona "P" blu) – visibile solo se le coordinate non sono (0,0) */}
             {trip.startLat !== 0 && (
@@ -433,6 +552,33 @@ export default function ItineraryPage() {
                 </Popup>
               </Marker>
             ))}
+
+            {/* ── Percorso sulla mappa ──────────────────────────────────────────
+                Due modalità mutuamente esclusive:
+
+                A) GraphHopper disponibile → routeLegs popolato dal backend:
+                   una <Polyline> solida per ogni tratto reale sulle strade.
+
+                B) GraphHopper non disponibile (Haversine fallback) → routeLegs vuoto:
+                   una singola <Polyline> tratteggiata che collega i punti in linea
+                   retta (partenza → tappe → partenza), per dare comunque un
+                   riferimento visivo dell'ordine di visita. */}
+
+            {routeLegs.length > 0
+              ? routeLegs.map((leg, i) => (
+                  <Polyline
+                    key={`leg-${i}`}
+                    positions={leg}
+                    pathOptions={{ color: '#2563eb', weight: 4, opacity: 0.75, lineJoin: 'round' }}
+                  />
+                ))
+              : straightLinePath.length > 1 && (
+                  <Polyline
+                    positions={straightLinePath}
+                    pathOptions={{ color: '#2563eb', weight: 3, opacity: 0.55, dashArray: '10 7' }}
+                  />
+                )
+            }
 
           </MapContainer>
         </div>

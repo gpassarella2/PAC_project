@@ -1,0 +1,306 @@
+\section{Test}
+In questa sezione vengono descritte le attività di testing svolte durante la terza iterazione, focalizzate sulla verifica della robustezza delle nuove funzionalità di gestione del profilo utente e sul consolidamento della logica di gestione dei viaggi, in particolare l'esportazione. I test hanno l'obiettivo di garantire che l'evoluzione del sistema mantenga standard elevati di affidabilità e che le operazioni critiche sui dati personali (come l'aggiornamento della password e l'eliminazione dell'account) siano gestite in totale sicurezza. Oltre ai test funzionali, è stata eseguita una nuova analisi statica del codice per monitorare l'impatto delle modifiche sulla qualità architetturale complessiva.
+
+\subsection{Test: CodeMR}
+L'analisi statica del codice per la terza iterazione è stata condotta tramite CodeMR per valutare l'andamento delle metriche di qualità a seguito dell'introduzione dei nuovi casi d'uso. Nonostante l'incremento delle linee di codice dovuto alla gestione del profilo e ai nuovi controlli di sicurezza, l'architettura si conferma solida e ben modularizzata.
+Di seguito vengono analizzate le tre metriche principali: Complessità, Accoppiamento e Mancanza di Coesione.
+
+\begin{itemize}
+    \item \textbf{Complessità:} La distribuzione mostra che la grande maggioranza delle classi (86,2\%) si colloca nelle fasce di complessità bassa o medio-bassa. L'aumento della logica per la validazione dei profili è stato assorbito senza generare picchi critici estesi.
+    \item \textbf{Accoppiamento:} Sebbene quasi la metà delle classi mantenga un accoppiamento basso, delle classi si collocano nella fascia alta riflettendo la naturale dipendenza dei service layer verso le entità di dominio e i repository, confermando la necessità di mantenere un'attenta separazione delle responsabilità.
+    \item \textbf{Coesione:} I valori di ``Lack of Cohesion'' indicano che, nonostante una base solida,tuttavia una quota significativa presenta criticità. Ciò suggerisce che alcune classi, in particolare quelle di orchestrazione quali TripService e TripController, gestiscono un numero elevato di responsabilità che potrebbero beneficiare di future operazioni di refactoring.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\begin{minipage}{0.30\textwidth}
+\centering
+\includegraphics[width=\textwidth]{Iterazione3/Diagrammi/CodeMR/complexIT3.png}
+\caption{Complessità.}
+\label{fig:codemr_complexity_it3}
+\end{minipage}\hfill
+\begin{minipage}{0.30\textwidth}
+\centering
+\includegraphics[width=\textwidth]{Iterazione3/Diagrammi/CodeMR/couplingIT3.png}
+\caption{Accoppiamento.}
+\label{fig:codemr_coupling_it3}
+\end{minipage}\hfill
+\begin{minipage}{0.30\textwidth}
+\centering
+\includegraphics[width=\textwidth]{Iterazione3/Diagrammi/CodeMR/lackCohesionIT3.png}
+\caption{Lack of Cohesion.}
+\label{fig:codemr_cohesion_it3}
+\end{minipage}
+\end{figure}
+
+\subsubsection*{Analisi delle Classi Problematiche e Struttura dei Package}
+
+Come evidenziato dal cruscotto riassuntivo delle metriche (\autoref{fig:codemr_summary_it3}), la salute architetturale complessiva del progetto risulta eccellente. Su un totale di 59 classi analizzate, ben 58 risultano totalmente prive di criticità strutturali, posizionandosi nella fascia verde ottimale. L'intero carico delle complessità è infatti circoscritto a un'unica singola classe, dimostrando che l'aggiunta di nuove funzionalità non ha intaccato la bontà del design generale del sistema.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{Iterazione3/Diagrammi/CodeMR/dettaglioFinale.png}
+\caption{Grafico riassuntivo dello stato di salute del codice: 58 classi ottimali prive di criticità contro 1 singola classe problematica.}
+\label{fig:codemr_summary_it3}
+\end{figure}
+
+L'analisi di dettaglio ha evidenziato la presenza di una classe classificata come ``altamente problematica''. Come mostrato in \autoref{fig:classe_problematic_it3}, \texttt{TripService} concentra i valori metrici più elevati, giustificati dal suo ruolo centrale di orchestrazione della logica di viaggio, ottimizzazione e gestione dello stato. Altre classi di servizio, come \texttt{UserService}, sono monitorate per evitare un accumulo eccessivo di responsabilità.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{Iterazione3/Diagrammi/CodeMR/problematicClassIT3.png}
+\caption{Dettaglio della classe \texttt{TripService}, identificata come altamente problematica.}
+\label{fig:classe_problematic_it3}
+\end{figure}
+
+Infine, la visualizzazione strutturale (\autoref{fig:struttura_codemr_it3}) conferma la corretta organizzazione dei package. Il peso maggiore del sistema risiede correttamente nel layer \texttt{service} (logica applicativa) e \texttt{model}, mentre i package relativi alla configurazione e ai controller rimangono snelli, rispettando i vincoli architetturali prefissati.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{Iterazione3/Diagrammi/CodeMR/structureIT3.png}
+\caption{Distribuzione delle metriche all'interno dei package.}
+\label{fig:struttura_codemr_it3}
+\end{figure}
+
+\newpage
+\subsection{Test: Junit}
+
+\subsubsection*{1. Gestione del profilo utente: modifica ed eliminazione}
+
+Sono stati inseriti una serie di test dedicati alla gestione degli utenti, con l’obiettivo di verificare il corretto comportamento sia del controller che del service.\\
+I test sono stati sviluppati per coprire i principali casi d’uso e le condizioni di errore, garantendo la robustezza e l’affidabilità dell’applicazione.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{Iterazione3/Diagrammi/test/TestUserMgmt/Test_UserController.png}
+\caption{Test classe "UserController" per gestione profilo utente}
+\label{fig:testUserController_it3}
+\end{figure}
+
+I test relativi alla classe \textit{UserController}  (\autoref{fig:testUserController_it3}) si concentrano sulla verifica degli endpoint REST esposti dall’applicazione.\\
+In particolare, viene controllato che le richieste HTTP siano gestite correttamente e che le risposte restituite rispettino le specifiche dell’API.\\
+Vengono testati diversi scenari di aggiornamento del profilo utente, includendo la modifica di username, email, nome e cognome, sia singolarmente che in combinazione.
+Per ciascuno di questi casi viene verificato che il controller restituisca il corretto codice di stato HTTP, gestendo in modo appropriato le situazioni di conflitto, come la presenza di uno username o di un’email già registrati nel sistema.
+
+Un’ulteriore parte dei test del controller riguarda l’eliminazione dell’account utente.\\
+In questo contesto vengono considerati sia i casi di successo sia le condizioni di errore, come ad esmepio, la richiesta di cancellazione di un utente inesistente.\\
+Viene inoltre verificato che il controller invochi correttamente il service passando le informazioni dell’utente autenticato, assicurando così una corretta integrazione tra i diversi livelli dell’architettura.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{Iterazione3/Diagrammi/test/TestUserMgmt/Test_UserService.png}
+\caption{Test classe "UserService" per gestione profilo utente}
+\label{fig:testUserService_it3}
+\end{figure}
+
+I test relativi alla classe \textit{UserService} (\autoref{fig:testUserService_it3}) sono invece orientati alla validazione della logica di business.\\
+Questa suite di test verifica che le operazioni fondamentali sugli utenti vengano eseguite correttamente e che lo stato del sistema rimanga coerente al termine di ciascuna operazione.\\
+Nello specifico, viene testato il processo di registrazione degli utenti, controllando il corretto fallimento dell’operazione nel caso in cui l’email risulti già presente nel sistema.
+
+Vengono inoltre approfondite le funzionalità di aggiornamento delle credenziali, includendo la modifica di username ed email sia separatamente che congiuntamente.
+Una parte significativa dei test è dedicata alla gestione dei casi limite, come l’assenza di modifiche effettive, l’invio di campi vuoti o la richiesta di aggiornamento per un utente non esistente.
+In tali situazioni, il servizio deve comportarsi in modo coerente, evitando operazioni non necessarie o stati inconsistenti.
+
+Infine, i test di eliminazione dell’utente verificano che la rimozione venga eseguita correttamente anche in presenza di entità correlate, come viaggi o altri dati associati, e che il sistema gestisca correttamente anche il caso in cui tali entità non siano presenti.
+In questo modo si assicura la corretta gestione delle dipendenze e l’integrità complessiva dei dati.
+
+L' insieme dei test implementati consente di validare il corretto funzionamento dell’applicazione sia dal punto di vista dell’interfaccia esposta verso l’esterno sia dal punto di vista della logica interna.
+
+\subsubsection*{2. Esportazione dei viaggi}
+
+Sono stati sviluppati una serie di test dedicati alle operazioni di esportazione dei dati e alla generazione di documenti in formato PDF.
+Tali test hanno l’obiettivo di verificare la correttezza del processo di esportazione sia dal punto di vista della logica di servizio sia dal punto di vista degli endpoint esposti dal controller.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{Iterazione3/Diagrammi/test/TestExport/Test_exportService.png}
+\caption{Test classe "ExportService" per gestione dell'esportazione del viaggio}
+\label{fig:testExportService_it3}
+\end{figure}
+
+I test relativi alla classe \textit{ExportService} (\autoref{fig:testExportService_it3}) si concentrano sulla generazione di documenti PDF associati ai monumenti.\\
+In particolare, viene verificato che il servizio gestisca correttamente il caso in cui il monumento richiesto non esista, evitando la produzione di risultati non validi.
+Vengono inoltre testati gli scenari di successo, controllando che i dati del monumento vengano correttamente inclusi nel documento generato.
+
+Una parte dei test è dedicata alla validazione della struttura del PDF prodotto, assicurando la presenza di un’intestazione corretta e la generazione di contenuti coerenti.\\
+Viene anche verificato che le collezioni di dati utilizzate per la creazione del documento non risultino vuote, garantendo che il PDF contenga effettivamente informazioni significative.
+Nel complesso, questi test assicurano che il servizio di esportazione produca documenti corretti, completi e consistenti rispetto ai dati disponibili nel sistema.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{Iterazione3/Diagrammi/test/TestExport/Test_TripController.png}
+\caption{Test classe "TripController" per gestione dell'esportazione del viaggio}
+\label{fig:testExportTripController_it3}
+\end{figure}
+
+I test del \textit{TripController}  (\autoref{fig:testExportTripController_it3}) sono invece focalizzati sulla verifica dell’endpoint responsabile dell’esportazione dei viaggi in formato PDF.
+In particolare, viene controllato che il controller risponda correttamente alla richiesta di esportazione e che restituisca un documento PDF valido come risultato dell’operazione.
+Questo tipo di test consente di verificare l’integrazione tra il livello di controller e il servizio di esportazione, assicurando che la funzionalità sia correttamente accessibile dall’esterno attraverso l’API.
+
+Nel loro insieme, questi test contribuiscono a garantire la correttezza e l’affidabilità delle funzionalità di esportazione del sistema.
+
+\subsubsection*{3. Motore di ottimizzazione e clonazione dei viaggi}
+
+Sono stati inseriti una serie di test dedicati al motore di ottimizzazione dei percorsi e alle funzionalità di clonazione dei viaggi pubblici.
+Questi test hanno l’obiettivo di verificare la correttezza degli algoritmi utilizzati  e il corretto comportamento degli endpoint e dei servizi coinvolti.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{Iterazione3/Diagrammi/test/TestPathVisualization/Test_OptimizationEngine.png}
+\caption{Test classe "OptimizationEngine" per l'ottimizzazione del percorso}
+\label{fig:testOptimizationEngine_it3}
+\end{figure}
+
+I test relativi alla classe \textit{OptimizationEngine}  (\autoref{fig:testOptimizationEngine_it3}) sono focalizzati sulla validazione degli algoritmi di calcolo dei percorsi e sull’ottimizzazione dei tour.
+In particolare, viene verificato che gli algoritmi di ricerca, come il \textit{Nearest Neighbour} e la strategia di ottimizzazione \textit{2-opt}, producano percorsi validi e coerenti, senza peggiorare la soluzione iniziale e mantenendo risultati stabili quando applicati più volte.
+
+Una parte significativa dei test riguarda la correttezza dei calcoli geometrici.
+Viene verificato che le distanze tra punti siano sempre non negative, che la distanza tra due punti coincidenti sia pari a zero e che il calcolo basato sulla formula di Haversine produca risultati coerenti.\\
+Inoltre, viene controllato che le matrici delle distanze siano simmetriche, di dimensioni corrette e coerenti con il numero di monumenti considerati.
+
+I test verificano anche che i percorsi generati rispettino vincoli fondamentali, come l’assenza di monumenti duplicati all’interno di un tour, la presenza di tutti i monumenti richiesti e il corretto ritorno al punto di partenza nei casi previsti.\\
+Viene inoltre controllata la gestione dei casi limite, come l’assenza di dati di input o l’uso di liste vuote.
+
+Dal punto di vista temporale, i test assicurano che la durata totale del tour sia calcolata correttamente, includendo anche il tempo di visita dei monumenti, il cui valore deve risultare sempre consistente e positivo.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{Iterazione3/Diagrammi/test/TestPathVisualization/Test_tripController.png}
+\caption{Test classe "TripController" per per la clonazione del percorso}
+\label{fig:testTripControllerOpt_it3}
+\end{figure}
+
+I test del \textit{TripController} (\autoref{fig:testTripControllerOpt_it3}) si concentrano invece sulla verifica dell’endpoint REST dedicato alla clonazione di un viaggio pubblico.\\
+In particolare, viene controllato che il controller restituisca una risposta di successo quando il viaggio sorgente esiste e che la clonazione venga effettuata correttamente.\\
+Vengono inoltre testati i casi di errore, come la richiesta di clonazione di un viaggio inesistente, verificando che vengano restituiti i codici di stato HTTP appropriati.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{Iterazione3/Diagrammi/test/TestPathVisualization/Test_tripService.png}
+\caption{Test classe "TripService" per la clonazione del percorso}
+\label{fig:testTripServiceOpt_it3}
+\end{figure}
+
+I test relativi al \textit{TripService}  (\autoref{fig:testTripServiceOpt_it3}) completano la validazione della funzionalità di clonazione, concentrandosi sulla logica di business.\\
+In questo contesto viene verificato che la clonazione di un viaggio pubblico comporti la corretta creazione di una nuova istanza persistita nel sistema.\\
+Vengono inoltre gestiti esplicitamente i casi di errore, come il tentativo di clonare un viaggio inesistente o un viaggio privato, assicurando che il servizio sollevi le eccezioni corrette e mantenga la coerenza dei dati.
+
+Questi test permettono quindi di validare sia la complessità algoritmica del motore di ottimizzazione sia la correttezza delle funzionalità di clonazione dei viaggi.
+
+\newpage
+\subsection{API Esposte}
+
+% ── 1. Clonazione di un Viaggio Pubblico ────
+\textbf{Clonazione di un Viaggio Pubblico}
+
+\begin{itemize}
+\item \textbf{Endpoint:} POST /api/trips/\{id\}/clone
+
+\item \textbf{Descrizione:} Permette all'utente autenticato di clonare un viaggio pubblico nella propria lista personale. Il viaggio clonato è una copia indipendente dell'originale, associata all'utente che ha effettuato la richiesta.
+I dettagli della richiesta e della risposta sono illustrati in \autoref{fig:cloneTripRequest} e \autoref{fig:cloneTripResponse}.
+
+\item \textbf{Autenticazione:} Richiesta (Bearer Token JWT).
+
+\item \textbf{Parametri:}
+\begin{itemize}
+\item \{id\} (string) --- ID del viaggio pubblico da clonare.
+\end{itemize}
+
+
+
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione3/Diagrammi/API/cloneReq.png}
+\caption{Test su Postman: Richiesta di clonazione di un viaggio pubblico.}
+\label{fig:cloneTripRequest}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione3/Diagrammi/API/cloneResp.png}
+\caption{Test su Postman: Risposta del server con il viaggio clonato.}
+\label{fig:cloneTripResponse}
+\end{figure}
+
+
+% ── 2. Esportazione di un Viaggio in PDF ────
+\textbf{Esportazione di un Viaggio in PDF}
+
+\begin{itemize}
+\item \textbf{Endpoint:} GET /api/trips/\{id\}/export
+
+\item \textbf{Descrizione:} Genera e restituisce il PDF dell'itinerario di un viaggio. Il file viene scaricato con il nome \texttt{itinerario.pdf}. La risposta non contiene JSON ma direttamente il contenuto binario del PDF.
+I dettagli della richiesta e della risposta sono illustrati in \autoref{fig:exportTripRequest}.
+
+\item \textbf{Autenticazione:} Richiesta (Bearer Token JWT).
+
+\item \textbf{Parametri:}
+\begin{itemize}
+\item \{id\} (string) --- ID del viaggio da esportare.
+\end{itemize}
+
+
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione3/Diagrammi/API/export.png}
+\caption{Test su Postman: Richiesta di esportazione di un viaggio in PDF.}
+\label{fig:exportTripRequest}
+\end{figure}
+
+
+% ── 3. Aggiornamento del Profilo Utente ─────
+\textbf{Aggiornamento del Profilo Utente}
+
+\begin{itemize}
+\item \textbf{Endpoint:} PATCH /api/user/profile
+
+\item \textbf{Descrizione:} Permette all'utente autenticato di aggiornare le informazioni del proprio profilo, come nome, cognome, username ed email. Vengono aggiornati solo i campi presenti nel payload della richiesta.
+I dettagli della richiesta e della risposta sono illustrati in \autoref{fig:updateProfileRequest} e \autoref{fig:updateProfileResponse}.
+
+\item \textbf{Autenticazione:} Richiesta (Bearer Token JWT).
+
+\item \textbf{Parametri:} Nessuno.
+
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione3/Diagrammi/API/patchreq.png}
+\caption{Test su Postman: Payload di richiesta per l'aggiornamento del profilo utente.}
+\label{fig:updateProfileRequest}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione3/Diagrammi/API/patchResp.png}
+\caption{Test su Postman: Risposta del server con il profilo aggiornato.}
+\label{fig:updateProfileResponse}
+\end{figure}
+
+
+% ── 4. Eliminazione dell'Account Utente ─────
+\textbf{Eliminazione dell'Account Utente}
+
+\begin{itemize}
+\item \textbf{Endpoint:} DELETE /api/user/profile
+
+\item \textbf{Descrizione:} Permette all'utente autenticato di eliminare definitivamente il proprio account e tutti i dati ad esso associati, inclusi i viaggi creati. L'operazione è irreversibile e restituisce uno stato \texttt{204 No Content} senza corpo nella risposta.
+I dettagli della richiesta e della risposta sono illustrati in \autoref{fig:deleteAccountRequest}.
+
+\item \textbf{Autenticazione:} Richiesta (Bearer Token JWT).
+
+\item \textbf{Parametri:} Nessuno.
+
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Iterazione3/Diagrammi/API/delete.png}
+\caption{Test su Postman: Richiesta di eliminazione dell'account utente.}
+\label{fig:deleteAccountRequest}
+\end{figure}
+

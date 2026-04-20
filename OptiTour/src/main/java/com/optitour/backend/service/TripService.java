@@ -398,6 +398,40 @@ public class TripService implements TripMgmtIF {
         return tripRepository.save(trip);
     }
     
+    @Override
+    public Trip clonePublicTrip(String sourceTripId, String userId) {
+    	
+        Trip source = tripRepository.findById(sourceTripId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trip non trovato"));
+
+        if (!source.isPublic()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Puoi salvare solo viaggi pubblici");
+        }
+
+        Trip copy = Trip.builder()
+            .userId(userId)
+            .name(source.getName())
+            .city(source.getCity())
+            .startPoint(source.getStartPoint())
+            .startLat(source.getStartLat())
+            .startLon(source.getStartLon())
+            .stages(source.getStages().stream()
+                .map(s -> TripStage.builder()
+                    .monumentId(s.getMonumentId())
+                    .visitDurationMinutes(s.getVisitDurationMinutes())
+                    .build())
+                .toList())
+            .status(TripStatus.SAVED)
+            .createdAt(Instant.now())
+            .updatedAt(Instant.now())
+            .build();
+
+        copy.setTotalDistanceMeters(source.getTotalDistanceMeters());
+        copy.setTotalDurationSeconds(source.getTotalDurationSeconds());
+        copy.setRouteLegs(source.getRouteLegs());
+        return tripRepository.save(copy);
+    }
+    
     /**
      * Ricava l'ID dell'utente dal JWT: il subject è lo username -> cerca l'utente nel DB.
      */
@@ -407,6 +441,7 @@ public class TripService implements TripMgmtIF {
                 .orElseThrow(() -> new RuntimeException("Utente non trovato: " + username))
                 .getId();
     }
+    
     
     // --- Helpers privati -----------------------------------------------------
 

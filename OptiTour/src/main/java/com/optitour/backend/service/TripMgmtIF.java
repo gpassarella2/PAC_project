@@ -86,4 +86,6 @@ public interface TripMgmtIF {
     
     List<TripResponse> getPublicTripsWithUsername();
 
+	Trip clonePublicTrip(String sourceTripId, String userId);
+
 }

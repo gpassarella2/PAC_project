@@ -1,0 +1,55 @@
+
+\section{Casi d'uso implementati}
+In questa terza e ultima fase di sviluppo, l'obiettivo principale è stato il completamento della gestione del profilo utente e l'introduzione di funzionalità avanzate per l'esportazione e la visualizzazione dei viaggi in formato pdf. È stato inoltre effettuato un lavoro di rifinitura e miglioramento generale del frontend per garantire un'esperienza utente più fluida e intuitiva.
+
+Di seguito sono riportati i casi d'uso sviluppati per questa iterazione, in conformità con i requisiti iniziali.
+
+\begin{table}[htbp]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{ID} & \textbf{Titolo} \\ \hline
+\textbf{UC6} & Esporta percorso \\ \hline
+\textbf{UC2.1} & Modifica dati \\ \hline
+\textbf{UC2.2} & Elimina account \\ \hline
+\end{tabular}
+\caption{Iterazione 3 - Casi d'uso implementati}
+\label{tab:iterazione3_casi_uso}
+\end{table}
+
+\subsection*{UC6: Esporta percorso}
+\textbf{Attori:} Utente, Sistema. \\
+\textbf{Descrizione:} L'utente può esportare un itinerario in un formato condivisibile (PDF). Il sistema genera un documento contenente una tabella riassuntiva con l'ordine delle tappe, i nomi dei monumenti e i tempi di visita. Questa funzionalità attiva direttamente il modulo \textit{Export Service} previsto dall'architettura. \\
+\textbf{Flusso degli eventi:}
+\begin{enumerate}
+    \item L'utente apre i dettagli di un viaggio salvato o appena ottimizzato.
+    \item Clicca sull'opzione "Esporta in PDF".
+    \item Il frontend invia la richiesta all'Application API.
+    \item L'Export Service elabora i dati del viaggio e genera il file PDF impaginato.
+    \item Il file viene scaricato automaticamente sul dispositivo dell'utente.
+\end{enumerate}
+
+\subsection*{UC2.1: Modifica dati}
+\textbf{Attori:} Utente, Sistema. \\
+\textbf{Descrizione:} L'utente autenticato può aggiornare le proprie informazioni personali e gestire la sicurezza del proprio account effettuando il cambio della password. \\
+\textbf{Flusso degli eventi:}
+\begin{enumerate}
+    \item L'utente accede alla sezione dedicata alla gestione del profilo.
+    \item Inserisce i nuovi dati personali o compila i campi per il cambio password (vecchia password e nuova password).
+    \item Invia la richiesta di aggiornamento.
+    \item Il sistema valida i dati immessi, aggiorna il database e restituisce un messaggio di conferma.
+\end{enumerate}
+
+\subsection*{UC2.2: Elimina account}
+\textbf{Attori:} Utente, Sistema. \\
+\textbf{Descrizione:} L'utente può richiedere la cancellazione definitiva e irreversibile del proprio profilo dal sistema. \\
+\textbf{Flusso degli eventi:}
+\begin{enumerate}
+    \item L'utente accede alla sezione di gestione del profilo.
+    \item Seleziona l'opzione "Elimina account".
+    \item Il sistema richiede una conferma dell'operazione per evitare cancellazioni accidentali.
+    \item L'utente conferma l'eliminazione.
+    \item Il sistema rimuove in modo permanente i dati dell'utente dal database, chiude la sessione e reindirizza l'utente alla pagina di Login.
+\end{enumerate}
+

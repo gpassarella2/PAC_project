@@ -89,6 +89,7 @@ public class RouteOptimizationService implements RouteOptimizationServiceMgmt {
         // 4. Ottimizzazione del percorso
         TspResult result = optimizationEngine.optimise(
                 trip.getStartLat(), trip.getStartLon(), monuments, stages);
+        
 
         // 5. Aggiorna e salva il Trip
         trip.setStages(result.orderedStages());
@@ -98,6 +99,9 @@ public class RouteOptimizationService implements RouteOptimizationServiceMgmt {
         // quando il viaggio viene riaperto da MyTrips o dal catalogo
         trip.setTotalDistanceMeters(result.totalDistanceMeters());
         trip.setTotalDurationSeconds(result.totalDurationSeconds());
+        trip.setRouteLegs(
+        	    result.routeLegs() != null ? result.routeLegs() : new ArrayList<>()
+        	);
         Trip saved = tripRepository.save(trip);
 
         System.out.println("Trip id=" + saved.getId() + " ottimizzato e salvato. Distanza="
@@ -129,7 +133,8 @@ public class RouteOptimizationService implements RouteOptimizationServiceMgmt {
                 saved.getStartLon(),
                 details,
                 result.totalDistanceMeters(),
-                result.totalDurationSeconds()
+                result.totalDurationSeconds(),
+                result.routeLegs() != null ? result.routeLegs() : new java.util.ArrayList<>()
         );
     }
 }

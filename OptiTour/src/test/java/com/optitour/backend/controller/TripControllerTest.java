@@ -5,6 +5,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -852,7 +854,8 @@ class TripControllerTest {
                 trip.getStartLon(),    // startLon
                 List.of(),             // stages ottimizzate (vuote per il test)
                 1500.0,                // distanza totale
-                3600L                  // durata totale
+                3600L,                  // durata totale
+                List.of()
         );
 
         // Mock del servizio di ottimizzazione
@@ -942,5 +945,66 @@ class TripControllerTest {
                 .andExpect(jsonPath("$.city").value("Milano"))
                 .andExpect(jsonPath("$.stages").isArray());
     }
+    
+    @Test
+    @WithMockUser(username = "testuser")
+    void clonePublicTrip_ShouldReturn200AndCloneTrip() throws Exception {
+        Trip source = savePublicTrip("u-source", "Trip pubblico da clonare", "Milano");
 
+        long beforeCount = tripRepository.count();
+
+        mockMvc.perform(post("/api/trips/" + source.getId() + "/clone"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.name").value("Trip pubblico da clonare"))
+                .andExpect(jsonPath("$.city").value("Milano"))
+          .andExpect(jsonPath("$.status").value("SAVED"));
+        
+        long afterCount = tripRepository.count();
+        assertEquals(beforeCount + 1, afterCount, "Il clone deve essere salvato nel database");
+
+        Trip cloned = tripRepository.findAll().stream()
+                .filter(t -> !t.getId().equals(source.getId()))
+                .findFirst()
+                .orElseThrow();
+
+        assertNotEquals(source.getId(), cloned.getId(), "Il clone deve avere un ID diverso");
+        assertEquals(userId, cloned.getUserId(), "Il clone deve appartenere all'utente autenticato");
+        assertEquals(source.getName(), cloned.getName());
+        assertEquals(source.getCity(), cloned.getCity());
+        assertEquals(source.getStartPoint(), cloned.getStartPoint());
+        assertEquals(source.getStartLat(), cloned.getStartLat(), 0.0001);
+        assertEquals(source.getStartLon(), cloned.getStartLon(), 0.0001);
+        assertEquals(Trip.TripStatus.SAVED, cloned.getStatus());
+        assertFalse(cloned.isPublic(), "Il clone non deve essere pubblico di default");
+        assertEquals(source.getStages().size(), cloned.getStages().size());
+    }
+    
+    @Test
+    @WithMockUser(username = "testuser")
+    void exportTrip_ShouldReturnPdf() throws Exception {
+        Trip trip = createTrip();
+
+        mockMvc.perform(get("/api/trips/" + trip.getId() + "/export"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(
+                        "Content-Disposition",
+                        "attachment; filename=\"itinerario.pdf\""
+                ))
+                .andExpect(content().contentType(MediaType.APPLICATION_PDF))
+                .andExpect(result -> {
+                    byte[] content = result.getResponse().getContentAsByteArray();
+                    assertNotNull(content);
+                    assertTrue(content.length > 0);
+                });
+    }
+    
+
+    @Test
+    @WithMockUser(username = "testuser")
+    void clonePublicTrip_ShouldReturn404IfSourceTripNotFound() throws Exception {
+        mockMvc.perform(post("/api/trips/id-inesistente/clone"))
+                .andExpect(status().isNotFound());
+        
+    }
 }

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -268,6 +269,178 @@ class OptimizationEngineTest {
         assertEquals(distHV[0][1], distGH[0][1], 1.0,
             "Il fallback deve restituire la distanza Haversine");
     }
+
+
+    // ── Test routeLegs – Unit (senza GraphHopper) ─────────────────────────────
+
+    /**
+     * Senza GraphHopper il blocco di popolamento dei routeLegs è completamente
+     * skippato: il campo deve essere una lista vuota, mai null.
+     */
+    @Test
+    void senzaGraphHopperRouteLegsDeveEssereVuoto() {
+        // graphHopperAvailable è false per default (nessun initGraphHopper chiamato)
+        TspResult result = engine.optimise(45.4641, 9.1919, monuments, stages);
+
+        assertNotNull(result.routeLegs(), "routeLegs non deve essere null");
+        assertTrue(result.routeLegs().isEmpty(),
+                "Senza GraphHopper routeLegs deve essere vuoto");
+    }
+
+    /**
+     * getRouteLeg in modalità fallback (graphHopperAvailable = false) deve
+     * restituire esattamente i due punti estremi passati come argomento.
+     * Usiamo la reflection perché il metodo è privato.
+     */
+    @Test
+    void getRouteLegSenzaGhRestituisceEsattamenteDuePuntiEstremi() throws Exception {
+        Method m = OptimizationEngine.class.getDeclaredMethod(
+                "getRouteLeg", double.class, double.class, double.class, double.class);
+        m.setAccessible(true);
+
+        double lat1 = 45.4641, lon1 = 9.1919;
+        double lat2 = 45.4706, lon2 = 9.1796;
+
+        @SuppressWarnings("unchecked")
+        List<double[]> leg = (List<double[]>) m.invoke(engine, lat1, lon1, lat2, lon2);
+
+        assertEquals(2, leg.size(),
+                "Il fallback deve restituire esattamente 2 punti");
+        assertArrayEquals(new double[]{lat1, lon1}, leg.get(0), 1e-9,
+                "Il primo punto deve coincidere con il punto di partenza");
+        assertArrayEquals(new double[]{lat2, lon2}, leg.get(1), 1e-9,
+                "Il secondo punto deve coincidere con il punto di arrivo");
+    }
+
+    /**
+     * In modalità fallback i punti estremi restituiti da getRouteLeg devono
+     * rispettare l'ordine: il primo è (lat1,lon1) e il secondo è (lat2,lon2).
+     * Verifica che lo scambio lat/lon non avvenga accidentalmente.
+     */
+    @Test
+    void getRouteLegFallbackNonInverteLongitudineLatitudine() throws Exception {
+        Method m = OptimizationEngine.class.getDeclaredMethod(
+                "getRouteLeg", double.class, double.class, double.class, double.class);
+        m.setAccessible(true);
+
+        double lat1 = 10.0, lon1 = 20.0;
+        double lat2 = 30.0, lon2 = 40.0;
+
+        @SuppressWarnings("unchecked")
+        List<double[]> leg = (List<double[]>) m.invoke(engine, lat1, lon1, lat2, lon2);
+
+        assertEquals(lat1, leg.get(0)[0], 1e-9, "leg[0][0] deve essere lat1");
+        assertEquals(lon1, leg.get(0)[1], 1e-9, "leg[0][1] deve essere lon1");
+        assertEquals(lat2, leg.get(1)[0], 1e-9, "leg[1][0] deve essere lat2");
+        assertEquals(lon2, leg.get(1)[1], 1e-9, "leg[1][1] deve essere lon2");
+    }
+
+    // ── Test routeLegs – Integration (richiedono GraphHopper + file OSM) ──────
+
+    /**
+     * Con GraphHopper attivo, il numero di routeLegs deve essere esattamente
+     * n+1 dove n = numero di monumenti (un tratto per ogni coppia consecutiva
+     * di waypoint nel circuito: start→m1, m1→m2, …, mn→start).
+     */
+    @Test
+    @Tag("integration")
+    void conGraphHopperNumeroLegDeveEssereNPiuUno() {
+        engine.initGraphHopper();
+        assumeTrue(engine.graphHopperAvailable, "GraphHopper non disponibile");
+
+        TspResult result = engine.optimise(45.4641, 9.1919, monuments, stages);
+
+        assertEquals(monuments.size() + 1, result.routeLegs().size(),
+                "Devono esserci n+1 legs per n monumenti (incluso il ritorno al punto di partenza)");
+    }
+
     
-    
+
+    /**
+     * Il primo punto del primo leg deve coincidere con il punto di partenza
+     * passato a optimise().
+     */
+    @Test
+    @Tag("integration")
+    void conGraphHopperPrimoLegPartedalPuntoDiPartenza() {
+        engine.initGraphHopper();
+        assumeTrue(engine.graphHopperAvailable, "GraphHopper non disponibile");
+
+        TspResult result = engine.optimise(45.4641, 9.1919, monuments, stages);
+
+        double[] firstPoint = result.routeLegs().get(0).get(0);
+        assertEquals(45.4641, firstPoint[0], 5e-4,
+                "La latitudine del primo punto del primo leg deve essere quella di partenza (tolleranza snapping stradale)");
+        assertEquals(9.1919, firstPoint[1], 5e-4,
+                "La longitudine del primo punto del primo leg deve essere quella di partenza (tolleranza snapping stradale)");
+    }
+
+    /**
+     * L'ultimo punto dell'ultimo leg deve coincidere con il punto di partenza
+     * (circuito chiuso: il percorso torna sempre all'origine).
+     */
+    @Test
+    @Tag("integration")
+    void conGraphHopperUltimoLegTornaAlPuntoDiPartenza() {
+        engine.initGraphHopper();
+        assumeTrue(engine.graphHopperAvailable, "GraphHopper non disponibile");
+
+        TspResult result = engine.optimise(45.4641, 9.1919, monuments, stages);
+
+        List<double[]> lastLeg = result.routeLegs().get(result.routeLegs().size() - 1);
+        double[] lastPoint = lastLeg.get(lastLeg.size() - 1);
+        assertEquals(45.4641, lastPoint[0], 5e-4,
+                "La latitudine dell'ultimo punto del percorso deve essere quella di partenza (tolleranza snapping stradale)");
+        assertEquals(9.1919, lastPoint[1], 5e-4,
+                "La longitudine dell'ultimo punto del percorso deve essere quella di partenza (tolleranza snapping stradale)");
+    }
+
+    /**
+     * Ogni punto all'interno dei legs deve avere coordinate geografiche valide:
+     * latitudine in [-90, 90] e longitudine in [-180, 180].
+     */
+    @Test
+    @Tag("integration")
+    void conGraphHopperOgniPuntoHaCoordinateValide() {
+        engine.initGraphHopper();
+        assumeTrue(engine.graphHopperAvailable, "GraphHopper non disponibile");
+
+        TspResult result = engine.optimise(45.4641, 9.1919, monuments, stages);
+
+        for (int li = 0; li < result.routeLegs().size(); li++) {
+            List<double[]> leg = result.routeLegs().get(li);
+            for (int pi = 0; pi < leg.size(); pi++) {
+                double lat = leg.get(pi)[0];
+                double lon = leg.get(pi)[1];
+                assertTrue(lat >= -90 && lat <= 90,
+                        "Lat non valida nel leg " + li + " punto " + pi + ": " + lat);
+                assertTrue(lon >= -180 && lon <= 180,
+                        "Lon non valida nel leg " + li + " punto " + pi + ": " + lon);
+            }
+        }
+    }
+
+    /**
+     * Con GraphHopper attivo, getRouteLeg deve restituire più di 2 punti
+     * per una coppia di coordinate all'interno della mappa OSM (i punti
+     * intermedi sulle strade sono il valore aggiunto rispetto al fallback).
+     */
+    @Test
+    @Tag("integration")
+    void conGraphHopperGetRouteLegRestituiscePuntiIntermedi() throws Exception {
+        engine.initGraphHopper();
+        assumeTrue(engine.graphHopperAvailable, "GraphHopper non disponibile");
+
+        Method m = OptimizationEngine.class.getDeclaredMethod(
+                "getRouteLeg", double.class, double.class, double.class, double.class);
+        m.setAccessible(true);
+
+        // Duomo → Castello: tratto all'interno della mappa OSM di Milano
+        @SuppressWarnings("unchecked")
+        List<double[]> leg = (List<double[]>) m.invoke(
+                engine, 45.4641, 9.1919, 45.4706, 9.1796);
+
+        assertTrue(leg.size() > 2,
+                "Con GraphHopper il leg deve avere più di 2 punti (punti intermedi sulle strade)");
+    }
 }
